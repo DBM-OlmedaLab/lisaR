@@ -1,0 +1,12 @@
+test_that("PATHWAYS preserves the complete 69-category active universe without zero coercion", {
+  dictionary <- data.frame(category_id = sprintf("PATH_%02d", 1:69), category_display_name = sprintf("Pathway %02d", 1:69))
+  results <- data.frame(category_id = c("PATH_01", "PATH_02", "PATH_03"), padj = c(0.01, 0.30, NA), tested = c(TRUE, TRUE, FALSE), available = c(TRUE, TRUE, FALSE))
+  single <- lisa_pathways_status_table(dictionary, results)
+  contrast <- lisa_pathways_status_table(dictionary, results)
+  expect_equal(nrow(single), 69L)
+  expect_identical(single$category_display, rep("all", 69L))
+  expect_identical(single$status[1:4], c("significant", "tested_not_significant", "not_available", "not_tested"))
+  expect_true(is.na(single$padj[[4]]))
+  expect_identical(single, contrast)
+  expect_error(lisa_pathways_status_table(dictionary[-1, ]), "expected 69")
+})

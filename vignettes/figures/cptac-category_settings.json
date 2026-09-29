@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "scope": "single",
+  "side_labels": "Analysis",
+  "presentation_version": "2.0",
+  "plot_set": "all",
+  "distribution_layout": "separate_lanes_v1",
+  "render_context": {
+    "profile": "fresh_r_process_v1",
+    "png_device": "cairo",
+    "isolation": "One synchronous fresh Rscript --vanilla process for each output figure."
+  },
+  "title": "ccRCC tumour minus NAT",
+  "subtitle": "Paired tumour minus NAT abundance\nPositive values indicate higher tumour abundance.",
+  "x_limits": [-4.6875039666167, 4.6875039666167],
+  "mean_definition": "Existing mean NES; significant unique classified member sets.",
+  "percentages": "Positive, negative and zero counts divided by significant finite-NES member count; absent members excluded.",
+  "quantiles": "P25-P75: stats::quantile type 7, between-gene-set dispersion, not a confidence interval.",
+  "contrast_rule": "Separate A/B distributions; existing descriptive A-B delta is unchanged; no delta percentiles.",
+  "row_order": "Supplied canonical category-summary row order; identical in every variant.",
+  "analysis_id": "cptac_ccrcc_tumor_minus_nat",
+  "collection": "GOBP-C2",
+  "category_nes_variants": "clean",
+  "variant": "clean",
+  "width": 13,
+  "height": 17.8,
+  "dpi": 180,
+  "source_sha256": "885e338f33d91720ce440d1d3b5afd3ad750d4465143ee466367aca752870be5"
+}

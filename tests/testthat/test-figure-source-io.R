@@ -1,0 +1,21 @@
+test_that("multiline figure text round-trips without changing numeric data", {
+  p <- tempfile(fileext=".tsv")
+  x <- data.frame(x=c(1.2,-3),figure_type="kegg_single",figure_subtitle="A\nB\tC")
+  lisaR:::lisa_write_figure_source_tsv(x,p)
+  expect_length(readLines(p),3L)
+  expect_identical(lisaR:::lisa_read_figure_source_tsv(p),x)
+  gz <- paste0(p,".gz");con<-gzfile(gz,"wt")
+  lisaR:::lisa_write_figure_source_tsv(x,con);close(con)
+  expect_identical(lisaR:::lisa_read_figure_source_tsv(gz),x)
+})
+test_that("only the known final legacy subtitle field is recovered", {
+  p<-tempfile(fileext=".tsv")
+  writeLines(c("x\tfigure_type\tfigure_subtitle","1\tkegg_single\tA","B",
+    "2\tkegg_single\tA","B"),p)
+  x<-lisaR:::lisa_read_figure_source_tsv(p)
+  expect_identical(x$x,1:2)
+  expect_identical(x$figure_type,rep("kegg_single",2))
+  expect_identical(x$figure_subtitle,rep("A\nB",2))
+  writeLines(c("x\tfigure_type\tfigure_subtitle","1\tkegg_single\tA","bad\tfield"),p)
+  expect_error(lisaR:::lisa_read_figure_source_tsv(p),"Malformed figure TSV")
+})

@@ -1,0 +1,5 @@
+symbol	log2FC	pvalue	padj
+GENE1	2.1	0.001	0.01
+GENE2	-1.4	0.010	0.04
+GENE3	0.8	0.200	0.50
+GENE4	1.7	0.030	0.08

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="460" viewBox="0 0 1100 460" role="img" aria-labelledby="title desc">
+<title id="title">CPTAC ccRCC prepared input</title><desc id="desc">The prepared example has eighty matched tumour and adjacent tissue pairs, or one hundred and sixty samples. Upstream paired modelling and protein-to-gene mapping produce 6482 unique gene rows for one differential-abundance comparison. lisaR analyses four semantic collections. The saved audit does not give the total originally measured protein-feature count.</desc>
+<rect width="100%" height="100%" fill="white"/>
+<text x="35" y="45" font-family="DejaVu Sans, sans-serif" font-size="26" font-weight="700" fill="#183347">CPTAC ccRCC: from paired samples to a gene-level input</text>
+<rect x="35" y="115" width="300" height="210" rx="10" fill="#EEF5F8" stroke="#B9CBD5"/>
+<text x="50" y="154" font-family="DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#183347">80 matched pairs</text>
+<text x="50" y="203" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Tumour + adjacent tissue</text>
+<text x="50" y="235" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">160 samples</text>
+<text x="50" y="267" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Paired differential abundance</text>
+<rect x="400" y="115" width="300" height="210" rx="10" fill="#EEF5F8" stroke="#B9CBD5"/>
+<text x="415" y="154" font-family="DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#183347">6,482 gene rows</text>
+<text x="415" y="203" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Mapped and filtered upstream</text>
+<text x="415" y="235" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Unique gene symbols</text>
+<text x="415" y="267" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Signed limma t for ranking</text>
+<rect x="765" y="115" width="300" height="210" rx="10" fill="#EEF5F8" stroke="#B9CBD5"/>
+<text x="780" y="154" font-family="DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#183347">One LISA analysis</text>
+<text x="780" y="203" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Tumour minus adjacent tissue</text>
+<text x="780" y="235" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Four semantic collections</text>
+<text x="780" y="267" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Category and gene evidence</text>
+<line x1="339" y1="219" x2="395" y2="219" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="395,219 385.0950818741206,223.78462087522354 385.0950818741206,214.21537912477646" fill="#087E8B"/>
+<line x1="704" y1="219" x2="760" y2="219" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="760,219 750.0950818741205,223.78462087522354 750.0950818741205,214.21537912477646" fill="#087E8B"/>
+<text x="35" y="384" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#183347">6,482 describes the prepared gene table, not all measured protein features.</text>
+<text x="35" y="421" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#183347">The saved audit has no pre-mapping denominator for a mapping percentage.</text>
+</svg>

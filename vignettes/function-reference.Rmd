@@ -1,0 +1,639 @@
+---
+title: "lisaR function reference"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{lisaR function reference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Use this page when you know the task but need the public R function, its main
+arguments and the result to inspect. Examples that refer to your files or
+objects are templates to adapt in an installed lisaR session. The small
+DE-adapter example runs offline.
+
+For a complete first analysis, use [Quick Start](quick-start.html). For a new
+study, prepare the input, validate the configuration, inspect the plan, run the
+study and verify the completed result.
+You do not need a separate function to add standard category, gene or contrast
+evidence: configured `run_lisa()` builds those products by default.
+
+| What you want to do | Function | Writes files? |
+|---|---|---|
+| Prepare an already computed DE table, without fitting a model | `prepare_lisa_de_input()` | No |
+| Copy the offline sample project | `lisa_init_project()` | Yes, to a new directory |
+| Check whether a study is ready | `validate_lisa_config()` | No |
+| Install a verified Riaz or CPTAC example input bundle | `install_lisa_example_bundle()` | Yes, to a new directory |
+| Prepare the pinned MSigDB TERM2GENE resource | `prepare_lisa_msigdb_resource()` | Yes, to the managed resource cache and registry |
+| Install one reviewed local scientific resource | `install_lisa_resource()` | Yes, to the managed resource cache and registry |
+| Check a custom dictionary, category map and TERM2GENE together | `validate_lisa_custom_resources()` | No |
+| Estimate report size | `plan_lisa_outputs()` | No |
+| Run a complete study | `run_lisa()` | Yes |
+| Run one DE analysis or one profile contrast | `run_lisa_de()` / `run_lisa_contrast()` | Yes |
+| Add category inference to a verified earlier run | `add_lisa_category_inference()` | Yes, in a new directory |
+| Refresh only saved category-inference presentation | `refresh_lisa_support_grades()` | Yes, in a new directory |
+| Plan extra figures from a completed run | `plan_lisa_extension()` | No |
+| Create extra figures from a completed run | `render_lisa_categories()` | Yes, in a new directory |
+| Check a completed run | `verify_lisa_run()` | No |
+| Open a completed run in the Shiny explorer | `explore_lisa_run()` | Yes, to an external exploration workspace |
+| Build an advanced saved-result request or export | Exploration functions listed below | Depends on the explicit action |
+
+The table lists the public interface. Do not build a workflow around internal
+`lisaR:::` helpers. The function help pages give complete signatures; the
+sections below explain when to choose each entry point and what to inspect.
+
+## `prepare_lisa_de_input()`
+
+Use this for data frames already produced by DESeq2, edgeR or limma. It fits
+no model and filters no genes by adjusted P value. Keep the complete tested
+table and declare the direction of the effect and ranking.
+
+```{r reference-prepare-input, eval=TRUE}
+library(lisaR)
+source_de <- data.frame(
+  gene = c("GENE_A", "GENE_B", "GENE_C", "GENE_D"),
+  log2FoldChange = c(1, -0.5, 0.1, NA_real_),
+  stat = c(3, -1, 0.2, NA_real_),
+  pvalue = c(0.001, 0.3, 0.8, NA_real_),
+  padj = c(0.01, 0.6, 0.95, NA_real_)
+)
+prepared <- prepare_lisa_de_input(
+  source_de, method = "DESeq2",
+  columns = list(symbol = "gene"),
+  positive_direction = "Treated relative to control"
+)
+stopifnot(nrow(prepared$data) == nrow(source_de))
+prepared$data
+prepared$row_audit[, c("source_row", "rank_eligible")]
+```
+
+The non-significant rows and permitted missing statistics remain. The missing
+rank is marked ineligible, not silently replaced by zero. `method` declares
+column conventions; it does not verify which software produced a table.
+
+| Returned object | Use |
+|---|---|
+| `data` | Canonical columns `symbol`, `log2FoldChange`, `rank_value`, `pvalue`, `padj` after the declared duplicate policy |
+| `full_data` | Canonical version of all input rows before duplicate selection/remapping |
+| `column_mapping` | Source-to-canonical column mapping |
+| `row_audit` | Row identity and eligibility, including missing statistics |
+| `duplicate_resolution` | Explicit decisions about duplicate rows |
+| `receipt` | Method/direction declarations and processing choices |
+
+DESeq2 Wald `stat` and limma `t` are recognised signed statistics. edgeR needs
+an explicitly supplied signed rank; an unsigned multi-df F/LR statistic is
+not given a direction automatically. DESeq2 LRT statistics likewise need an
+appropriate separately prepared signed rank. `rank_direction` can be
+`same_as_effect` (default) or `opposite_to_effect`; the latter negates ranks
+once and checks comparable nonzero signs.
+
+The default duplicate policy is `error`; DE statistics must not be aggregated.
+`na_policy = "retain"` is the default, while `"error"` rejects missing
+statistics. Infinite/malformed values and missing gene identifiers are always
+errors. `matrix_scale` records a declaration only: it does not inspect,
+transform or configure an expression matrix. See
+[Preparing DE inputs](preparing-de-inputs.html) for method-specific examples.
+
+## `lisa_init_project()`
+
+This creates a new copy of the installed synthetic sample project, with
+inputs and resources for an offline example.
+
+```{r reference-api-template-1, eval=FALSE}
+root <- if (.Platform$OS.type == "windows") "D:/lisa" else "~/lisa"
+dir.create(path.expand(root), recursive = TRUE, showWarnings = FALSE)
+project <- lisa_init_project(file.path(root, "sample"))
+config <- file.path(project, "study.yml")
+```
+
+`path` must name a directory that does not exist. The function copies the
+configuration and synthetic inputs, then returns the new project path
+invisibly. It stops rather than merging with or overwriting an existing
+directory. Use it to inspect a complete offline example before adapting a
+configuration to your own data.
+
+## `validate_lisa_config()`
+
+Use this before every run. It checks a complete study definition without
+running enrichment or creating analysis output.
+
+```{r reference-api-template-2, eval=FALSE}
+validation <- validate_lisa_config(
+  config,
+  check_files = TRUE,
+  strict = TRUE
+)
+```
+
+- `config`: YAML/JSON path or equivalent named R list.
+- `check_files`: verify referenced input files and resolve the dictionary,
+  TERM2GENE and category-map IDs against the active species, registry and
+  managed cache. `FALSE` is structural prevalidation only and cannot establish
+  execution readiness.
+- `strict`: reject unknown keys at every configuration level. Use
+  `strict = FALSE` only to inspect an older configuration before migrating it.
+  Recognised fields, scientific contracts and security rules still apply.
+  `run_lisa()` always validates strictly.
+
+The result answers two questions: “is the structure valid?” and “can this
+study run here?”. Its readiness stages are:
+
+| Stage | Question answered |
+|---|---|
+| `structural_valid` | Does the configuration follow schema 1.0.0? |
+| `inputs_ready` | Are the declared study inputs present and acceptable? |
+| `dependencies_ready` | Are the required R packages available? |
+| `resources_ready` | Do the registered scientific resources resolve correctly? |
+| `execution_ready` | Have all required stages passed? |
+
+The `readiness` table summarises those stages. The `inputs`, `dependencies`
+and `resources` tables provide row-level diagnostics. `valid` is retained as
+an alias for `execution_ready`, so a missing or unknown resource can never
+return `valid = TRUE`. Structural contract errors raise an actionable error;
+missing files, packages or registered resources return a summary with
+`execution_ready = FALSE`. With `check_files = FALSE`, input/resource readiness
+is not established, even when `structural_valid` is `TRUE`.
+
+Inspect `validation$config` for the normalised configuration and
+`validation$configuration_provenance` to distinguish supplied values from
+defaults. Paths in YAML/JSON start at the study file's directory; paths in an
+R list start at the current working directory. See the complete offline
+[configuration example](configuration-reference.html).
+
+## `install_lisa_resource()`
+
+Use this after you have obtained and reviewed a local scientific resource. It
+copies one immutable TSV into lisaR's managed cache and adds its versioned
+identity to the local registry.
+
+```{r reference-api-template-3, eval=FALSE}
+installed <- install_lisa_resource(
+  source = dictionary_path,
+  logical_id = "lab_dictionary",
+  version = "1.0.0",
+  species = "Homo sapiens",
+  modality = "transcriptomic/genomic",
+  schema = "lisa_dictionary@2",
+  approved_origin = "Local reviewed dictionary release 1.0.0",
+  expected_sha256 = reviewed_dictionary_sha256
+)
+installed$resource_id
+```
+
+`source` must be an existing local, non-symbolic-link TSV. The SHA-256 must
+come from the reviewed manifest for that resource; the function does not
+download data, accept licence terms or turn an unknown file into an approved
+resource. Install the dictionary, category map and TERM2GENE separately, using
+the matching schema for each file.
+
+`version = "1.0.0"` is the resource's first-publication version.
+`schema = "lisa_dictionary@2"` is the score-free TSV contract, not a second
+resource version. The legacy `lisa_dictionary@1` reader is only for an existing
+historical resource; it is not the schema for a new score-free dictionary. The
+package bundles the core and expanded LISA dictionaries and category map.
+MSigDB TERM2GENE memberships remain external and must be acquired and
+registered through an authorised route.
+
+## `install_lisa_example_bundle()`
+
+Use this to obtain one reviewed, version-pinned example input bundle before
+running its public preparer. It supports `"riaz-gse91061"` and
+`"cptac-ccrcc"`; it does not fit models or run LISA.
+
+```{r reference-api-template-example-bundle, eval=FALSE}
+bundle <- install_lisa_example_bundle(
+  example = "riaz-gse91061",
+  destination = "riaz-gse91061-bundle"
+)
+bundle$next_command
+```
+
+`destination` must be new. The optional `source` selects one local archive or
+one explicit archive address, but cannot alter the package-pinned archive or
+member identities. The returned `next_command` points to the example's
+prepare-only route. Review and adapt the resulting project before a separate
+scientific run.
+
+## `prepare_lisa_msigdb_resource()`
+
+Use this specialised helper for the default external
+`msigdb_term2gene@2026.1` membership resource. It either transforms the exact
+reviewed local MSigDB ZIP or, when no ZIP is supplied, acquires the one pinned
+archive after the caller has reviewed the applicable terms.
+
+```{r reference-api-template-msigdb, eval=FALSE}
+term2gene <- prepare_lisa_msigdb_resource(
+  source_zip = "msigdb.2026.1.zip"
+)
+term2gene$resource_id
+```
+
+For the acquisition route, call `prepare_lisa_msigdb_resource(accept_terms =
+TRUE)` only after reviewing the applicable MSigDB, KEGG and BioCarta terms for
+your intended use. That argument permits this call's acquisition only; it is
+not a licence grant. If the exact resource is already registered, lisaR
+resolves it without acquiring or transforming another copy.
+
+## `validate_lisa_custom_resources()`
+
+Use this once all three custom resources are registered. It checks their
+schemas, species, immutable identities and cross-file relationships before a
+study uses them.
+
+```{r reference-api-template-4, eval=FALSE}
+checked <- validate_lisa_custom_resources(
+  dictionary_resource = "lab_dictionary@1.0.0",
+  category_map_resource = "lab_category_map@1.0.0",
+  term2gene_resource = "lab_term2gene@1.0.0",
+  species = "Homo sapiens"
+)
+stopifnot(checked$valid)
+```
+
+See [Custom dictionaries and supercategories](custom-dictionaries-and-supercategories.html)
+for the accepted TSV columns, relationships and a complete construction,
+registration and selection example.
+
+## `run_lisa()`
+
+Use this for the normal configuration-defined workflow. With the default
+`dry_run = TRUE`, it creates planning evidence only. After you deliberately set
+`dry_run = FALSE`, it validates and runs every configured analysis and contrast,
+then builds the requested report products.
+
+```{r reference-api-template-5, eval=FALSE}
+result <- run_lisa(config)
+```
+
+`config` is a YAML/JSON path or an equivalent named list. Relative paths in a
+file configuration are resolved from the configuration file's directory;
+relative paths in a list are resolved from the current working directory. The
+run result is returned invisibly. With `dry_run = TRUE` (the default), it
+contains planning evidence and `plan_dir`, not completed scientific results.
+With `dry_run = FALSE`, the requested products are written below the new
+`pipeline.output_dir` and verified before promotion.
+
+The standard report includes the category navigator and evidence sheets,
+global gene search and aligned evidence for declared compatible semantic
+contrasts. A full `run_lisa()` also calculates a separate serial category-
+inference stage across configured semantic collections within each analysis;
+`HALLMARKS` and contrasts do not receive this inference. The default category
+view shows adjusted-P stars up to `****` at P ≤0.0001, with exact P and d/N in
+the category card. `report.category_nes_variants` defaults to all four of `clean`,
+`percentages`, `direction` and `dispersion`; a non-empty unique subset is allowed. GeneCards
+are opt-in (`report.legacy_gene_products = TRUE`), and ORA remains separate
+and off by default (`pipeline.run_ora = FALSE`). These are configuration
+fields, not extra `run_lisa()` arguments.
+
+Parallelism is configured only through `pipeline.workers`; it is not a
+separate `run_lisa()` argument. Independent tasks use stable identifiers and
+fixed random seeds. lisaR waits for every worker to finish and checks the
+result before placing it in the final output folder. See
+[Parallel execution](parallel-execution.html).
+
+At the start, lisaR binds the study to one SHA-256 contract. That contract
+covers the exact configuration, every original scientific input, the three
+registered resources, the installed lisaR code and the R/package dependency
+closure used for this run.
+
+| Artefact | What it records |
+|---|---|
+| `run_contract.tsv` | The canonical digest that binds all contract components |
+| `input_inventory.tsv` | DE, matrix, mapped-ID, external-index, allowlisted source-data and duplicate-mapping inputs |
+| `resource_inventory.tsv` | The three registered scientific resources and their identities |
+| `executable_code_inventory.tsv` | The installed lisaR code used by the run |
+| `effective_environment.tsv` | The R runtime and installed dependency closure that actually ran |
+
+These receipts use roles, portable identifiers or base file names and SHA-256
+values, not absolute source paths. `effective_environment.tsv` is provenance;
+it is not an environment lock or an installer.
+
+## Reuse verified saved results for category inference
+
+`add_lisa_category_inference(source_run, output_dir, term2gene = NULL)` adds
+inference to a **new copy** of an earlier complete run using its verified saved
+fgsea results and exact TERM2GENE identity. It does not rerun DE or GSEA. Use
+this only when inference is genuinely absent; it calculates new category P
+values and simultaneous lower bounds from the saved gene-set results. The
+source remains unchanged. See `?add_lisa_category_inference` for the full
+input contract and plot formats.
+
+`refresh_lisa_support_grades(source_run, output_dir)` instead makes a new,
+verified copy of a run that **already has category inference**. It refreshes
+the current four-star presentation and report sources without recalculating
+DE, GSEA, closed tests, category P, d/N or hypothesis families. The destination
+must not exist, and a new report must be built and sealed in that copy. This is
+the correct route for changing star presentation on an accepted inferred run;
+it is not a way to add inference to `run_lisa_de()` output by assumption.
+
+## `plan_lisa_outputs()`
+
+Use this before a large or full report when you need to judge storage and file
+counts. It estimates report size without starting enrichment.
+
+```{r reference-api-template-6, eval=FALSE}
+plan <- plan_lisa_outputs(config)
+plan$summary
+plan$products
+```
+
+`config` is a YAML/JSON path or the equivalent named list. If known, pass a
+named `category_counts` vector to replace the conservative category-count
+assumption, and use `bytes_per_figure` to adjust the storage estimate. The
+function returns summary, collection, product and file-policy tables. It does
+not run enrichment, resolve a missing resource into existence or establish
+execution readiness. Unspecified category counts use a conservative 100 per
+collection; the default storage assumption is 1 MiB per figure format.
+The estimate includes standard evidence/member figures and selected NES
+variants, but gene-search payload size depends on complete memberships and DE
+rows. Treat this as an estimate, not a memory or disk-space guarantee.
+
+## `run_lisa_de()`
+
+Use this lower-level function for one LISA analysis of a prepared DE result
+outside a configuration-defined study. For routine work, prefer `run_lisa()` so
+the settings are stored with the result.
+
+The available collection IDs are `GOBP-C2`, `GOMF`, `GOCC`, `PATHWAYS` and
+`HALLMARKS`. If `universes` is omitted, lisaR uses all five. The example below
+selects the four semantic LISA collections; `HALLMARKS` remains available as a
+direct MSigDB analysis but is deliberately not part of this example.
+
+```{r reference-api-template-7, eval=FALSE}
+run_lisa_de(
+  input,
+  output_dir,
+  comparison_name = NULL,
+  species = "Homo sapiens",
+  symbol_col = NULL,
+  rank_col = NULL,
+  logfc_col = NULL,
+  pvalue_col = NULL,
+  padj_col = NULL,
+  universes = c("GOBP-C2", "GOMF", "GOCC", "PATHWAYS"),
+  lisa_dictionary = "core",
+  term2gene_path = NULL,
+  make_heatmaps = FALSE,
+  ...,
+  trusted_rds = FALSE,
+  rds_max_bytes = 512 * 1024^2
+)
+```
+
+If `input` is an RDS file, trust is the first decision. Set
+`trusted_rds = TRUE` only for a local, stable file under your control and from
+a source you fully trust. The `rds_max_bytes` checks are useful diagnostics,
+but they are not a sandbox and cannot make an untrusted RDS safe.
+
+Arguments:
+
+- `input`: DE table path, data frame or supported DE result object.
+- `output_dir`: destination directory.
+- `comparison_name`: stable portable ASCII technical identifier used in paths
+  and file names. Put Unicode or spaced display text in a separate title or
+  label field.
+- `species`: `Homo sapiens` or `Mus musculus`.
+- `symbol_col`, `rank_col`, `logfc_col`, `pvalue_col`, `padj_col`: explicit
+  source columns. `rank_col` is optional when a compatible effect size exists.
+- `universes`: one or more of the five collection IDs listed above.
+- `lisa_dictionary`: `core` by default, resolving the registered
+  `lisa_dictionary_core@1.0.0` resource; `expanded` resolves
+  `lisa_dictionary_expanded@1.0.0`. Both score-free dictionary resources, and the
+  category map, are bundled with lisaR. The default MSigDB TERM2GENE
+  memberships are external. If all three explicit resource paths are passed
+  through `...`, this argument is a portable label for the custom dictionary
+  instead of a registered tier.
+- `term2gene_path`: optional path to a species-matched gene-set membership
+  table. Omit all three resource paths to use registered defaults, or provide
+  `term2gene_path`, `lisa_dictionary_path` and `category_map_path` together for
+  an advanced explicit-path workflow.
+- `make_heatmaps`: reserved compatibility flag. In version 1.0 the lower-level
+  function warns and does not generate heatmaps. For heatmaps, use a configured
+  `run_lisa()` study with an expression matrix, then request the `heatmap`
+  product through `render_lisa_categories()`.
+- `...`: advanced single-analysis arguments. Every argument passed through
+  `...` must be named explicitly; unnamed advanced arguments are rejected
+  before the analysis engine is called.
+- `trusted_rds`: named-only confirmation that the caller accepts the risks of
+  reading a **local, stable and fully trusted** `.rds` file. YAML/JSON study
+  configurations cannot grant this capability and should use TSV/CSV inputs.
+  Supported serialised DE inputs are
+  tables/matrices, `DESeqDataSet`, `DESeqResults`, `DGELRT`, `DGEExact` and
+  `TopTags`; `DGEList` is rejected because it contains counts rather than a DE
+  result. When gene identifiers are stored in row names, use
+  `symbol_col = "rowname"` explicitly.
+- `rds_max_bytes`: named-only positive whole-byte diagnostic limit applied
+  before deserialisation and again to the approximate in-memory object size.
+  It is not a sandbox or a hard memory bound against hostile or highly
+  compressed RDS content, symlink changes or file replacement between checks
+  and deserialisation. `trusted_rds = TRUE` therefore means that the caller
+  accepts those risks for a stable file under their control.
+
+### DESeq2, edgeR and trusted RDS inputs
+
+Objects already loaded in the current R session can be passed directly:
+
+- `DESeqResults` is used as the DE result table.
+- `DESeqDataSet` requires exactly one selector: `deseq2_name` or
+  `deseq2_contrast`, supplied as a named argument through `...`.
+- edgeR `DGELRT`, `DGEExact` and `TopTags` results are accepted.
+- `DGEList` is rejected because it contains counts rather than a fitted DE
+  result.
+
+For example, this selects one DESeq2 coefficient and the four semantic
+collections:
+
+```{r reference-api-template-8, eval=FALSE}
+run_lisa_de(
+  input = dds,
+  output_dir = "results/treated-vs-control",
+  comparison_name = "treated_vs_control",
+  species = "Homo sapiens",
+  symbol_col = "rowname",
+  universes = c("GOBP-C2", "GOMF", "GOCC", "PATHWAYS"),
+  deseq2_name = "condition_treated_vs_control"
+)
+```
+
+Use `deseq2_contrast = c("condition", "treated", "control")` instead when a
+three-part contrast is the intended DESeq2 result; do not provide both
+selectors. A local `.rds` path additionally requires `trusted_rds = TRUE`.
+YAML and JSON configurations accept tabular inputs only and can never grant
+permission to read an RDS file. Export a TSV/CSV when the configured workflow
+is required.
+
+Each accepted RDS input produces
+`qc/<comparison>_trusted_RDS_input_receipt.tsv` with schema
+`lisa_rds_input_receipt_v2`.
+
+| Receipt field | Meaning |
+|---|---|
+| `source_sha256` | SHA-256 of the serialised source file |
+| `object_sha256` | SHA-256 of the validated in-memory object serialised with R version 3/XDR |
+| File and object details | Base file name, class, dimensions, serialised size and approximate in-memory size |
+| Trust and limit details | Configured diagnostic limit and explicit authorisation state |
+
+`object_sha256` protects integrity while the object passes through internal
+branches, but it is not a stable semantic identity across R or package
+versions. Absolute source paths are not written to the receipt. The same
+receipt is retained when one call branches over several LISA collections or
+dictionaries, and the RDS is deserialised only once.
+
+Advanced arguments accepted through `...` include input type, MSigDB mode,
+dictionary/category-map paths, C2 sources, DESeq2 contrast/name, GSEA and
+over-representation analysis (ORA)
+cutoffs, gene-set-size limits, thread count, random seed, output/plot formats,
+plot ordering, palette, overwrite and verbosity. These are lower-level options;
+configuration-defined studies are preferred because they save the settings
+used for the analysis beside the results.
+
+## `run_lisa_contrast()`
+
+Use this lower-level function to compare two compatible, completed
+single-analysis results. Prefer declaring the contrast in `run_lisa()` when it
+belongs to a complete study.
+
+```{r reference-api-template-9, eval=FALSE}
+run_lisa_contrast(
+  contrast_a,
+  contrast_b,
+  output_dir,
+  comparison_name = NULL,
+  contrast_a_label = "Contrast A",
+  contrast_b_label = "Contrast B",
+  universes = c("GOBP-C2", "GOMF", "GOCC", "PATHWAYS"),
+  ...
+)
+```
+
+- `contrast_a`, `contrast_b`: compatible completed single-analysis outputs.
+- `output_dir`: contrast destination.
+- `comparison_name`: stable contrast identifier.
+- `contrast_a_label`, `contrast_b_label`: labels used in tables and plots.
+- `universes`: collections to compare. The five available IDs are
+  `GOBP-C2`, `GOMF`, `GOCC`, `PATHWAYS` and `HALLMARKS`; omitting the argument
+  uses all five. The example selects the four semantic collections and leaves
+  out direct `HALLMARKS` analysis deliberately.
+
+The low-level call computes descriptive profile comparisons. It is not the
+complete report/evidence pipeline. Declare `contrasts` in a configured study
+to obtain the linked A/B navigator, aligned matrices and return links to genes.
+The two NES distributions and significance states remain separate; a delta
+is not a category-level significance test. Legacy inputs without member
+provenance cannot supply fabricated medians or percentiles.
+
+In a configured study, `pipeline.run_hallmarks: false` removes `HALLMARKS`
+from the effective collection selection. `true` permits it, but does not add
+it to an explicit `collections` list that omits it.
+
+Advanced options through `...` control plot subsets/order, missing categories,
+direction tolerance, grouping, exports, plot formats/background, gene-set
+annotation, file labels, title prefix, overwrite and verbosity. Prefer
+declaring contrasts in `run_lisa()` unless constructing an advanced workflow.
+
+## `plan_lisa_extension()`
+
+Use this to check which extra figures would be created from an existing
+standard run. Planning is read-only.
+
+```{r reference-api-template-10, eval=FALSE}
+selection <- list(
+  analyses = "analysis_a",
+  categories = c("SYN_CATEGORY_A", "SYN_CATEGORY_B"),
+  products = c("gene_cards", "volcano")
+)
+plan <- plan_lisa_extension("results/study", selection)
+plan[c("mode", "expected_files", "selected_categories")]
+```
+
+`source_run` must be a completed run that passes `verify_lisa_run()`.
+`selection` may be `"full"`, a selection-file path or a named list. Planning
+is read-only and stops if a selection name is invalid or the source run has
+changed.
+
+## `render_lisa_categories()`
+
+Use this after reviewing an extension plan. It creates additional figures from
+a completed standard run without repeating enrichment.
+
+```{r reference-api-template-11, eval=FALSE}
+rendered <- render_lisa_categories(
+  "results/study",
+  selection,
+  output_dir = "results/study-selected"
+)
+```
+
+`output_dir` must be a new directory outside the source run. The function
+reuses the saved enrichment tables, creates and checks the requested figures,
+and returns a receipt invisibly. It does not repeat enrichment or alter the
+source run. It stops if a requested product cannot be built or validated.
+
+## `verify_lisa_run()`
+
+Use this before accepting, sharing or interpreting a run. It checks that the
+expected files exist, are unchanged and passed lisaR's final validation.
+
+```{r reference-api-template-12, eval=FALSE}
+check <- verify_lisa_run("results/example")
+check$gate
+check$findings
+```
+
+`run_dir` is the completed results folder. The return value contains `gate`
+(`PASS` or `FAIL`), detailed findings and the path to the file list used for
+verification. A PASS means that every expected file is present and unchanged
+and that lisaR finished its final checks. It does **not** establish biological
+validity, a valid model design, redistribution rights or pixel-identical figure
+reproduction on other systems. The [troubleshooting guide](troubleshooting.html)
+explains those distinctions and how to preserve a failed run for diagnosis.
+
+The main verification artefacts are:
+
+| Artefact | Role in verification |
+|---|---|
+| `expected_artifacts.tsv` | States which products are required, optional or not applicable |
+| `artifact_validation.tsv` | Reconciles required products with their status and material files |
+| `run_manifest.tsv` | Lists final files, sizes and SHA-256 values |
+| `run_events.tsv` | Records that final validation and promotion completed |
+
+## Explore or export a saved result
+
+Use `explore_lisa_run()` for the supported interactive route. It requires the
+optional Shiny package, verifies the completed run and opens it without
+changing the source result:
+
+```{r reference-explore-saved-run, eval=FALSE}
+explore_lisa_run("results/example")
+```
+
+The exploration workspace is outside the immutable source run. Browsing reads
+saved material. A selected figure is rendered only after an explicit request,
+and this rendering does not repeat DE, GSEA or ORA. Follow
+[Explore saved results with Shiny](shiny-app.html) for the normal interactive
+workflow and portable export.
+
+The lower-level exploration API is also public for advanced interfaces:
+
+| Task | Public functions |
+|---|---|
+| Open a workspace and inspect available figures | `lisa_explore_open()`, `lisa_explore_catalog()`, `lisa_explore_status()` |
+| Define and inspect one exact request | `lisa_figure_request()`, `lisa_request_id()`, `lisa_explore_plan()` |
+| Submit and follow explicit work | `lisa_explore_submit()`, `lisa_explore_poll()`, `lisa_explore_cancel()` |
+| Inspect reusable outputs | `lisa_explore_artifacts()`, `lisa_explore_stale_artifacts()` |
+| Export validated available material | `lisa_explore_export()` |
+
+`lisa_explore_submit()` schedules one exact figure. It is the boundary between
+read-only navigation and rendering. `lisa_explore_export()` accepts `dir` or
+`zip` output and snapshots only validated material already available when the
+export begins. It does not generate missing products. Native KEGG and contrast
+preparation use the additional exported helpers
+`lisa_explore_configure_kegg()`, `lisa_explore_prepare_kegg_index()` and
+`lisa_explore_prepare_contrast_products()`. Use their installed help pages
+because they require an existing local snapshot or compatible saved evidence.

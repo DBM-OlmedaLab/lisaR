@@ -1,0 +1,59 @@
+---
+title: "Read your first report"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Read your first report}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Open `report_index.html` in the output folder. The report can be read in a
+browser without R. For Riaz ON, select **responders_vs_pd_on** and open a LISA
+plot such as **GOBP-C2**.
+
+## Start with a category
+
+Each row represents a biological category. Its mean NES summarises the
+individually significant gene sets assigned to it. For Riaz ON, a positive
+NES points towards CR/PR responders and a negative NES towards PD.
+
+The category mean is descriptive. It is not a measure of pathway activity,
+and the number of contributing gene sets is not the number of patients.
+
+Select the category to open its evidence page. Look at the individual gene
+sets and their genes before interpreting the category label. Related sets
+often overlap, so several sets need not represent independent findings.
+
+## Read statistical support separately
+
+The category-significance view shows stars for adjusted category P values.
+Stars indicate evidence that at least one member set is enriched, not the
+size or direction of an effect.
+
+The category card also reports **d/N**: at the default confidence level, at
+least d of N evaluable member sets are supported as enriched with 95%
+simultaneous confidence. This is a lower bound, not the exact count.
+An unmarked category can be nonsignificant or not evaluable; the card
+distinguishes the two.
+
+The [statistical analysis guide](statistical-analysis.html) explains how these
+quantities are calculated and which hypotheses are assessed together.
+
+## Save or share a figure
+
+Use the download links beside the selected plot to obtain its PNG or SVG.
+Source tables and R recipes record the values and settings behind the figure.
+PDF links appear when PDF output was requested.
+
+To share the interactive report, copy the entire output folder and keep its
+relative paths intact. Opening a saved report does not repeat the analysis.
+
+You have completed the basic route. Continue to the
+[advanced guides](advanced.html) when you need additional analyses, figures
+or configuration options.

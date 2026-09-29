@@ -1,0 +1,7 @@
+universe	gene_set_id	gene_set_name	source_id	category_id	category_display_name	tier	source_family
+GOBP-C2	GOBP_ORA_HIT_STRONG	ORA hit strong	synthetic	CAT_A	Category A	core	GO:BP
+GOBP-C2	GOBP_ORA_HIT_STRONG	ORA hit strong	synthetic	CAT_B	Category B	core	GO:BP
+GOBP-C2	GOBP_ORA_HIT_WEAK	ORA hit weak	synthetic	CAT_C	Category C	core	GO:BP
+GOBP-C2	GOBP_ORA_ZERO_A	ORA zero A	synthetic	CAT_D	Category D	core	GO:BP
+GOBP-C2	GOBP_ORA_ZERO_B	ORA zero B	synthetic	CAT_E	Category E	core	GO:BP
+GOBP-C2	GOBP_ORA_OUTSIDE_BG	ORA outside background	synthetic	CAT_F	Category F	core	GO:BP

@@ -1,0 +1,887 @@
+---
+title: "Configure lisaR in R, YAML or JSON"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Configure lisaR in R, YAML or JSON}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+A study has the same configuration whether you write it as an R list, YAML or
+JSON. Start with the complete example to compare the three formats, then use
+the field tables when you need to change a report, execution, input or resource
+decision.
+
+You need lisaR installed. The first example uses only the installed synthetic
+sample input and performs structural validation: it does **not** require
+external scientific resources, run GSEA or establish execution readiness. For a
+first complete run, follow [Quick Start](quick-start.html). For real DE tables,
+start with [Preparing DE inputs](preparing-de-inputs.html).
+
+## Compare one complete configuration in three formats
+
+A named R list, YAML and JSON describe the same study. Here is a complete R
+list with two analyses, one contrast and four collections. Its resource
+identifiers select the installed sample fixtures.
+
+```{r reference-complete-config, eval=TRUE}
+library(lisaR)
+
+cfg <- list(
+  pipeline = list(
+    schema_version = "1.0.0",
+    profile = "transcriptomic/genomic",
+    evidence_mode = "full_de",
+    output_dir = "results/minimal-study",
+    dry_run = TRUE,
+    workers = 4L,
+    dictionary_resource = "lisa_dictionary_quickstart@1.1.0",
+    term2gene_resource = "lisa_quickstart_term2gene@2.1.0",
+    category_map_resource = "lisa_quickstart_category_map@1.1.0",
+    run_kegg_maps = FALSE,
+    run_hallmarks = FALSE,
+    sufficiency_action = "ignore_with_reason",
+    sufficiency_ignore_reason = "Bundled synthetic sample dataset; the restricted universe is intentional.",
+    duplicate_policies = list(
+      de_table_duplicate_policy = "error",
+      matrix_duplicate_policy = "error",
+      mapped_id_collision_policy = "error"
+    )
+  ),
+  report = list(
+    mode = "standard",
+    category_evidence = TRUE,
+    category_nes_variants = c("clean", "percentages", "direction", "dispersion"),
+    legacy_gene_products = FALSE,
+    evidence_max_sets = 25L,
+    evidence_max_genes = 40L,
+    formats = list(png = TRUE, svg = FALSE, pdf = FALSE),
+    source_data = TRUE,
+    recipes = FALSE
+  ),
+  collections = c("GOBP-C2", "GOMF", "GOCC", "PATHWAYS"),
+  single_de = list(
+    list(
+    analysis_id = "treatment",
+    de_path = system.file("extdata", "minimal", "de_A.tsv", package = "lisaR"),
+    species = "Homo sapiens",
+    symbol_col = "symbol",
+    logfc_col = "log2FC",
+    padj_col = "padj"),
+    list(
+    analysis_id = "control",
+    de_path = system.file("extdata", "minimal", "de_B.tsv", package = "lisaR"),
+    species = "Homo sapiens",
+    symbol_col = "symbol",
+    logfc_col = "log2FC",
+    padj_col = "padj")
+  ),
+  contrasts = list(list(
+    contrast_id = "treatment_vs_control",
+    analysis_a = "treatment",
+    analysis_b = "control",
+    contrast_label = "Treatment versus control"
+  ))
+)
+
+validation <- validate_lisa_config(cfg, check_files = FALSE)
+stopifnot(validation$structural_valid, !validation$execution_ready)
+validation$readiness
+```
+
+The structure passes, but inputs and resources remain `not_checked`, so this
+check alone does not establish execution readiness. These sample tables use
+their signed effect as the ranking because they have no separate signed
+test-statistic column. For real DESeq2 or limma results, declare the appropriate
+`rank_col` explicitly.
+
+Before execution, validate with `check_files = TRUE` and require
+`execution_ready` to be `TRUE`. Obtain and register real resources through the
+[resource workflow](resources-and-provenance.html); do not substitute sample
+fixtures into a scientific study.
+
+## Inspect what lisaR actually resolved
+
+Validation, planning and configured execution share the same resolution rules.
+Defaults and supplied values are visible without learning a new configuration
+format:
+
+```{r reference-resolved-config, eval=TRUE}
+validation$config$report
+validation$configuration_provenance[
+  validation$configuration_provenance$field %in% c(
+    "report.category_evidence", "report.category_nes_variants",
+    "pipeline.gsea_padj_cutoff", "pipeline.cache_mode"
+  ),
+]
+```
+
+`validation$config` contains resolved values and paths;
+`configuration_provenance` identifies defaults and explicit declarations.
+A completed run records these as `config/pipeline_config.normalized.json`
+and `config/configuration_provenance.tsv`. Preserve the original study file
+as well. Resolved absolute paths are useful locally, but are not a portable
+replacement for the original relative-path configuration.
+
+Use strict validation, the default. Unknown fields raise an error rather than
+silently changing the run. `strict = FALSE` is for inspecting older files; it
+still checks known types and scientific contracts, and `run_lisa()` always
+validates strictly.
+
+The following YAML and JSON are complete equivalents of the R list. The R
+list uses `system.file()` because it has no containing configuration file;
+the two file formats use the same sample paths relative to the directory
+that contains the saved configuration.
+
+```yaml
+pipeline:
+  schema_version: "1.0.0"
+  profile: "transcriptomic/genomic"
+  evidence_mode: "full_de"
+  output_dir: "results/minimal-study"
+  workers: 4
+  dry_run: true
+  dictionary_resource: "lisa_dictionary_quickstart@1.1.0"
+  term2gene_resource: "lisa_quickstart_term2gene@2.1.0"
+  category_map_resource: "lisa_quickstart_category_map@1.1.0"
+  run_kegg_maps: false
+  run_hallmarks: false
+  sufficiency_action: "ignore_with_reason"
+  sufficiency_ignore_reason: "Bundled synthetic sample dataset; the restricted universe is intentional."
+  duplicate_policies:
+    de_table_duplicate_policy: "error"
+    matrix_duplicate_policy: "error"
+    mapped_id_collision_policy: "error"
+report:
+  mode: "standard"
+  category_evidence: true
+  category_nes_variants: [clean, percentages, direction, dispersion]
+  legacy_gene_products: false
+  evidence_max_sets: 25
+  evidence_max_genes: 40
+  formats: {png: true, svg: false, pdf: false}
+  source_data: true
+  recipes: false
+collections: ["GOBP-C2", "GOMF", "GOCC", "PATHWAYS"]
+single_de:
+  - analysis_id: "treatment"
+    de_path: "../extdata/minimal/de_A.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    logfc_col: "log2FC"
+    padj_col: "padj"
+  - analysis_id: "control"
+    de_path: "../extdata/minimal/de_B.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    logfc_col: "log2FC"
+    padj_col: "padj"
+contrasts:
+  - contrast_id: "treatment_vs_control"
+    analysis_a: "treatment"
+    analysis_b: "control"
+    contrast_label: "Treatment versus control"
+```
+
+```json
+{
+  "pipeline": {
+    "schema_version": "1.0.0",
+    "profile": "transcriptomic/genomic",
+    "evidence_mode": "full_de",
+    "output_dir": "results/minimal-study",
+    "workers": 4,
+    "dry_run": true,
+    "dictionary_resource": "lisa_dictionary_quickstart@1.1.0",
+    "term2gene_resource": "lisa_quickstart_term2gene@2.1.0",
+    "category_map_resource": "lisa_quickstart_category_map@1.1.0",
+    "run_kegg_maps": false,
+    "run_hallmarks": false,
+    "sufficiency_action": "ignore_with_reason",
+    "sufficiency_ignore_reason": "Bundled synthetic sample dataset; the restricted universe is intentional.",
+    "duplicate_policies": {
+      "de_table_duplicate_policy": "error",
+      "matrix_duplicate_policy": "error",
+      "mapped_id_collision_policy": "error"
+    }
+  },
+  "report": {
+    "mode": "standard",
+    "category_evidence": true,
+    "category_nes_variants": ["clean", "percentages", "direction", "dispersion"],
+    "legacy_gene_products": false,
+    "evidence_max_sets": 25,
+    "evidence_max_genes": 40,
+    "formats": {"png": true, "svg": false, "pdf": false},
+    "source_data": true,
+    "recipes": false
+  },
+  "collections": ["GOBP-C2", "GOMF", "GOCC", "PATHWAYS"],
+  "single_de": [
+    {"analysis_id": "treatment", "de_path": "../extdata/minimal/de_A.tsv", "species": "Homo sapiens", "symbol_col": "symbol", "logfc_col": "log2FC", "padj_col": "padj"},
+    {"analysis_id": "control", "de_path": "../extdata/minimal/de_B.tsv", "species": "Homo sapiens", "symbol_col": "symbol", "logfc_col": "log2FC", "padj_col": "padj"}
+  ],
+  "contrasts": [
+    {"contrast_id": "treatment_vs_control", "analysis_a": "treatment", "analysis_b": "control", "contrast_label": "Treatment versus control"}
+  ]
+}
+```
+
+## Choose safe paths and identifiers
+
+Paths in YAML or JSON start from the folder that contains the configuration
+file. Paths in an R list start from the current working directory.
+`pipeline.output_dir` tells lisaR where to save the finished analysis. Work in
+progress stays separate and is promoted to the new final destination only after
+all checks pass. It does not replace an existing completed run.
+
+Technical identifiers that become directory or file-name components use one
+portable ASCII grammar. These include `run_id`, `analysis_id`, `contrast_id`,
+`output_id`, `file_label_prefix` and `source_data.target_subdir`.
+
+| Identifier rule | Accepted | Rejected |
+|---|---|---|
+| First character | ASCII letter or number | Dot, hyphen or underscore |
+| Later characters | ASCII letters, numbers, dot, hyphen and underscore | Spaces, path separators, traversal fragments and Unicode |
+| Final character | ASCII letter, number, hyphen or underscore | Dot or space |
+| Reserved names | Ordinary portable names | `CON`, `PRN`, `AUX`, `NUL`, `COM1` to `COM9` and `LPT1` to `LPT9`, including names with an extension |
+
+lisaR rejects invalid identifiers instead of silently rewriting them. Keep
+readable Unicode in the separate `label`, `contrast_label`, `report_title`,
+`comparison` and other display-text fields.
+External scientific keys are not relabelled: for example, a KEGG key such as
+`hsa:1` remains `hsa:1` in the API and provenance, while lisaR derives a
+deterministic ASCII-only component for its private cache path.
+
+On Unix-like systems, lisaR keeps both areas private: staging and final result
+directories are `0700`, and their files are `0600`. Existing ancestor
+permissions are not changed. For a shared HPC project, require
+`verify_lisa_run(...)$gate` to be `"PASS"` before deliberately granting group
+access according to the institutional policy.
+
+Use a new local output directory that other processes cannot modify while the
+analysis is running. lisaR checks managed paths, builds the run in a private
+staging directory and exposes it only after validation. Network and shared
+filesystems can have different rename and locking behaviour; use them only when
+your institution has validated that behaviour for lisaR. See
+[Troubleshooting](troubleshooting.html) for recovery and diagnostic
+guidance.
+
+## Set pipeline inputs and resources
+
+Required fields:
+
+- `schema_version`: the configuration format, currently `"1.0.0"`.
+  This is distinct from the package version and the release label “1.0.0”.
+- `profile`: `transcriptomic/genomic`, `global proteomic`, `targeted` or
+  `custom`.
+- `evidence_mode`: `full_de`, `rank_only`, `effect_only` or `custom`.
+- `output_dir`: new destination for the run.
+- `duplicate_policies`: explicit policy for DE tables, expression matrices and
+  mapped-identifier collisions.
+
+`schema_version` is not a request to use the newest package release. It tells
+lisaR how to interpret the fields in the file. Keep it fixed until you
+deliberately migrate the configuration to a different schema.
+
+`full_de` requires an effect and adjusted significance, `rank_only` requires a
+ranking value, and `effect_only` requires an effect. Typical source-column
+mappings are:
+
+| Evidence role | Common columns | Interpretation |
+|:---|:---|:---|
+| `effect` | `log2FoldChange`, `logFC` | Signed effect size. |
+| `significance` | `padj`, `FDR` | Multiple-testing-adjusted significance. |
+| `rank` | `stat`, `t`, `z` | Signed statistic used to order genes. |
+
+Do not use `padj` or FDR as a ranking value: it has no direction and often
+contains ties. For DESeq2, a common `full_de` entry uses
+`logfc_col: log2FoldChange`, `padj_col: padj` and `rank_col: stat`.
+
+For the advanced `custom` mode, declare the evidence explicitly:
+
+```yaml
+pipeline:
+  evidence_mode: custom
+  evidence:
+    required_columns: [effect, significance]
+    products: []
+```
+
+The values in `required_columns` are evidence roles: `effect`, `significance`
+and `rank`. Map them to real columns with `logfc_col`, `padj_col` and
+`rank_col` in each `single_de` entry. `products` records your declared product
+compatibility as provenance; it does not enable a product or override its own
+data requirements.
+
+Resource selection fields:
+
+- `dictionary_resource`: versioned, registered LISA dictionary.
+- `term2gene_resource`: versioned, registered gene-set memberships used by
+  gene set enrichment analysis (GSEA).
+- `category_map_resource`: registered LISA category-map resource.
+- `lisa_dictionary`: optional `core` or `expanded` tier selector. Omit it when
+  selecting a custom dictionary resource.
+
+You may omit all three resource IDs in an ordinary configuration. lisaR then
+selects `lisa_dictionary_core@1.0.0`, `msigdb_term2gene@2026.1` and
+`lisa_category_map@1.0.0` by default. Leaving those IDs explicit is also valid
+and can make review easier. The core and expanded dictionary resources are
+bundled as `lisa_dictionary_core@1.0.0` and
+`lisa_dictionary_expanded@1.0.0`. Both use the score-free
+`lisa_dictionary@2` file schema. The bundled category map uses the
+`category_map@1` schema. The default MSigDB TERM2GENE memberships are external:
+obtain them through the authorised resource route, then register the exact
+versioned file. The synthetic sample resources are also bundled, but are not
+scientific substitutes for a study.
+
+Use explicit `name@version` overrides for reviewed alternatives. Custom
+dictionaries and supercategory maps must be registered and validated together
+with their TERM2GENE resource; see
+[Custom dictionaries and supercategories](custom-dictionaries-and-supercategories.html).
+
+### Migrate an earlier configuration in a reviewed copy
+
+Schema `1.0.0` records the current configuration contract. It does not rename
+the R package or any scientific resource, and lisaR does not silently convert
+an older file. Follow [Configuration migration](troubleshooting.html#configuration-migration)
+for the exact old-key mapping, copy command, validation and planning steps.
+Keep the original file unchanged and choose a new output directory. A migrated
+configuration is not evidence that an old result was rerun or revalidated.
+
+## Look up exact fields and defaults
+
+This is the shared field reference for named R lists, YAML and JSON. `Required`
+means required by schema 1.0.0, not merely recommended. A blank default means
+the field is optional and has no parser-supplied value. A file path is resolved
+from the YAML/JSON file's directory, or from the current working directory for
+an R list.
+
+| Field path | Required | Type and accepted values | Default / interaction |
+|---|---:|---|---|
+| `pipeline.schema_version` | yes | string: `1.0.0` | No other version is accepted. |
+| `pipeline.profile` | yes | `transcriptomic/genomic`, `global proteomic`, `targeted`, `custom` | Selects modality-matched resources and sufficiency checks. |
+| `pipeline.evidence_mode` | yes | `full_de`, `rank_only`, `effect_only`, `custom` | `custom` requires `pipeline.evidence`. |
+| `pipeline.evidence.required_columns` | with `custom` | non-empty unique roles: `effect`, `significance`, `rank` | Roles are mapped by each analysis's column fields. |
+| `pipeline.evidence.products` | no | unique non-empty strings | Provenance only; does not enable report products. |
+| `pipeline.output_dir` | yes | non-empty path | New final run destination. |
+| `pipeline.duplicate_policies.{de_table_duplicate_policy,matrix_duplicate_policy,mapped_id_collision_policy}` | yes | `error`, or a `select`, `aggregate` or `mapping_file` object | All three must be present. DE-table policy cannot be `aggregate`. |
+| `pipeline.workers` | no | positive integer | `4`; Windows and macOS use the serial backend. |
+| `pipeline.gsea_padj_cutoff` | no | finite number in `[0, 1]` | `0.25`; shared cutoff for summaries, contrasts and figures. |
+| `pipeline.dry_run` | no | Boolean | `true`; returns planning evidence rather than a completed run. |
+| `pipeline.resume` | no | Boolean | `false`; `true` is rejected in this release. |
+| `pipeline.run_id`, `pipeline.file_label_prefix` | no | portable ASCII identifier | `file_label_prefix` defaults to `semantic`; display text belongs in labels or titles. |
+| `pipeline.report_title` | no | string | `project.title`, otherwise `LISA report`. |
+| `pipeline.base_dir` | no | path | `output_dir`; controls the managed working base. |
+| `pipeline.sufficiency_action` | no | `warn`, `error`, `ignore_with_reason` | `warn`; the last choice requires a non-empty `sufficiency_ignore_reason`. |
+| `pipeline.sufficiency_ignore_reason` | conditional | string | Recorded with the run when a restricted assay is intentionally accepted. |
+| `pipeline.dictionary_resource`, `pipeline.term2gene_resource`, `pipeline.category_map_resource` | no | versioned `name@version` resource IDs | Defaults are the active core dictionary, MSigDB TERM2GENE and category map stated above. |
+| `pipeline.lisa_dictionary` | no | `core` or `expanded` | `core`; omit for a custom dictionary resource. It must not conflict with an explicit tier resource. |
+| `pipeline.run_ora` | no | Boolean | `false`; ORA is separate from ranked GSEA. |
+| `pipeline.run_hallmarks` | no | Boolean | `true`; permits selected `HALLMARKS`, but never adds it to `collections`. |
+| `pipeline.run_kegg_maps` | no | Boolean | `false`; if true, requires `kegg_access_mode: cache_only`, `kegg_cache_root` and `kegg_snapshot_id`. |
+| `pipeline.kegg_access_mode` | no | `external`, `cache_only` | `external`; `cache_only` is compulsory for native maps. |
+| `pipeline.kegg_cache_root`, `pipeline.kegg_snapshot_id` | conditional | non-empty path; portable ASCII identifier | Required only for native maps; local snapshot metadata is checked. |
+| `pipeline.pathways_category_display` | no | `all` | `all`; no upstream PATHWAYS filter is accepted. |
+| `pipeline.kegg_map_selection` | no | `significant_only` | `significant_only`; does not enable maps. |
+| `pipeline.cache_mode` | no | `off`, `readwrite`, `readonly`, `refresh` | `off`; every active mode requires `cache_dir`. |
+| `pipeline.cache_dir` | conditional | non-empty path or `null` when cache is off | Required when `cache_mode` is active. |
+| `pipeline.cache_max_bytes` | no | positive exactly representable integer, up to `2^53 - 1` | `536870912`; cache capacity, not a resource registry. |
+
+| Field path | Required | Type and accepted values | Default / interaction |
+|---|---:|---|---|
+| `project.title` | no | string | Used as `report_title` when that pipeline field is absent. |
+| `project.output_dir` | no | non-empty path | Project metadata; use `pipeline.output_dir` for execution. |
+| `report.mode` | no | `standard`, `full` | `standard`; `selected` belongs only to the extension API. |
+| `report.formats.{png,svg,pdf}` | no | Boolean | `true`, `false`, `false`; all false suppresses static figures, not HTML or computation. |
+| `report.source_data`, `report.recipes`, `report.category_evidence`, `report.legacy_gene_products` | no | Boolean | `true`, `false`, `true`, `false`, respectively. |
+| `report.category_nes_variants` | no | one to four unique values: `clean`, `percentages`, `direction`, `dispersion` | All four, in that order. |
+| `report.evidence_max_sets`, `report.evidence_max_genes` | no | positive integers | `25`, `40`; initial visible limits, not data filters. |
+| `collections` | no | non-empty unique subset of `GOBP-C2`, `GOMF`, `GOCC`, `PATHWAYS`, `HALLMARKS` | All five. The first four are semantic universes; Hallmarks is direct. |
+| `single_de` | yes | non-empty array of analysis objects | Use it, or the equivalent `de_index` / `de_index_path` parser aliases, to supply analyses. |
+| `contrasts` | no | array of contrast objects | Equivalent parser aliases: `contrast_index`, `contrast_index_path`. |
+| `source_data` | no | array of source objects | Each entry needs `path` or `source_path`, and an explicit non-empty study or entry allowlist. |
+| `allowlisted_source_paths` | conditional | array of non-empty paths | Required for source-data entries unless every entry supplies `allowlisted_paths`. |
+
+The schema rejects unknown fields. The parser recognises the older output keys
+only to issue a migration error; do not use `plot_formats`, `export_formats`,
+`run_reports` or `run_gene_level` in a 1.0.0 study.
+
+## Choose report products
+
+`report` is a **top-level** section, alongside `pipeline`; do not nest it under
+`pipeline`.
+
+| Setting | Default | What it controls |
+|---|---|---|
+| `report.mode` | `standard` | Standard study or standard study plus a full extension |
+| `report.category_evidence` | `true` | Category navigator, category evidence, global gene evidence and aligned evidence for declared semantic contrasts |
+| `report.category_nes_variants` | `[clean, percentages, direction, dispersion]` | One to four distinct NES overview variants; at least one required |
+| `report.legacy_gene_products` | `false` | Opt in to legacy gene-level products such as GeneCards |
+| `report.evidence_max_sets` | `25` | Initial matrix limit for gene sets; positive integer |
+| `report.evidence_max_genes` | `40` | Initial matrix limit for genes; positive integer |
+| `report.formats.png` | `true` | Render PNG figures |
+| `report.formats.svg` | `false` | Render SVG figures |
+| `report.formats.pdf` | `false` | Render PDF figures |
+| `report.source_data` | `true` | Save figure-specific sources, independently of canonical scientific tables |
+| `report.recipes` | `false` | Request reproduction recipes; keep source data enabled to use them |
+
+The matrix limits restrict the displayed view, not the complete evidence tables
+or the recurrence counts. The report provides a shared navigation header, a
+category navigator after the LISA overview graphics and a member-gene-set
+chart at the end of the corresponding category sheet. There is no duplicate
+visible category table or separate gallery of those member charts.
+
+The Hommel category-significance view is a separate automatic product of a
+completed `run_lisa()` analysis when applicable. Its four adjusted-P star
+thresholds are presentation conventions, not an additional value of
+`report.category_nes_variants` or a configurable inferential cutoff. The four
+NES variants remain descriptive; `HALLMARKS` and A/B profile contrasts do not
+gain category inference.
+
+### Four NES views, one scientific result
+
+| Variant | Additional information |
+|---|---|
+| `clean` | Mean NES, with the existing clean summary |
+| `percentages` | The clean view plus concordance percentages beside each point |
+| `direction` | Mean plus median and percentages of significant members with positive/negative NES |
+| `dispersion` | The direction view plus type-7 P25-P75 |
+
+All selected variants use the same member population, order and scale. For
+contrasts, each side retains its own statistics and the original descriptive
+delta. Percentiles show dispersion, **not confidence intervals**. Percentages
+state their denominator; they do not measure independent evidence or
+confidence. The denominator is the number of unique category members with
+finite NES and adjusted P value at or below the cutoff; zero NES values stay
+in that denominator and have a separate percentage. With no significant
+members, percentages are unavailable. Concordance with the mean is also
+unavailable when the mean is exactly zero. See
+[Semantic categories](semantic-category-guide.html) for the collection and
+category structure.
+
+The selector accepts one to four unique names. **At least one must
+remain selected**, but `clean` is not compulsory: `[dispersion]` alone is
+valid. Unknown names, duplicates and an empty list are errors. Its order is
+retained in the HTML selector. This controls the new NES overview family;
+the LISA categories section presents these views together without a duplicated legacy gallery. Complementary gene-set overviews remain available.
+
+For YAML, choose one of these alternative values under `report`:
+
+```yaml
+category_nes_variants: [clean, percentages, direction, dispersion]  # default: all four
+```
+
+```yaml
+category_nes_variants: [clean]  # one clean overview
+```
+
+```yaml
+category_nes_variants: [dispersion]  # one overview with all annotations
+```
+
+The JSON equivalent is, for example,
+`"category_nes_variants": ["dispersion"]`. YAML and JSON describe the same
+configuration; JSONL is not a study configuration format.
+
+```{r reference-output-choices, eval=TRUE}
+clean_only <- cfg
+clean_only$report$category_nes_variants <- "clean"
+clean_check <- validate_lisa_config(clean_only, check_files = FALSE)
+stopifnot(identical(
+  unlist(clean_check$config$report$category_nes_variants, use.names = FALSE),
+  "clean"
+))
+
+dispersion_only <- cfg
+dispersion_only$report$category_nes_variants <- "dispersion"
+dispersion_check <- validate_lisa_config(dispersion_only, check_files = FALSE)
+stopifnot(identical(
+  unlist(dispersion_check$config$report$category_nes_variants, use.names = FALSE),
+  "dispersion"
+))
+
+all_plan <- plan_lisa_outputs(cfg, category_counts = c(`GOBP-C2` = 2L))
+clean_plan <- plan_lisa_outputs(clean_only, category_counts = c(`GOBP-C2` = 2L))
+all_plan$summary
+clean_plan$summary
+```
+
+The supplied count of two categories is an **illustrative planning assumption**,
+not a claim about the installed resource. The two plans compare presentation
+choices only; they do not perform sensitivity analysis or test different
+scientific conclusions.
+
+### Standard, full and no static figures
+
+| Choice | What runs and what is added |
+|---|---|
+| `standard` | GSEA and canonical tables, overview graphics, linked category/gene evidence and evidence for declared compatible semantic contrasts; no mass full extension |
+| `full` | The same canonical study plus a separate extension of applicable extra products; expensive figures may require additional inputs |
+| All three format switches `false` | No static PNG/PDF/SVG figure files or their associated figure-only artefacts; scientific/evidence tables and HTML navigation remain |
+| Selected extension | Existing R API for chosen additions to a verified run; **not** a study mode and not a “generate” button in the HTML |
+
+Full is an output expansion, not a different GSEA method. It is not necessary
+for evidence pages. Use `plan_lisa_outputs()` before choosing it; estimates
+include the selected NES variants and standard member charts but are not a
+hard upper bound on report size or memory. The shared gene explorer also grows
+with the DE and full-membership tables.
+
+To request no static figure files, change **all** switches explicitly; omitted
+PNG defaults to `true`:
+
+```{r reference-no-static-figures, eval=TRUE}
+no_static <- cfg
+no_static$report$formats <- list(png = FALSE, svg = FALSE, pdf = FALSE)
+no_static_check <- validate_lisa_config(no_static, check_files = FALSE)
+stopifnot(!any(unlist(no_static_check$config$report$formats)))
+```
+
+The offline navigator uses SVG as part of its interface even in this mode.
+“No static figures” is not “no HTML” and does not cancel GSEA. If you want no
+computation, use `dry_run`, described below.
+
+The optional extension products are `member_gene_sets`, `gene_cards`,
+`volcano`, `heatmap`, `kegg`, `contrast_profile` and `contrast_heatmap`.
+Extensions leave their verified source run unchanged. The extension's `kegg`
+product summarises KEGG gene-set evidence from the TERM2GENE memberships.
+Native pathway maps are separate graphics, requested through
+`pipeline.run_kegg_maps` with the local cache-only settings below. Selecting
+the `kegg` extension product alone neither enables native maps nor retrieves
+a map snapshot.
+
+Other product controls live under `pipeline`:
+
+- `run_ora`: default `false`. ORA is separate threshold-based enrichment,
+  not the basis of the GSEA evidence matrix.
+- `run_hallmarks`: default `true`. Permits `HALLMARKS` when explicitly
+  selected; does not add it to a list that excludes it.
+- `run_kegg_maps`: optional native pathway painting from existing gene-level
+  evidence. It requires the explicit cache-only contract below.
+- `kegg_access_mode`: must be `cache_only` when `run_kegg_maps` is true; the
+  configured route never retrieves maps automatically.
+- `kegg_cache_root` and `kegg_snapshot_id`: required with `run_kegg_maps`;
+  identify the local snapshot whose files are checked against its metadata.
+- `pathways_category_display`: currently `all`.
+- `kegg_map_selection`: retained compatibility field, `significant_only`;
+  does not enable painted maps.
+
+GSEA tests the selected TERM2GENE source space, not just mapped sets.
+`GOBP-C2`, `GOMF` and `GOCC` keep a dedicated `OTHER_UNCLASSIFIED` table;
+`PATHWAYS` has no separate residual table. Unclassified rows are excluded
+from figures. Direct `HALLMARKS` is not a semantic category universe.
+
+## Choose execution and output controls
+
+- `workers`: distribute independent analysis, contrast and post-processing
+  tasks while keeping their order and random seeds fixed; default `4`. Choose a
+  positive integer no larger than the CPU cores allocated to the R process.
+  Linux uses a bounded multicore backend. Windows and macOS run serially even
+  when a larger value is requested. Each DE task uses one thread; shared-cache,
+  report and final-verification steps remain serial.
+- `gsea_padj_cutoff`: the single inclusive adjusted-P threshold used for
+  member-set summaries, A/B support flags and figure endpoints; default `0.25`. Use a
+  number from `0` to `1`. Changing it changes the descriptive category
+  summaries and must therefore be recorded with the run.
+- `dry_run`: validate and plan without enrichment; start with `true`. A
+  successful plan returns `PLAN_PASS` and is stored in the separate directory
+  reported as `result$plan_dir`. It does not create or reserve
+  `pipeline.output_dir`. `verify_lisa_run(result$plan_dir)` returns `FAIL`
+  because planning evidence is not a completed scientific run. Set
+  `dry_run: false` to use the still-free scientific destination.
+- `resume`: the default is `false`, and it must remain `false` in this release. lisaR
+  cannot yet prove that a partial
+  run was created with the same configuration, code and resources. If a run is
+  interrupted, keep its staging tree for inspection and start a clean run with
+  a new `run_id`. Setting `true` stops with `LISA-RESUME-001`.
+- `run_id`: optional explicit portable ASCII technical identifier.
+- `report_title`: title displayed in the report.
+- `file_label_prefix`: portable ASCII filename prefix; display text belongs in
+  `report_title` or analysis labels.
+- `sufficiency_action`: what to do when the usable feature count is below the
+  profile threshold. The default is `warn`; use `error` to stop, or
+  `ignore_with_reason` for an intentionally restricted assay.
+- `sufficiency_ignore_reason`: non-empty justification required with
+  `ignore_with_reason`; it becomes part of the reproducible configuration.
+
+For `transcriptomic/genomic`, lisaR warns below 5,000 usable unique features
+and gives a strong warning below 2,000. For `global proteomic`, the corresponding
+thresholds are 1,500 and 500. A `targeted` profile has no universal minimum and
+records that limitation instead. These checks flag whether the input may be
+too narrow for a useful enrichment analysis; they do not measure data quality
+or statistical power.
+
+For example, an intentionally restricted panel can record:
+
+```yaml
+pipeline:
+  sufficiency_action: ignore_with_reason
+  sufficiency_ignore_reason: "Targeted 84-gene immune panel; the restricted feature universe is intentional."
+```
+
+### Duplicate policies
+
+Each input class requires one of:
+
+- `error`: stop when duplicate identifiers are present; recommended default.
+- `select`: retain an observed row using a declared criterion and deterministic
+  tie breaker.
+- `aggregate`: allowed for compatible matrix/mapping inputs, with explicit
+  numeric and non-numeric methods; not allowed for DE effect/significance rows.
+- `mapping_file`: use an explicit row-resolution mapping.
+
+Implicit first-row selection is prohibited.
+
+## Choose collections
+
+A list of registered gene-set collections:
+
+| Collection | Biological scope |
+|:---|:---|
+| `GOBP-C2` | Broad biological programmes, combining GO Biological Process with selected curated pathway families from MSigDB C2:CP. |
+| `GOMF` | Molecular activities represented by GO Molecular Function gene sets. |
+| `GOCC` | Cellular locations, structures and complexes represented by GO Cellular Component gene sets. |
+| `PATHWAYS` | A strict signalling view of the `GOBP-C2` gene-set space. |
+| `HALLMARKS` | MSigDB Hallmark gene sets analysed directly, without semantic LISA remapping. |
+
+The first four are the semantic LISA universes. `HALLMARKS` is the fifth
+analysis option, but it is a direct collection rather than another semantic
+universe. The examples use the four semantic collections and exclude
+Hallmarks deliberately:
+
+```yaml
+pipeline:
+  run_hallmarks: false
+
+collections:
+  - GOBP-C2
+  - GOMF
+  - GOCC
+  - PATHWAYS
+```
+
+You may select a different supported subset for your study. Remember that
+`run_hallmarks: true` keeps Hallmarks only when `HALLMARKS` is selected; it
+does not add it to the list above. See
+[How lisar works](how-lisar-works.html) for the relationship between
+the universes, dictionaries and biological hierarchy. Availability depends on
+the installed species-matched gene-set membership table.
+
+## Describe each analysis
+
+One entry per differential-expression analysis:
+
+- `analysis_id`: stable portable ASCII technical identifier.
+- `de_path`: differential-expression table.
+- `species`: `Homo sapiens` or `Mus musculus`.
+- `symbol_col`: gene-symbol column.
+- `logfc_col`: signed effect-size column.
+- `pvalue_col`: optional raw p-value column.
+- `padj_col`: adjusted p-value/FDR column.
+- `rank_col`: optional precomputed ranking column.
+
+The ranking column must retain direction. Use a signed statistic such as a
+DESeq2 Wald `stat`, a limma `t` or another signed `z`-score; never use `padj`
+or FDR as `rank_col`.
+
+Presentation metadata is optional but strongly recommended:
+
+- `label`: concise human-readable analysis title.
+- `comparison`: the exact oriented comparison shown in plot subtitles.
+- `positive_direction`: a plain-language definition of positive log2FC/NES.
+- `model_note`: the fitted model, coefficient or contrast, and any pairing,
+  blocking or adjustment variables.
+
+These fields do not alter statistics. They prevent internal IDs from becoming
+the only explanation of a figure.
+
+Optional matrix paths and their identifier columns support heatmaps. Match the
+field to the stored scale: `vst_matrix`/`vst_matrix_path` declare transformed
+values (no further log transform); `counts_matrix`, `tpm_matrix` and their
+`*_path` forms declare count-like values, which the heatmap displays as
+`log2(x + 1)`. That display transform is not a substitute for DE normalisation.
+Generic matrix fields retain a legacy filename-based scale inference, so
+prefer an explicit typed field. Never declare one file under conflicting
+scales. `matrix_id_col` identifies the gene column and sample columns retain
+their input order. The input adapter's `matrix_scale` receipt alone does not
+configure or transform this matrix.
+
+### Look up analysis, contrast and source-data fields
+
+| Field path | Required | Type / values | Default or condition |
+|---|---:|---|---|
+| `single_de[].analysis_id` | yes | portable ASCII identifier | Unique technical analysis identifier. |
+| `single_de[].de_path` | yes | non-empty tabular-input path | YAML/JSON configurations do not accept RDS input. |
+| `single_de[].species` | yes | `Homo sapiens` or `Mus musculus` | Must match the selected resources. |
+| `single_de[].symbol_col`, `gene_id_col` | conditional | source-column names | Supply the identifier mapping required by the input contract. |
+| `single_de[].logfc_col`, `padj_col`, `rank_col`, `pvalue_col` | conditional | source-column names | Required roles depend on `evidence_mode`; rank must be signed. |
+| `single_de[].label`, `comparison`, `positive_direction`, `model_note` | no | display strings | Do not change statistical input. |
+| `single_de[].msigdb_mode`, `term2gene_target_species` | no | strings | Advanced membership-input declarations. |
+| `single_de[].matrix_path`, `expression_matrix_path`, `counts_matrix_path`, `vst_matrix_path`, `normalized_matrix_path`, `tpm_matrix_path`, `sample_counts_path` | no | paths | Pick the path that declares the stored scale; do not declare one file under conflicting scales. |
+| `single_de[].expression_matrix`, `counts_matrix`, `vst_matrix`, `normalized_matrix`, `tpm_matrix`, `sample_counts` | no | paths | Backward-compatible matrix aliases; prefer the explicit `*_path` form. |
+| `single_de[].matrix_id_col`, `matrix_feature_col` | no | source-column names | Identifies matrix features. |
+| `single_de[].sample_include_regex`, `heatmap_sample_include_regex`, `sample_exclude_regex`, `heatmap_sample_exclude_regex` | no | regular-expression strings | Select samples for the stated view without changing DE. |
+| `single_de[].mapped_id_path`, `mapped_id_col`, `source_id_col` | no | path and source-column names | Used for explicit identifier mapping and collision handling. |
+| `contrasts[].contrast_id` | yes | portable ASCII identifier | Unique technical contrast identifier. |
+| `contrasts[].analysis_a`, `analysis_b` | yes | `analysis_id` strings | Direction is A minus B. Both analyses must be compatible. |
+| `contrasts[].output_id` | no | portable ASCII identifier | Optional output technical identifier. |
+| `contrasts[].contrast_label`, `comparison`, `positive_direction` | no | display strings | Label and describe the descriptive profile difference. |
+| `source_data[].path` or `source_path` | one required | non-empty path | One source path per entry. |
+| `source_data[].role` or `source_role` | no | string | Provenance description. |
+| `source_data[].target_subdir` | no | portable ASCII identifier | Destination beneath the source-data area. |
+| `source_data[].allowlisted_paths` | conditional | non-empty path array | Overrides the study-level allowlist for that entry. |
+
+For a non-`error` duplicate-policy object, `type` is required and may be
+`select`, `aggregate` or `mapping_file`. `select` can use `criterion`
+(`min_padj`, `max_abs_rank`, `max_quality`, `min`, `max`, `min_abs`,
+`max_abs`), `column` and a `tie_breaker` string or `{column: ...}`. Aggregate
+policies may declare `numeric_method` (`mean`, `sum`, `median`, `min`, `max`)
+and `non_numeric_method` (`constant`, `collapse`); mapping policies identify
+`mapping_file`, `source_row_col` and `output_id_col`. The parser rejects
+unknown policy keys.
+
+## Use completed DESeq2, edgeR and trusted RDS inputs
+
+YAML and JSON studies accept text DE tables. For a completed data frame,
+`prepare_lisa_de_input()` provides an auditable route into the configured
+workflow; see [Preparing DE inputs](preparing-de-inputs.html). For a supported
+result object retained in memory, the lower-level `run_lisa_de()` is another
+route:
+
+- `DESeqResults` can be passed directly.
+- `DESeqDataSet` requires exactly one result selector: `deseq2_name` for a
+  named coefficient or `deseq2_contrast` for a contrast. Supplying neither or
+  both is an error.
+- edgeR results `DGELRT`, `DGEExact` and `TopTags` are supported.
+- `DGEList` is rejected because it contains counts and design information, not
+  a completed differential-expression result.
+
+For example, choose one DESeq2 coefficient from an object already in memory:
+
+```{r config-deseq2-object-template, eval=FALSE}
+result <- run_lisa_de(
+  dds,
+  output_dir = "results/treated-vs-control",
+  comparison_name = "treated_vs_control",
+  species = "Homo sapiens",
+  symbol_col = "rowname",
+  deseq2_name = "condition_treated_vs_control",
+  universes = c("GOBP-C2", "GOMF", "GOCC", "PATHWAYS")
+)
+```
+
+The contrast form uses `deseq2_contrast` instead of `deseq2_name`, for example
+`c("condition", "treated", "control")`.
+
+An `.rds` file is not a plain data table. Read it only when it is local, stable
+and fully trusted, and make that decision explicit in the R call:
+
+```{r config-trusted-rds-template, eval=FALSE}
+result <- run_lisa_de(
+  "dds.rds",
+  output_dir = "results/treated-vs-control-rds",
+  comparison_name = "treated_vs_control",
+  species = "Homo sapiens",
+  symbol_col = "rowname",
+  trusted_rds = TRUE,
+  deseq2_name = "condition_treated_vs_control",
+  universes = c("GOBP-C2", "GOMF", "GOCC", "PATHWAYS")
+)
+```
+
+The size limit is diagnostic, not a sandbox. YAML and JSON cannot set
+`trusted_rds` or point a configured `de_path` at an RDS file. Export a TSV or
+CSV first if you need the configuration-defined workflow. See
+[Function reference](function-reference.html) for the remaining
+arguments and the trust receipt written for an accepted RDS input.
+
+## Describe profile contrasts
+
+Each contrast contains:
+
+- `contrast_id`: stable portable ASCII technical identifier.
+- `analysis_a`, `analysis_b`: IDs declared in `single_de`.
+- `contrast_label`: human-readable label.
+- `comparison`: exact profile-level comparison for report text.
+- `positive_direction`: interpretation of a positive category-profile delta.
+
+Contrast direction follows `analysis_a` minus `analysis_b`. Both analyses must
+be scientifically and technically compatible. A profile difference is
+descriptive, not a new statistical test of category change. The paired
+evidence view retains significance and leading edges separately for A and B;
+missing evidence is not replaced by zero.
+
+## Include auditable source files
+
+Optional source files can enter a run only through an explicit, non-empty
+allowlist:
+
+- every resolved source file must exactly match one listed file;
+- allowing a directory does not allow its children;
+- `allowlisted_source_paths` applies to the study, while `allowlisted_paths`
+  applies to one entry and takes precedence;
+- each entry declares its role and destination subdirectory; and
+- lisaR checks every entry before copying any of them.
+
+A missing, empty or mismatched allowlist therefore fails without leaving a
+partial source import. Use this mechanism for auditable source material, not
+for copying arbitrary directories.
+
+## Reuse exact GSEA work in an optional cache
+
+This is a computation cache, **not** the registry of scientific resources.
+It is off by default. This partial YAML block enables it in a local directory
+relative to the study file:
+
+```yaml
+pipeline:
+  cache_mode: readwrite
+  cache_dir: cache/gsea
+  cache_max_bytes: 536870912
+```
+
+| Mode | Read an exact hit? | On a miss |
+|---|---|---|
+| `off` | No | Compute normally; no cache access |
+| `readonly` | Yes | Compute normally; do not write a cache entry |
+| `readwrite` | Yes | Compute and attempt to store the result |
+| `refresh` | No | Recompute and attempt to replace the cache entry |
+
+An active mode requires an explicit local `cache_dir`. The default budget is
+512 MiB (`536870912` bytes), supplied as a positive whole number no larger
+than `9007199254740991` (the exact-integer limit of the configuration's numeric
+representation). This bounds
+the cache implementation, not R's total memory. If a changed budget conflicts
+with existing slots, use a new directory or the original budget; a cached
+result is disposable, but never delete resources or completed run artefacts
+as though they were cache entries.
+
+A hit requires the same ordered named ranking, complete selected memberships,
+universe, gene-set-size limits, algorithm/parameters, seed and task identity,
+and relevant software/runtime context. A renamed analysis can therefore miss
+because its task identity changes. Corrupt or incompatible entries cannot be
+accepted as equivalent results. The cache stores raw GSEA results, not
+category annotations, report pages or figure files. Those are derived again
+for the current run. No change in dictionary label or output option alone is
+proof that reuse is possible.
+
+Inspect `qc/<comparison>_content_cache.tsv` in each analysis/collection for
+hit/miss status, reason and component hashes. The report also reuses prepared
+downloads with identical content internally; that optimisation is separate
+from this optional GSEA cache and requires no configuration.
+
+The configuration and provenance records use the technical name `TERM2GENE`
+for the membership table. Its schema has five columns:
+`gs_collection`, `gs_subcollection`, `gs_name`, `gs_exact_source` and
+`gene_symbol`. Together they record the source collection, subcollection,
+gene-set identifier, exact source and one member gene per row.
+
+See [Parallel execution](parallel-execution.html) to choose a worker
+count, understand what happens when a task fails and compare serial with
+parallel results.

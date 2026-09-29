@@ -1,0 +1,64 @@
+---
+title: "Use your own differential-expression table"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Use your own differential-expression table}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Once [Riaz ON](riaz-on-quick-start.html) runs, replace its table with your own.
+Supply the complete DE result, not only significant genes.
+
+## Prepare the input
+
+For a DESeq2 table, use these columns:
+
+| Column | Meaning |
+|---|---|
+| `symbol` | Gene symbol matching the gene-set resource. |
+| `log2FoldChange` | Signed effect for your comparison. |
+| `stat` | Signed ranking statistic, normally the Wald statistic. |
+| `pvalue` | Gene-level raw P value. |
+| `padj` | Gene-level adjusted P value. |
+
+Check which group is in the numerator before writing the direction sentence.
+A DESeq2 likelihood-ratio statistic is unsigned; the
+[extended R guide](getting-started.html) explains that case and edgeR/limma
+inputs.
+
+## Run one analysis
+
+This example assumes a human DESeq2 Wald-test result and the resource prepared
+during Riaz ON. Change the two paths and the direction sentence.
+
+```{r own-de, eval=FALSE}
+library(lisaR)
+
+result <- run_lisa(
+  de = "de_treated_vs_control.tsv",
+  output_dir = "lisa-treated-vs-control",
+  species = "Homo sapiens",
+  method = "DESeq2",
+  positive_direction = "Higher in treated than in control"
+)
+
+stopifnot(identical(result$gate, "PASS"))
+browseURL(result$report_index)
+```
+
+Choose a new output directory. STANDARD is the default; it includes PNG and
+SVG figures, source tables and figure recipes. Add `pdf = TRUE` if needed.
+
+lisaR uses the supplied DE results. It does not re-estimate your effects or fit
+your experimental design. For another species, prepare the corresponding
+[membership resource](resources-and-provenance.html); do not substitute the
+human resource.
+
+**Next: [Read your report](read-your-report.html).**

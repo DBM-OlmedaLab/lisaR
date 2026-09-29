@@ -1,0 +1,4 @@
+category_id	display_name	macrogroup_id	macrogroup_name	macrogroup_order	category_order_within_macrogroup	notes
+IMMUNE_RESPONSE	Immune response	RESPONSE_PROGRAMMES	Response programmes	1	1	Synthetic compatibility example.
+SIGNAL_TRANSDUCTION	Signal transduction	RESPONSE_PROGRAMMES	Response programmes	1	2	Synthetic compatibility example.
+CELL_STRUCTURE	Cell structure	CELL_ORGANISATION	Cell organisation	2	1	Synthetic compatibility example.

@@ -1,0 +1,55 @@
+---
+title: "Advanced guides"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Advanced guides}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Use these guides when you need to understand a method or change the default
+workflow. For a first run, follow [Get started](documentation.html).
+
+## Methods and interpretation
+
+- [Statistical analysis](statistical-analysis.html): gene-set tests, category
+  inference and the limits of comparisons.
+- [How lisaR works](how-lisar-works.html): dictionaries, categories and resources.
+- [Category guide](semantic-category-guide.html): plot variants and their meaning.
+- [Dictionary construction](dictionary-construction.html): how the saved
+  assignments were produced.
+
+## Inputs and configuration
+
+- [Extended R workflow](getting-started.html): input objects, multiple DE
+  analyses, contrasts and report options.
+- [Prepare DE inputs](preparing-de-inputs.html): input conventions and provenance.
+- [Resources and provenance](resources-and-provenance.html): membership resources
+  and their registration.
+- [Custom dictionaries](custom-dictionaries-and-supercategories.html): your own
+  categories and supercategories.
+- [Installation details](advanced-installation.html): optional dependencies,
+  local environments and installation troubleshooting.
+
+## Reports and worked examples
+
+- [Reports and figures](scientific-report.html): additional products and saved
+  result workflows.
+- [Shiny app](shiny-app.html): explore saved results and generate selected figures.
+- [Riaz PRE and ON](riaz-gse91061-worked-example.html): the complete prepared study.
+- [CPTAC proteomics](cptac-ccrcc-proteomics.html): a proteomic example.
+- [Synthetic example](quick-start.html): a self-contained offline demonstration.
+
+## Reference
+
+- [Configuration reference](configuration-reference.html)
+- [Function reference](function-reference.html)
+- [Parallel execution](parallel-execution.html)
+- [Troubleshooting](troubleshooting.html)
+- [Licence and citation](licence-and-citation.html)

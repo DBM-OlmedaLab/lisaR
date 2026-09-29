@@ -1,0 +1,246 @@
+---
+title: "How LISA dictionaries were built"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{How LISA dictionaries were built}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The built-in LISA dictionaries were prepared before any user's study was
+analysed. During construction, model-specific annotations rated how closely a
+gene set fitted a predefined biological category. lisaR now distributes the
+accepted gene-set-to-category assignments and applies them locally. An
+ordinary analysis does not ask a language model to classify the study.
+
+This guide explains the recorded construction method and its limits. It does
+not describe a new analysis or a method for interpreting one study's
+enrichment scores.
+
+## What the four collections mean
+
+| Collection | Biological scope during construction |
+|---|---|
+| `GOBP-C2` | Broad biological programmes. It combines GO Biological Process gene sets with selected curated pathway families from MSigDB C2:CP. |
+| `GOMF` | Molecular activities represented by GO Molecular Function gene sets. |
+| `GOCC` | Cellular locations, structures and complexes represented by GO Cellular Component gene sets. |
+| `PATHWAYS` | A stricter signalling classification of the GOBP-C2 gene-set space. |
+
+`HALLMARKS` is separate. lisaR analyses Hallmark gene sets directly rather
+than assigning them through a LISA semantic dictionary.
+
+The biological categories and their definitions existed before scoring. The
+inspected GOMF and GOCC annotation inputs contain the GO source identifier,
+gene-set name, example genes and category definitions. Their description
+fields are empty. The records therefore do not support a claim that every
+model received a full gene membership list or a prose description for every
+gene set.
+
+## Four recorded model streams
+
+The saved construction table has separate score and source columns for
+Qwen3.5, Gemma4, Mistral3.2 and Phi4-14b. The selection code treats Qwen3.5 and
+Gemma4 as the anchor pair. Mistral3.2 and Phi4-14b provide supporting scores.
+This is not unrestricted majority voting.
+
+The scores are ordinal judgements of biological fit. They are not
+probabilities, confidence percentages, votes, GSEA weights or measurements
+from a study.
+
+The surviving records give the clearest collection-specific interpretation
+for GOMF and GOCC:
+
+* For GOMF, 0 means no relationship, 1 a weak or contextual relationship, 2 a
+  supported secondary function, 3 a major function and 4 a primary or
+  canonical function.
+* The GOCC production rubric allows 0, 3 or 4 and asks whether the category
+  describes compartment identity. It does not score molecular function or
+  pathway activity.
+
+The records support a common selection rule for `GOBP-C2`, `GOMF` and `GOCC`,
+but they do not establish one identical production prompt for all three
+collections. Prompt optimisation records are historical calibration material,
+not proof of the final prompt used for every saved score.
+
+## Exact method for GOBP-C2, GOMF and GOCC
+
+The ordinary GO-family rule was named
+`anchor_support_consensus_v0_1`. After any explicitly recorded imputation, the
+four scores were combined as follows:
+
+* A final score of 4 was assigned when both anchors were 4. It was also
+  assigned when both anchors were at least 3, at least one anchor was 4, and
+  at least one support model scored at least 3.
+* Otherwise, a final score of 3 was assigned when both anchors were at least 3.
+  It was also assigned when one anchor was at least 3, the other was at
+  least 2, and at least one support model scored at least 3.
+
+Core retained final score 4. Expanded retained core and final score 3.
+`OTHER_UNCLASSIFIED`, `MF_UNKNOWN` and `CC_UNKNOWN_OTHER` were excluded.
+Lower-score outputs remained in construction and sensitivity tables rather
+than the default distributed dictionaries.
+
+### Missing GO-family scores
+
+A derived `GOBP-C2` layer filled a missing model score with the mode of the
+available model scores for that category. When modes tied, it chose the lower
+value. The saved consensus contains 3,649 gene-set and category pairs with an
+imputed value. Source fields distinguish these derived values from raw scores.
+The inspected builder applies this imputation layer to `GOBP-C2`, not to GOMF
+or GOCC.
+
+An imputed value is not another independent model annotation.
+
+### Eleven recorded GOMF overrides
+
+Eleven GOMF pairs have an explicit manual validation score recorded under
+David Olmeda's review. That score replaced the ordinary rule result before
+tier selection.
+
+| Gene-set ID | Category ID | Rule score | Recorded override |
+|---|---:|---:|---:|
+| `GOMF_ANAPHASE_PROMOTING_COMPLEX_BINDING` | `MF_CELL_CYCLE_REG` | 3 | 4 |
+| `GOMF_ATP_DEPENDENT_PROTEIN_FOLDING_CHAPERONE` | `MF_STRESS_RESPONSE` | 2 | 3 |
+| `GOMF_CHEMOREPELLENT_ACTIVITY` | `MF_DEVELOPMENT_REG` | 3 | 3 |
+| `GOMF_CLATHRIN_ADAPTOR_ACTIVITY` | `MF_VESICLE_TRAFFIC` | 3 | 4 |
+| `GOMF_CYCLIN_BINDING` | `MF_CELL_CYCLE_REG` | 3 | 4 |
+| `GOMF_CYSTEINE_TYPE_ENDOPEPTIDASE_REGULATOR_ACTIVITY_INVOLVED_IN_APOPTOTIC_PROCESS` | `MF_APOPTOSIS_REG` | 3 | 4 |
+| `GOMF_DOUBLE_STRANDED_RNA_BINDING` | `MF_VIRAL_HOST` | 2 | 3 |
+| `GOMF_EXOGENOUS_PROTEIN_BINDING` | `MF_VIRAL_HOST` | 2 | 3 |
+| `GOMF_HEAT_SHOCK_PROTEIN_BINDING` | `MF_STRESS_RESPONSE` | 3 | 4 |
+| `GOMF_NOTCH_BINDING` | `MF_DEVELOPMENT_REG` | 3 | 3 |
+| `GOMF_PEPTIDASE_ACTIVATOR_ACTIVITY_INVOLVED_IN_APOPTOTIC_PROCESS` | `MF_APOPTOSIS_REG` | 3 | 4 |
+
+An override that retains the same numerical score is still part of the
+recorded manual validation layer.
+
+## Exact method for the current PATHWAYS assignments
+
+PATHWAYS was selected later under the historical v0.7 name-first method dated
+3 July 2026. A pathway's name had to support the biological assignment.
+Canonical genes could support a name-supported call, but gene overlap alone
+was not enough for a score of 3 or 4. Models could assign zero to every
+PATHWAYS category.
+
+The current PATHWAYS core contains 921 pairs:
+
+* 824 have Qwen=4 and Gemma=4.
+* 97 have anchor scores 4 and 3 in either order, with both Mistral and Phi
+  observed at 4.
+
+The expanded PATHWAYS dictionary contains those core pairs and 134 additional
+pairs:
+
+* 100 have anchor scores 4 and 3, both support scores at least 3, and exactly
+  one support score equal to 4.
+* 34 have both anchors at 3 and both support scores observed at 4.
+
+A score of 4 from one anchor with the other below 3 was not admitted by these
+core or strict-expanded rules. A further 152 review-only rows are outside the
+production ledgers. The broad PATHWAYS sensitivity set was identical to the
+expanded set, not an additional permissive tier.
+
+The distinction between observed and imputed support matters. The core 4/3
+branch and the expanded 3/3 branch explicitly require observed support. The
+expanded 4/3 branch does not carry that same explicit source condition, so it
+must not be described as if it did.
+
+### Missing PATHWAYS scores
+
+The PATHWAYS build records eight missing Phi gene-set responses, covering 576
+category score cells. A derived layer filled those cells with the median of
+the available model scores. This is different from the lower-tied mode used
+for missing `GOBP-C2` scores. The audit verified the source code and saved
+report for this step but did not replay every raw PATHWAYS record.
+
+## How historical selections reach current v1
+
+The located source ledgers contain all assignments in the current package
+tables:
+
+| Tier | GO-family rows | PATHWAYS rows | Current total |
+|---|---:|---:|---:|
+| Core | 14,592 | 921 | 15,513 |
+| Expanded | 22,171 | 1,055 | 23,226 |
+
+The source-to-package comparison found the same seven-field rows and values,
+with no unmatched or duplicate projected rows. It was a multiset comparison,
+not a byte-for-byte replay of the historical build order.
+
+The current first-publication resource identities are
+`lisa_dictionary_core@1.0.0` and
+`lisa_dictionary_expanded@1.0.0`. The historical construction names
+`v0_1` and `v0_7` describe archived stages. They are not the version numbers
+of the current distributed resources. Older package resource pins also remain
+distinct historical identities.
+
+Current runtime tables retain `universe`, gene-set identity and label,
+category identity and label, source identity, and `tier`. They do not retain
+`LISA_score`. The removal of that historical construction field did not change
+the accepted assignments or tiers.
+
+## Calibration evidence and limits
+
+The manual calibration record describes 123 validated rows. Three
+unclassified rows were excluded, leaving 120. The saved summary reports
+120/120 recovered by the expanded rule and 118/120 by the core rule. This was
+a development and calibration recovery check. It was not an independent
+held-out study, a whole-genome accuracy estimate or validation for every
+possible biological classification.
+
+The available records do not support a complete historical replay. In
+particular:
+
+* The original MSigDB retrieval release was not recorded.
+* Complete production prompts, responses and successful execution receipts
+  were not recovered for every GO model and gene set.
+* One aggregate raw GO score file named by the builder is absent at its
+  recorded location, although the downstream consensus table and imputation
+  layer are present.
+* Two exact historical hierarchy inputs named by the technical rebuild
+  contract were not identified through the inspected construction chain.
+
+These limits concern reconstruction of the historical annotation process.
+They do not make an LLM necessary for an ordinary lisaR analysis.
+
+## Sources available with lisaR
+
+The installed package includes its current resource manifest, migration
+ledger and technical reconstruction notes. Locate them without relying on a
+private project path:
+
+```{r packaged-provenance, eval=FALSE}
+system.file(
+  "extdata", "dictionaries", "RESOURCE_PROVENANCE.tsv",
+  package = "lisaR"
+)
+system.file(
+  "extdata", "dictionaries", "TECHNICAL_REBUILD_PROVENANCE.md",
+  package = "lisaR"
+)
+system.file(
+  "extdata", "dictionaries", "RESOURCE_MIGRATION_MANIFEST.tsv",
+  package = "lisaR"
+)
+```
+
+The detailed method above was checked against the archived records named
+`build_lisa_dictionaries.py`, `lisa_consensus_scores_all_universes_v0_1.tsv`,
+`consensus_rule_scores_long.tsv`,
+`gobpc2_missing_model_scores_imputed_mode_long.tsv`,
+`derive_pathways_v0_7_core_extended_rules.py`,
+`pathways_v0_7_final_core_inclusions.tsv` and
+`pathways_v0_7_final_core_plus_extended_strict_inclusions.tsv`. Those archive
+files are not currently distributed with lisaR. Their absence is why this
+page states the limits explicitly rather than claiming complete replay.
+
+For ordinary resource selection, see
+[Resources and provenance](resources-and-provenance.html). To build and
+register your own classification, continue to
+[Custom dictionaries and supercategories](custom-dictionaries-and-supercategories.html).

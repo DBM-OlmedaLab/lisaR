@@ -1,0 +1,4 @@
+source	sha256	rows	bundled	use
+lisa_dictionary_core@1.0.0	f24b5bd8d9ac66b6d64c1a91c56ab567aa64a37f05dee5ce0ed3011b2bed8994	15513	TRUE	member counts and representative-example selection
+lisa_dictionary_expanded@1.0.0	0914c2d2e40369041a2313e913898f9c8e4065779e3973b076b70ea473045736	23226	TRUE	exact membership cross-check for selected examples
+lisa_category_map@1.0.0	d61fcb2e1d40d0448d459daaab952975477203bb00b76cb53145aea8f61333b1	158	TRUE	category labels, order and supercategory membership

@@ -1,0 +1,3 @@
+symbol	log2FoldChange	padj	rank_value
+TX_A	1.2	0.01	4
+TX_B	-0.8	0.20	-3

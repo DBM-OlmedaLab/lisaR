@@ -1,0 +1,39 @@
+# R and RStudio local state
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Package build and check artifacts
+*.tar.gz
+*.Rcheck/
+
+# Operating-system and editor artifacts
+.DS_Store
+Thumbs.db
+*~
+*.swp
+
+# Local runtime outputs and caches
+runs/
+staging/
+input_staging/
+exports/
+backups/
+audits/
+hpc_runs/
+smoke-output/
+
+# Superseded local snapshots
+*.before_fix_*
+
+# Local validation evidence and project coordination
+/reports/
+/PROJECT.md

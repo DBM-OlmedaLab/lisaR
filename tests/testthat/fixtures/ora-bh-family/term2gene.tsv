@@ -1,0 +1,17 @@
+gs_collection	gs_subcollection	gs_name	gs_exact_source	gene_symbol
+C5	BP	GOBP_ORA_HIT_STRONG	synthetic	G1
+C5	BP	GOBP_ORA_HIT_STRONG	synthetic	G2
+C5	BP	GOBP_ORA_HIT_STRONG	synthetic	G3
+C5	BP	GOBP_ORA_HIT_WEAK	synthetic	G5
+C5	BP	GOBP_ORA_HIT_WEAK	synthetic	G6
+C5	BP	GOBP_ORA_HIT_WEAK	synthetic	G7
+C5	BP	GOBP_ORA_HIT_WEAK	synthetic	G8
+C5	BP	GOBP_ORA_HIT_WEAK	synthetic	G9
+C5	BP	GOBP_ORA_ZERO_A	synthetic	G10
+C5	BP	GOBP_ORA_ZERO_A	synthetic	G11
+C5	BP	GOBP_ORA_ZERO_B	synthetic	G12
+C5	BP	GOBP_ORA_ZERO_B	synthetic	G13
+C5	BP	GOBP_ORA_ZERO_B	synthetic	G14
+C5	BP	GOBP_ORA_ZERO_B	synthetic	G15
+C5	BP	GOBP_ORA_OUTSIDE_BG	synthetic	X1
+C5	BP	GOBP_ORA_OUTSIDE_BG	synthetic	X2

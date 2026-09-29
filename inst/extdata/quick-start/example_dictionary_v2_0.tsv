@@ -1,0 +1,13 @@
+universe	gene_set_id	gene_set_name	source_id	category_id	category_display_name	LISA_score	tier
+GOBP-C2	SYN_SIGNAL_A	Synthetic immune signalling set A	SYNTHETIC_TEACHING	SYN_SIGNAL	Synthetic immune signalling		custom
+GOBP-C2	SYN_SIGNAL_B	Synthetic immune signalling set B	SYNTHETIC_TEACHING	SYN_SIGNAL	Synthetic immune signalling		custom
+GOBP-C2	SYN_SIGNAL_C	Synthetic immune signalling set C	SYNTHETIC_TEACHING	SYN_SIGNAL	Synthetic immune signalling		custom
+GOBP-C2	SYN_STRESS_A	Synthetic stress adaptation set A	SYNTHETIC_TEACHING	SYN_STRESS	Synthetic stress adaptation		custom
+GOBP-C2	SYN_STRESS_B	Synthetic stress adaptation set B	SYNTHETIC_TEACHING	SYN_STRESS	Synthetic stress adaptation		custom
+GOBP-C2	SYN_STRESS_C	Synthetic stress adaptation set C	SYNTHETIC_TEACHING	SYN_STRESS	Synthetic stress adaptation		custom
+GOBP-C2	SYN_PROLIF_A	Synthetic proliferation set A	SYNTHETIC_TEACHING	SYN_PROLIF	Synthetic proliferation		custom
+GOBP-C2	SYN_PROLIF_B	Synthetic proliferation set B	SYNTHETIC_TEACHING	SYN_PROLIF	Synthetic proliferation		custom
+GOBP-C2	SYN_PROLIF_C	Synthetic proliferation set C	SYNTHETIC_TEACHING	SYN_PROLIF	Synthetic proliferation		custom
+GOBP-C2	SYN_MATRIX_A	Synthetic matrix remodelling set A	SYNTHETIC_TEACHING	SYN_MATRIX	Synthetic matrix remodelling		custom
+GOBP-C2	SYN_MATRIX_B	Synthetic matrix remodelling set B	SYNTHETIC_TEACHING	SYN_MATRIX	Synthetic matrix remodelling		custom
+GOBP-C2	SYN_MATRIX_C	Synthetic matrix remodelling set C	SYNTHETIC_TEACHING	SYN_MATRIX	Synthetic matrix remodelling		custom

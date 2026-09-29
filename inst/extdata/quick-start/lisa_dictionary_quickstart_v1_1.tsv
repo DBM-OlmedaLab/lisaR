@@ -1,0 +1,49 @@
+universe	gene_set_id	gene_set_name	source_id	category_id	category_display_name	tier
+GOBP-C2	SYN_GOBP_SIGNAL_A	Synthetic immune signalling set A	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+GOBP-C2	SYN_GOBP_SIGNAL_B	Synthetic immune signalling set B	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+GOBP-C2	SYN_GOBP_SIGNAL_C	Synthetic immune signalling set C	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+GOBP-C2	SYN_GOBP_STRESS_A	Synthetic stress adaptation set A	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+GOBP-C2	SYN_GOBP_STRESS_B	Synthetic stress adaptation set B	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+GOBP-C2	SYN_GOBP_STRESS_C	Synthetic stress adaptation set C	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+GOBP-C2	SYN_GOBP_PROLIF_A	Synthetic proliferation set A	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+GOBP-C2	SYN_GOBP_PROLIF_B	Synthetic proliferation set B	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+GOBP-C2	SYN_GOBP_PROLIF_C	Synthetic proliferation set C	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+GOBP-C2	SYN_GOBP_MATRIX_A	Synthetic matrix remodelling set A	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+GOBP-C2	SYN_GOBP_MATRIX_B	Synthetic matrix remodelling set B	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+GOBP-C2	SYN_GOBP_MATRIX_C	Synthetic matrix remodelling set C	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+GOMF	SYN_GOMF_SIGNAL_A	Synthetic immune signalling set A	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+GOMF	SYN_GOMF_SIGNAL_B	Synthetic immune signalling set B	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+GOMF	SYN_GOMF_SIGNAL_C	Synthetic immune signalling set C	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+GOMF	SYN_GOMF_STRESS_A	Synthetic stress adaptation set A	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+GOMF	SYN_GOMF_STRESS_B	Synthetic stress adaptation set B	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+GOMF	SYN_GOMF_STRESS_C	Synthetic stress adaptation set C	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+GOMF	SYN_GOMF_PROLIF_A	Synthetic proliferation set A	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+GOMF	SYN_GOMF_PROLIF_B	Synthetic proliferation set B	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+GOMF	SYN_GOMF_PROLIF_C	Synthetic proliferation set C	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+GOMF	SYN_GOMF_MATRIX_A	Synthetic matrix remodelling set A	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+GOMF	SYN_GOMF_MATRIX_B	Synthetic matrix remodelling set B	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+GOMF	SYN_GOMF_MATRIX_C	Synthetic matrix remodelling set C	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+GOCC	SYN_GOCC_SIGNAL_A	Synthetic immune signalling set A	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+GOCC	SYN_GOCC_SIGNAL_B	Synthetic immune signalling set B	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+GOCC	SYN_GOCC_SIGNAL_C	Synthetic immune signalling set C	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+GOCC	SYN_GOCC_STRESS_A	Synthetic stress adaptation set A	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+GOCC	SYN_GOCC_STRESS_B	Synthetic stress adaptation set B	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+GOCC	SYN_GOCC_STRESS_C	Synthetic stress adaptation set C	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+GOCC	SYN_GOCC_PROLIF_A	Synthetic proliferation set A	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+GOCC	SYN_GOCC_PROLIF_B	Synthetic proliferation set B	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+GOCC	SYN_GOCC_PROLIF_C	Synthetic proliferation set C	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+GOCC	SYN_GOCC_MATRIX_A	Synthetic matrix remodelling set A	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+GOCC	SYN_GOCC_MATRIX_B	Synthetic matrix remodelling set B	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+GOCC	SYN_GOCC_MATRIX_C	Synthetic matrix remodelling set C	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+PATHWAYS	SYN_PATHWAYS_SIGNAL_A	Synthetic immune signalling set A	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+PATHWAYS	SYN_PATHWAYS_SIGNAL_B	Synthetic immune signalling set B	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+PATHWAYS	SYN_PATHWAYS_SIGNAL_C	Synthetic immune signalling set C	SYNTHETIC_SAMPLE	SYN_SIGNAL	Synthetic immune signalling	custom
+PATHWAYS	SYN_PATHWAYS_STRESS_A	Synthetic stress adaptation set A	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+PATHWAYS	SYN_PATHWAYS_STRESS_B	Synthetic stress adaptation set B	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+PATHWAYS	SYN_PATHWAYS_STRESS_C	Synthetic stress adaptation set C	SYNTHETIC_SAMPLE	SYN_STRESS	Synthetic stress adaptation	custom
+PATHWAYS	SYN_PATHWAYS_PROLIF_A	Synthetic proliferation set A	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+PATHWAYS	SYN_PATHWAYS_PROLIF_B	Synthetic proliferation set B	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+PATHWAYS	SYN_PATHWAYS_PROLIF_C	Synthetic proliferation set C	SYNTHETIC_SAMPLE	SYN_PROLIF	Synthetic proliferation	custom
+PATHWAYS	SYN_PATHWAYS_MATRIX_A	Synthetic matrix remodelling set A	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+PATHWAYS	SYN_PATHWAYS_MATRIX_B	Synthetic matrix remodelling set B	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom
+PATHWAYS	SYN_PATHWAYS_MATRIX_C	Synthetic matrix remodelling set C	SYNTHETIC_SAMPLE	SYN_MATRIX	Synthetic matrix remodelling	custom

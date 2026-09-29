@@ -1,0 +1,190 @@
+---
+title: "Explore a saved report with Shiny"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+vignette: >
+  %\VignetteIndexEntry{Explore a saved report with Shiny}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Use Shiny to browse a completed lisaR report and generate selected figures from
+its saved results. The application does not repeat differential expression,
+GSEA or ORA. It writes generated material to a separate exploration workspace
+and leaves the original scientific report unchanged.
+
+To inspect existing pages and downloads without generating anything, open the
+saved report's `report_index.html` directly. That route needs neither R nor
+Shiny.
+
+## Open the saved analysis
+
+Install the optional application packages once in the R library where lisaR is
+installed:
+
+```{r install-shiny, eval=FALSE}
+install.packages(c("shiny", "callr", "ps"))
+```
+
+`shiny` provides the interface. `callr` runs a figure worker separately so
+you can continue to browse. `ps` supports worker status checks. Some figures
+need further packages or saved inputs; the application reports when one is not
+available for the selected run.
+
+Set `run_dir` to the completed report folder and open it:
+
+```{r open-saved-run, eval=FALSE}
+library(lisaR)
+
+run_dir <- "path/to/your/saved-run"
+explore_lisa_run(run_dir)
+```
+
+After [Quick Start](quick-start.html), you can instead use
+`run_dir <- result$output_dir` in the same R session.
+
+In an environment where R must not launch the browser, use the supported
+option below and open the loopback URL printed by Shiny in the browser
+available to that environment:
+
+```{r open-without-browser-launch, eval=FALSE}
+explore_lisa_run(run_dir, launch.browser = FALSE)
+```
+
+This option leaves the application running while you open its address yourself.
+
+## Choose one exact item
+
+The saved report opens inside a Shiny shell. To reach its figure controls:
+
+1. Open the analysis or contrast, then choose the collection.
+2. Under **Section**, select **Category evidence** and follow **Explore a category**.
+3. Choose the category in the evidence sheet's selector.
+
+For Quick Start, use **Synthetic response A**, **GOBP-C2** and
+**Synthetic immune signalling**. After the custom-dictionary tutorial, use the
+same analysis and collection with **Example of signal response**.
+
+Use **Explore a category** for this route. Clicking a category label in an
+overview graph opens the static evidence page outside the Shiny shell.
+
+Each button names one product. Examples include **Generate volcano**,
+**Generate gene card**, **Generate gene heatmap** and
+**Generate KEGG pathway map**. Contrast pages can show named buttons such as
+**Generate paired gene heatmap** or **Generate gene-category network**.
+
+Where a product has another selector, choose one exact value before pressing
+its button. For a gene figure, check the gene. For a heatmap, check the offered
+scale. For a native KEGG map, check both the pathway name and identifier.
+Changing a selection, opening a category or searching for a gene does not
+generate a figure.
+
+A native KEGG map also requires an authorised immutable local snapshot and
+the corresponding saved run information. KEGG-derived TERM2GENE membership
+can support enrichment but does not supply a native pathway diagram. See
+[Resources and provenance](resources-and-provenance.html).
+
+## Generate the figure and follow its state
+
+Press the named **Generate** button once. The request moves through the states
+that apply to it:
+
+| State | What it means |
+|---|---|
+| `ungenerated` | No request has been submitted for this figure. |
+| `queued` | The request is saved and waiting for the single figure-worker slot. |
+| `running` | A separate R worker is producing this figure from saved results. |
+| `available` | The generated files passed their checks and can be reused. |
+| `not_applicable` | The saved run lacks an input or condition required by this product. |
+| `failed` | The request ended without an available figure; read its message. |
+
+A second background figure request can remain `queued` behind the one that is
+`running`. You do not need to close the report while it waits. Generating a
+figure is presentation work over saved results, not a new enrichment analysis.
+
+## Inspect, download and reuse the result
+
+When the state is `available`, inspect the image in the same category sheet.
+Use whichever PNG, PDF, source-data or R-script download links that product
+actually provides. Keep the source data and settings with a downloaded recipe.
+
+Reopening the same saved analysis reuses a generated figure while its source
+run, settings and files still validate. Opening the report never generates a
+missing figure automatically.
+
+## Resolve unavailable or failed requests
+
+`not_applicable` is a product-availability result, not a negative biological
+finding. Read the explanation. For example, a gene heatmap may need a saved
+expression matrix, while a native KEGG map needs the authorised snapshot
+described above. Other saved report sections remain available.
+
+For a `failed` request, keep its message and correct the named input, package
+or resource outside the immutable source run. The same named **Generate**
+button becomes available again; there is no separate **Retry** button.
+
+## Cancel a figure through the advanced R API
+
+The Shiny shell has no visible per-figure cancel button. If you submit figures
+through R, keep the workspace and the `job_id` returned by
+`lisa_explore_submit()`:
+
+```{r cancel-figure-api, eval=FALSE}
+ws <- lisa_explore_open(run_dir)
+request <- lisa_figure_request(
+  unit_type = "single_de",
+  analysis_id = "response_a",
+  collection = "GOBP-C2",
+  category_id = "SYN_SIGNAL",
+  product = "volcano"
+)
+job <- lisa_explore_submit(ws, request, background = TRUE)
+
+lisa_explore_status(ws)
+lisa_explore_cancel(ws, job$job_id)
+```
+
+The identifiers above belong to the synthetic sample project. Use IDs from
+your saved report for another study.
+
+A background request can queue behind another figure. A foreground API request
+can instead be refused with an instruction to wait or submit it in the
+background. Follow that message rather than restarting R.
+
+A queued job is cancelled immediately and recorded as `failed` with the
+cancellation reason. A running worker records the request, continues until its
+next safe point and only then reaches a terminal `failed` state. Do not close
+or stop the process to force cancellation. This API route is separate from the
+export control below.
+
+## Save an expanded report
+
+1. In **Save expanded report to**, enter a new folder outside the original
+   report. The destination must not already exist.
+2. Press **Save expanded report**.
+3. Wait while the toolbar shows **Export queued** or **Export running**. Continue
+   only when it reports **Saved expanded report to** the chosen destination.
+4. Copy or zip the whole new folder. At the destination, open its
+   `report_index.html` and keep every subfolder with it.
+
+The export takes a snapshot of figures that are `available` when saving
+begins. It does not generate queued, running or ungenerated figures. If a
+figure worker prevents the export from starting, wait for the displayed figure
+state to finish, then press **Save expanded report** again.
+
+If the toolbar reports **Export failed**, keep the message and do not move a
+partial staging folder. Correct the named problem and choose a new destination
+before trying again.
+
+Use **Cancel export** only for an export that is queued or running. A queued
+export cancels immediately. A running export stops at its next safe point, so
+wait for the displayed terminal message before closing R.
+
+The expanded folder contains the original report and the available figures
+captured by that export. It opens without R or Shiny, with working figures and
+downloads but no live generation controls. See
+[Read and share a saved report](scientific-report.html) for navigation.

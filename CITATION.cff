@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use lisaR, please cite this software and the scientific resources used in your analysis."
+type: software
+title: "lisaR: LLM-Inferred Semantic Annotation Pipeline"
+authors:
+  - family-names: "Olmeda Casadomé"
+    given-names: "David"
+    orcid: "https://orcid.org/0000-0001-5513-5621"
+version: 1.0.0
+date-released: 2026-09-29
+license: GPL-3.0-or-later
+repository-code: "https://github.com/DBM-OlmedaLab/lisaR"
+url: "https://github.com/DBM-OlmedaLab/lisaR"

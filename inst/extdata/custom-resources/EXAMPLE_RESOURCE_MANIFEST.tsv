@@ -1,0 +1,4 @@
+logical_id	version	species	modality	schema	sha256	compatibility	approved_origin	artifact
+lisa_dictionary_custom_example	1.0.0	Homo sapiens	transcriptomic/genomic	lisa_dictionary@2	2f1b4161824e700f8252374dd3f878088ae89f54d7f384d16a712000e1de7026	lisaR>=0.6.0	Bundled synthetic compatibility example; lisa_dictionary@2 contract (no LISA_score column)	lisa_dictionary_custom_example_v1_0.tsv
+lisa_example_custom_category_map	1.0.0	Homo sapiens	transcriptomic/genomic	category_map@1	d785166c1ffc36c923a6af941210b9b29741eefdb66f73aaa90166dda054809b	lisaR>=0.6.0	Bundled synthetic compatibility example reviewed with lisaR 0.6.0	example_custom_category_map.tsv
+lisa_example_custom_term2gene	1.0.0	Homo sapiens	transcriptomic/genomic	term2gene@1	6d5c5cc820ea00349d4899b1e673f6fff9156417acb965c8b6cc39751ce86660	lisaR>=0.6.0	Bundled synthetic compatibility example reviewed with lisaR 0.6.0	example_custom_term2gene.tsv

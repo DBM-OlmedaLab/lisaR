@@ -1,0 +1,156 @@
+---
+title: "Licence, attribution and citation"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Licence, attribution and citation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Before sharing lisaR, a resource or a report, identify which material you are
+sharing. The software licence, fixed LISA annotations, third-party scientific
+resources and your own study material have different notices and conditions.
+One licence does not replace the others.
+
+Where a report presents category-level adjusted P and minimum supported d/N,
+its methods use robust Hommel closed testing. Cite Goeman et al. (2019),
+*Biometrika* 106, 841–856,
+[doi:10.1093/biomet/asz041](https://doi.org/10.1093/biomet/asz041), alongside
+the study's data and gene-set resource sources. This method attribution does
+not replace provider licences or justify biological claims beyond the saved
+analysis.
+
+## Identify the material
+
+| Material | Where its conditions come from | What to keep with it |
+|---|---|---|
+| lisaR code, documentation and synthetic fixtures | `DESCRIPTION` and `inst/COPYING` | Package name and version, GPL-3.0-or-later notice, copyright holder, author and corresponding source obligations when distributing covered copies. |
+| Fixed LISA dictionaries and category map in this candidate | Installed resource manifest, provenance and third-party notices | Exact resource IDs, SHA-256 records, LISA/CSIC notice and applicable MSigDB, KEGG or BioCarta attribution. |
+| External TERM2GENE memberships and native pathway material | The provider's current terms and the recipient's authorised acquisition route | Provider attribution, exact release or snapshot identity and any collection-specific notices. |
+| R package dependencies | Each dependency's own licence | The notices and sources required for the form in which you distribute them. |
+| Your input data and generated report | Your data source, consent/governance, study agreements and incorporated resources | Study citations, data provenance, resource inventory and any provider notices that apply to included material. |
+
+This guide reports the notices installed with lisaR. It does not create a new
+permission or settle whether a particular dataset or report may be distributed.
+
+## Share the lisaR software under its licence
+
+`DESCRIPTION` records `License: GPL (>= 3)`, corresponding to
+GPL-3.0-or-later. The copyright holder is the Agencia Estatal Consejo Superior
+de Investigaciones Científicas (CSIC), and the author is David Olmeda Casadomé.
+The complete GPL text is installed as `COPYING`.
+
+The licence covers lisaR code, documentation and original synthetic fixtures.
+When you distribute a covered copy or modification, retain the licence and
+copyright notice and meet the corresponding-source obligations for that form
+of distribution. The GPL does not grant rights in external scientific
+resources.
+
+Source and issue access are identified in the package metadata:
+[DBM-OlmedaLab/lisaR](https://github.com/DBM-OlmedaLab/lisaR).
+
+## Retain the fixed-annotation notices
+
+lisaR includes the exact
+`lisa_dictionary_core@1.0.0`,
+`lisa_dictionary_expanded@1.0.0` and
+`lisa_category_map@1.0.0` resources. They record fixed
+gene-set-to-category assignments and category organisation, not external gene
+memberships.
+
+The installed provenance records the CSIC/LISA annotations and retains
+MSigDB, KEGG and BioCarta attribution where their identifiers occur.
+The resource manifest identifies the bundled annotations and their
+source-specific conditions. Do not treat `GPL-3.0-or-later` as permission to
+redistribute third-party memberships or diagrams.
+
+The installed third-party notice records that MSigDB identifies KEGG MEDICUS
+content as CC BY-SA 4.0 and describes one-way compatibility from CC BY-SA 4.0
+to GPLv3 for adapted material. That compatibility does not remove MSigDB or
+KEGG attribution and does not replace collection-specific conditions.
+
+The current technical reconstruction is tied to MSigDB 2026.1 through
+`msigdbr` 26.1.0. The original historical model-assisted annotation retrieval
+release is unrecorded. These are separate provenance facts. See
+[How LISA dictionaries were built](dictionary-construction.html) for the
+source-backed history and its limits.
+
+## Keep external resources under their own terms
+
+| External material | Installed notice |
+|---|---|
+| MSigDB identifiers or TERM2GENE memberships | Retain Molecular Signatures Database attribution and the applicable collection-specific conditions. Review the [MSigDB licence terms](https://www.gsea-msigdb.org/gsea/msigdb_license_terms.jsp). |
+| KEGG MEDICUS or KEGG LEGACY identifiers, KGML or pathway images | Retain MSigDB and KEGG attribution where applicable and review the [KEGG copyright and licence information](https://www.kegg.jp/kegg/legal.html). A user-authorised cache snapshot is not part of the lisaR software licence. |
+| BioCarta identifiers or memberships | Retain MSigDB and BioCarta acknowledgement and disclaimer conditions linked from the MSigDB terms. |
+
+The MSigDB preparation helper asks a recipient to assert acceptance only before
+the supported public acquisition. That assertion permits the call; it does not
+grant a licence, accept terms for another person or confer redistribution
+rights. A recorded resource ID or SHA-256 likewise proves identity, not
+permission.
+
+Dependencies retain their own licences. If you redistribute an installed
+library, container or other combined form, review the actual dependency set and
+the notices required for that distribution. Installing a dependency does not
+replace the terms for scientific content retrieved through it.
+
+## Share a report without changing its rights
+
+Before sending or publishing a lisaR report:
+
+1. Keep the report's configuration, input provenance,
+   `resource_inventory.tsv`, `config/resource_resolution.tsv` and manifest.
+2. Identify the lisaR package version and the source commit or archive used.
+3. Retain the study and dataset citations required by their sources.
+4. Retain the MSigDB, KEGG, BioCarta or other provider attribution that applies
+   to memberships, identifiers, maps or derived figures in the report.
+5. Check whether your agreements permit you to distribute the underlying data,
+   external resources and generated material to the intended recipients.
+
+lisaR does not place a new licence on a user's input data merely by processing
+it. Conversely, generating an HTML page or figure does not remove conditions
+attached to incorporated data or third-party resources.
+
+## Cite the installed software and scientific sources
+
+Inspect the citation generated from the exact installed package metadata:
+
+```{r cite-lisar, eval=FALSE}
+citation("lisaR")
+packageDescription("lisaR")[
+  c("Package", "Version", "Date", "URL", "Author")
+]
+```
+
+Cite the version used in your analysis. For this release, R derives the software
+citation from the installed package metadata.
+
+Cite the study data and analytical methods used in your work. For external
+gene-set resources, follow the provider's current citation instructions and
+record the exact release used. The installed resource provenance names
+Molecular Signatures Database, Liberzon et al. and Subramanian et al.; consult
+the provider material for the complete citations appropriate to your selected
+release and collections.
+
+## Locate the exact installed notices
+
+Use the installed paths rather than copying notices from another lisaR version:
+
+```{r locate-licence-notices, eval=FALSE}
+system.file("COPYING", package = "lisaR")
+system.file("THIRD_PARTY_NOTICES.md", package = "lisaR")
+system.file(
+  "extdata", "dictionaries", "RESOURCE_PROVENANCE.tsv",
+  package = "lisaR"
+)
+```
+
+Read those files before redistribution. If the status or terms of material you
+intend to share remain ambiguous, keep that material private until the relevant
+rights holder or institutional process resolves the question.

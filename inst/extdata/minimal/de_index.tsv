@@ -1,0 +1,3 @@
+analysis_id	de_path	species	symbol_col	logfc_col	padj_col
+example_A	de_A.tsv	Homo sapiens	symbol	log2FC	padj
+example_B	de_B.tsv	Homo sapiens	symbol	log2FC	padj

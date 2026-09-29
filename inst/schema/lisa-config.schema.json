@@ -1,0 +1,743 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/DBM-OlmedaLab/lisaR/schemas/config/1.0.0",
+  "title": "lisaR study configuration 1.0.0",
+  "description": "Configuration contract for lisaR 1.0. Schema version is independent of the numeric R package version and scientific resource versions. Older configurations require explicit migration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pipeline",
+    "single_de"
+  ],
+  "properties": {
+    "pipeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "profile",
+        "evidence_mode",
+        "output_dir",
+        "duplicate_policies"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "profile": {
+          "enum": [
+            "transcriptomic/genomic",
+            "global proteomic",
+            "targeted",
+            "custom"
+          ]
+        },
+        "evidence_mode": {
+          "enum": [
+            "full_de",
+            "rank_only",
+            "effect_only",
+            "custom"
+          ]
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "required_columns"
+          ],
+          "properties": {
+            "required_columns": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "effect",
+                  "significance",
+                  "rank"
+                ]
+              }
+            },
+            "products": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            }
+          }
+        },
+        "output_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workers": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "gsea_padj_cutoff": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.25
+        },
+        "base_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dictionary_resource": {
+          "type": "string",
+          "minLength": 1
+        },
+        "term2gene_resource": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category_map_resource": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lisa_dictionary": {
+          "enum": [
+            "core",
+            "expanded"
+          ]
+        },
+        "file_label_prefix": {
+          "$ref": "#/$defs/portableId"
+        },
+        "run_kegg_maps": {
+          "type": "boolean"
+        },
+        "run_ora": {
+          "type": "boolean",
+          "default": false
+        },
+        "kegg_access_mode": {
+          "enum": [
+            "external",
+            "cache_only"
+          ]
+        },
+        "kegg_cache_root": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kegg_snapshot_id": {
+          "$ref": "#/$defs/portableId"
+        },
+        "run_hallmarks": {
+          "type": "boolean"
+        },
+        "pathways_category_display": {
+          "const": "all"
+        },
+        "kegg_map_selection": {
+          "const": "significant_only"
+        },
+        "report_title": {
+          "type": "string"
+        },
+        "dry_run": {
+          "type": "boolean"
+        },
+        "resume": {
+          "type": "boolean"
+        },
+        "run_id": {
+          "$ref": "#/$defs/portableId"
+        },
+        "sufficiency_action": {
+          "enum": [
+            "warn",
+            "error",
+            "ignore_with_reason"
+          ]
+        },
+        "sufficiency_ignore_reason": {
+          "type": "string"
+        },
+        "duplicate_policies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "de_table_duplicate_policy",
+            "matrix_duplicate_policy",
+            "mapped_id_collision_policy"
+          ],
+          "properties": {
+            "de_table_duplicate_policy": {
+              "$ref": "#/$defs/duplicatePolicy"
+            },
+            "matrix_duplicate_policy": {
+              "$ref": "#/$defs/duplicatePolicy"
+            },
+            "mapped_id_collision_policy": {
+              "$ref": "#/$defs/duplicatePolicy"
+            }
+          }
+        },
+        "cache_dir": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "cache_mode": {
+          "enum": [
+            "off",
+            "readwrite",
+            "readonly",
+            "refresh"
+          ],
+          "default": "off"
+        },
+        "cache_max_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991,
+          "default": 536870912
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "cache_mode"
+            ],
+            "properties": {
+              "cache_mode": {
+                "enum": [
+                  "readwrite",
+                  "readonly",
+                  "refresh"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "cache_dir"
+            ],
+            "properties": {
+              "cache_dir": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "evidence_mode": {
+                "const": "custom"
+              }
+            },
+            "required": [
+              "evidence_mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "evidence"
+            ]
+          }
+        }
+      ]
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "output_dir": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "full",
+            "standard"
+          ],
+          "default": "standard"
+        },
+        "formats": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "png": {
+              "type": "boolean",
+              "default": true
+            },
+            "svg": {
+              "type": "boolean",
+              "default": false
+            },
+            "pdf": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "source_data": {
+          "type": "boolean",
+          "default": true
+        },
+        "recipes": {
+          "type": "boolean",
+          "default": false
+        },
+        "category_evidence": {
+          "type": "boolean",
+          "default": true
+        },
+        "category_nes_variants": {
+          "type": "array",
+          "description": "Select one to four distinct category NES views for individual analyses and contrasts. clean retains the original mean and support; percentages adds point-adjacent directional percentages; direction adds median; dispersion also adds P25-P75. All views preserve supercategories. At least one is required; omission selects all four. Rendering respects report.formats.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "clean",
+              "percentages",
+              "direction",
+              "dispersion"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "default": [
+            "clean",
+            "percentages",
+            "direction",
+            "dispersion"
+          ]
+        },
+        "legacy_gene_products": {
+          "type": "boolean",
+          "default": false
+        },
+        "evidence_max_sets": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 25
+        },
+        "evidence_max_genes": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 40
+        }
+      }
+    },
+    "collections": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "GOBP-C2",
+          "GOMF",
+          "GOCC",
+          "PATHWAYS",
+          "HALLMARKS"
+        ]
+      },
+      "default": [
+        "GOBP-C2",
+        "GOMF",
+        "GOCC",
+        "PATHWAYS",
+        "HALLMARKS"
+      ],
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "single_de": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/singleAnalysis"
+      }
+    },
+    "contrasts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/contrast"
+      }
+    },
+    "source_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "anyOf": [
+          {
+            "required": [
+              "path"
+            ]
+          },
+          {
+            "required": [
+              "source_path"
+            ]
+          }
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string"
+          },
+          "source_role": {
+            "type": "string"
+          },
+          "target_subdir": {
+            "$ref": "#/$defs/portableId"
+          },
+          "allowlisted_paths": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        }
+      }
+    },
+    "allowlisted_source_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "source_data"
+        ],
+        "properties": {
+          "source_data": {
+            "minItems": 1
+          }
+        }
+      },
+      "then": {
+        "anyOf": [
+          {
+            "required": [
+              "allowlisted_source_paths"
+            ],
+            "properties": {
+              "allowlisted_source_paths": {
+                "minItems": 1
+              },
+              "source_data": {
+                "items": {
+                  "properties": {
+                    "allowlisted_paths": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "source_data": {
+                "items": {
+                  "required": [
+                    "allowlisted_paths"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "portableId": {
+      "type": "string",
+      "description": "Portable ASCII technical identifier. Human-facing Unicode belongs in a separate label or title field.",
+      "pattern": "^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9_-])?$",
+      "not": {
+        "pattern": "^([Cc][Oo][Nn]|[Pp][Rr][Nn]|[Aa][Uu][Xx]|[Nn][Uu][Ll]|[Cc][Oo][Mm][1-9]|[Ll][Pp][Tt][1-9])([.]|$)"
+      }
+    },
+    "duplicatePolicy": {
+      "oneOf": [
+        {
+          "enum": [
+            "error"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "select",
+                "aggregate",
+                "mapping_file"
+              ]
+            },
+            "criterion": {
+              "enum": [
+                "min_padj",
+                "max_abs_rank",
+                "max_quality",
+                "min",
+                "max",
+                "min_abs",
+                "max_abs"
+              ]
+            },
+            "tie_breaker": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "column"
+                  ],
+                  "properties": {
+                    "column": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              ]
+            },
+            "column": {
+              "type": "string",
+              "minLength": 1
+            },
+            "numeric_method": {
+              "enum": [
+                "mean",
+                "sum",
+                "median",
+                "min",
+                "max"
+              ]
+            },
+            "non_numeric_method": {
+              "enum": [
+                "constant",
+                "collapse"
+              ]
+            },
+            "mapping_file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_row_col": {
+              "type": "string",
+              "minLength": 1
+            },
+            "output_id_col": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "singleAnalysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysis_id",
+        "de_path",
+        "species"
+      ],
+      "properties": {
+        "analysis_id": {
+          "$ref": "#/$defs/portableId"
+        },
+        "de_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "species": {
+          "enum": [
+            "Homo sapiens",
+            "Mus musculus"
+          ]
+        },
+        "symbol_col": {
+          "type": "string"
+        },
+        "rank_col": {
+          "type": "string"
+        },
+        "logfc_col": {
+          "type": "string"
+        },
+        "pvalue_col": {
+          "type": "string"
+        },
+        "padj_col": {
+          "type": "string"
+        },
+        "gene_id_col": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "comparison": {
+          "type": "string"
+        },
+        "positive_direction": {
+          "type": "string"
+        },
+        "model_note": {
+          "type": "string"
+        },
+        "msigdb_mode": {
+          "type": "string"
+        },
+        "term2gene_target_species": {
+          "type": "string"
+        },
+        "matrix_path": {
+          "type": "string"
+        },
+        "expression_matrix_path": {
+          "type": "string"
+        },
+        "counts_matrix_path": {
+          "type": "string"
+        },
+        "vst_matrix_path": {
+          "type": "string"
+        },
+        "normalized_matrix_path": {
+          "type": "string"
+        },
+        "tpm_matrix_path": {
+          "type": "string"
+        },
+        "expression_matrix": {
+          "type": "string"
+        },
+        "counts_matrix": {
+          "type": "string"
+        },
+        "vst_matrix": {
+          "type": "string"
+        },
+        "normalized_matrix": {
+          "type": "string"
+        },
+        "tpm_matrix": {
+          "type": "string"
+        },
+        "sample_counts_path": {
+          "type": "string"
+        },
+        "sample_counts": {
+          "type": "string"
+        },
+        "matrix_id_col": {
+          "type": "string"
+        },
+        "matrix_feature_col": {
+          "type": "string"
+        },
+        "sample_include_regex": {
+          "type": "string"
+        },
+        "heatmap_sample_include_regex": {
+          "type": "string"
+        },
+        "sample_exclude_regex": {
+          "type": "string"
+        },
+        "heatmap_sample_exclude_regex": {
+          "type": "string"
+        },
+        "mapped_id_path": {
+          "type": "string"
+        },
+        "mapped_id_col": {
+          "type": "string"
+        },
+        "source_id_col": {
+          "type": "string"
+        }
+      }
+    },
+    "contrast": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contrast_id",
+        "analysis_a",
+        "analysis_b"
+      ],
+      "properties": {
+        "contrast_id": {
+          "$ref": "#/$defs/portableId"
+        },
+        "output_id": {
+          "$ref": "#/$defs/portableId"
+        },
+        "analysis_a": {
+          "type": "string"
+        },
+        "analysis_b": {
+          "type": "string"
+        },
+        "contrast_label": {
+          "type": "string"
+        },
+        "comparison": {
+          "type": "string"
+        },
+        "positive_direction": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

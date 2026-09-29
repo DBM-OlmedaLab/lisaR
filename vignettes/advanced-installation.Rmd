@@ -1,0 +1,134 @@
+---
+title: "Installation details"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Installation details}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+For the ordinary installation, start with [Install lisaR](installation.html).
+This page keeps the optional dependencies and installation diagnostics.
+You need **R 4.1 or later**. RStudio is optional, but the steps below work in
+its Console.
+
+If you only need to read a portable HTML report, you do not need R. Keep the
+report folder and its relative files together.
+
+lisaR is installed from its GitHub repository. The installation includes the
+LISA dictionaries and the synthetic sample project used in Quick Start.
+
+## Install the required packages
+
+Run this once in R with internet access. `BiocManager` installs `fgsea` from a
+Bioconductor release that is compatible with your R version, together with the
+required CRAN packages.
+
+```{r installation-dependencies, eval=FALSE}
+install.packages(c("BiocManager", "remotes"))
+BiocManager::install(
+  c("digest", "fgsea", "fs", "ggplot2", "hommel", "jsonlite", "openxlsx", "readr", "yaml"),
+  update = FALSE,
+  ask = FALSE
+)
+```
+
+The required `hommel` version is at least 1.8; the installer resolves this from
+`DESCRIPTION`. Base and recommended Imports come with R. Install extra packages
+only for the route you intend to use:
+
+| Route | Additional packages |
+|---|---|
+| Shiny application with background figure jobs | `shiny`, `callr`, `ps` |
+| Prepared Riaz project | `data.table` |
+| Gene-level figures and FULL cards | `ggrepel`, `gridExtra`, `patchwork` |
+| Native KEGG maps | `AnnotationDbi`, `KEGGREST`, `png`, plus `org.Hs.eg.db` for human or `org.Mm.eg.db` for mouse |
+| Reconstructing Riaz upstream inputs | `data.table`, `readxl`, `DESeq2`, `AnnotationDbi`, `org.Hs.eg.db`, `SummarizedExperiment` |
+| Building these HTML vignettes from source | `knitr`, `rmarkdown`, plus Pandoc outside R |
+
+Use the same `BiocManager::install()` form for these packages. For example,
+install `data.table` before using the prepared Riaz project. Later,
+`validate_lisa_config()` will report packages needed by the analysis and
+report products you selected.
+
+## Install lisaR from GitHub
+
+In R or the RStudio Console, run:
+
+```{r install-github, eval=FALSE}
+remotes::install_github(
+  "DBM-OlmedaLab/lisaR",
+  upgrade = "never",
+  build_vignettes = FALSE
+)
+```
+
+This installs the package and its included resources in one step. You do not
+need to locate a separate source archive or install lisaR again to load its
+dictionaries. Ordinary installation does not rebuild the vignettes.
+
+The source package includes the LISA dictionaries, category hierarchy and
+synthetic sample project. It does **not** include the external MSigDB
+TERM2GENE membership needed for a real study. Preparing that membership is a
+separate step in [Resources and provenance](resources-and-provenance.html).
+
+Source and release status are listed at
+[DBM-OlmedaLab/lisaR](https://github.com/DBM-OlmedaLab/lisaR). Repository access
+may remain restricted before publication. If GitHub reports that the repository
+is unavailable, check your access with the project owner. Do not paste access
+tokens into a chat or into this code.
+
+## Check that R loads the installed copy
+
+Restart R if another lisaR version is already loaded, then run:
+
+```{r confirm-installation, eval=FALSE}
+library(lisaR)
+packageVersion("lisaR")
+find.package("lisaR")
+system.file("extdata", "dictionaries", package = "lisaR")
+system.file("examples", "quick-start", "study.yml", package = "lisaR")
+```
+
+`packageVersion()` identifies the installed package. `find.package()` shows
+the R library from which it was loaded. If these checks complete, continue
+with [Quick Start](quick-start.html). That synthetic project contains every
+input needed for a first report and does not require MSigDB access.
+
+For a real study, continue to
+[Prepare differential-expression inputs](preparing-de-inputs.html), then
+[run lisaR with your prepared files](getting-started.html).
+
+## Read the guides
+
+The installation above does not rebuild HTML vignettes. Read the
+[guides online](https://olmedalab.org/lisaR/en/#guides), where each guide also
+has a PDF download. You can open the Quick Start directly from R:
+
+```{r open-online-guide, eval=FALSE}
+browseURL("https://olmedalab.org/lisaR/reader/quick-start.html?lang=en")
+```
+
+The source files are in the repository's `vignettes/` directory, in `.Rmd`
+format. `vignette()` lists compiled HTML only when the package was built with
+vignettes. You do not need those HTML files or another installation to run the
+examples.
+
+## If installation fails
+
+| Message or problem | Action |
+|---|---|
+| A package dependency is missing | Run the dependency step in the same R library, then install lisaR again. |
+| R and Bioconductor versions are incompatible | Select the Bioconductor release supported by the active R version. |
+| A source dependency requires compilation | Install the platform's R build tools: Rtools on Windows, the command-line tools on macOS, or the appropriate compiler packages on Linux. |
+| Pandoc is missing during a vignette build | Use the Pandoc supplied by RStudio or install it before rebuilding documentation. Pandoc is not needed for an ordinary lisaR analysis. |
+| An older lisaR version still appears | Restart R and check the library returned by `find.package("lisaR")`. |
+
+See [Troubleshooting](troubleshooting.html) for configuration and execution
+errors after installation.

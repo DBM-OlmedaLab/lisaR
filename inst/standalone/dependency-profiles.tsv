@@ -1,0 +1,26 @@
+package	manager	profile	reason
+digest	CRAN	core	SHA-256 integrity
+fgsea	Bioconductor	core	gene-set enrichment
+fs	CRAN	core	no-follow filesystem boundary checks
+ggplot2	CRAN	core	standard LISA figures
+hommel	CRAN	core	robust simultaneous LISA category inference
+jsonlite	CRAN	core	configuration and manifests
+openxlsx	CRAN	core	XLSX tables and report workbooks
+readr	CRAN	core	pinned canonical TSV byte output
+yaml	CRAN	core	YAML configuration
+AnnotationDbi	Bioconductor	full	KEGG gene annotation
+data.table	CRAN	full	Riaz input tables
+DESeq2	Bioconductor	full	Riaz differential-expression models
+ggrepel	CRAN	full	gene labels in volcano plots
+gridExtra	CRAN	full	gene-card layout
+KEGGREST	Bioconductor	full	optional KEGG retrieval
+knitr	CRAN	full	vignette rendering
+msigdbr	CRAN	full	optional TERM2GENE export
+org.Hs.eg.db	Bioconductor	full	human gene annotation
+org.Mm.eg.db	Bioconductor	full	mouse gene annotation
+patchwork	CRAN	full	gene-card layout
+png	CRAN	full	optional KEGG images
+readxl	CRAN	full	Riaz supplementary spreadsheets
+rmarkdown	CRAN	full	vignette rendering
+SummarizedExperiment	Bioconductor	full	Riaz model diagnostics
+testthat	CRAN	validation	package validation tests

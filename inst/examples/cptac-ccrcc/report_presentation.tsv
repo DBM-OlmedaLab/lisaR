@@ -1,0 +1,3 @@
+role	id	label	description
+study	cptac	CPTAC ccRCC — tumor versus adjacent non-tumoral tissue	Paired global proteomics of clear cell renal cell carcinoma.
+analysis	cptac_ccrcc_tumor_minus_nat	ccRCC tumor vs adjacent non-tumoral tissue	80 paired tumors and adjacent non-tumoral renal tissues. Positive log2 fold changes indicate greater abundance in tumor; adjacent tissue is not from healthy donors.

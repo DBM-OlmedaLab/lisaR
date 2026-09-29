@@ -1,0 +1,207 @@
+/* Copyright (C) 2026 Agencia Estatal Consejo Superior de Investigaciones
+   Científicas (CSIC). Author: David Olmeda Casadomé.
+   This file is part of lisaR, free software under the GNU General Public
+   License version 3 (GPL-3). See the DESCRIPTION file and
+   <https://www.gnu.org/licenses/gpl-3.0.html>. */
+
+/* Shared chrome only. Scientific plots retain their own red/blue scales. */
+:root { --lisa-shell-height: 211px; }
+body.lisa-shell-page {
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  color: #202a35;
+  background: #f8f9fb;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.lisa-shared-shell, .lisa-shared-shell * { box-sizing: border-box; }
+.lisa-shared-shell {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  color: #202a35;
+  background: #fff;
+  border: 0;
+  border-bottom: 2px solid #b94e4a;
+  box-shadow: 0 2px 7px rgb(27 39 50 / 5%);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.lisa-shell-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 132px;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 2px 24px;
+}
+.lisa-shell-brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 9px;
+  color: #202a35;
+  font-size: 20px;
+  font-weight: 750;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.lisa-shell-brand picture { display: block; line-height: 0; }
+.lisa-shell-brand img { display: block; width: 410px; height: 128px; max-width: none; object-fit: contain; }
+.lisa-shell-brand-short { display: none; }
+.lisa-shell-nav { display: flex; flex-wrap: wrap; gap: 3px 5px; margin-left: auto; }
+.lisa-shell-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 8px 11px;
+  color: #354353;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 1.3;
+  text-decoration: none;
+}
+.lisa-shell-nav a:hover { background: #f0f2f5; color: #14202c; }
+.lisa-shell-nav a[aria-current] {
+  color: #14202c;
+  background: #e9edf1;
+  border-color: #acb7c4;
+  font-weight: 700;
+}
+.lisa-shell-menu {
+  display: none;
+  min-height: 42px;
+  margin-left: auto;
+  padding: 8px 13px;
+  color: #202a35;
+  background: #fff;
+  border: 1px solid #acb7c4;
+  border-radius: 5px;
+  font: inherit;
+  cursor: pointer;
+}
+.lisa-shell-explorer {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.6fr) minmax(150px, .7fr) minmax(190px, 1fr);
+  align-items: end;
+  gap: 8px 16px;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 24px 8px;
+}
+.lisa-shell-picker { display: grid; min-width: 0; gap: 3px; color: #435465; font-size: 11px; font-weight: 650; }
+.lisa-shell-picker select {
+  width: 100%; min-width: 0; min-height: 34px; padding: 5px 27px 5px 9px;
+  border: 1px solid #adb9c3; border-radius: 5px; color: #172a39; background: #fff;
+  font: 550 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-overflow: ellipsis; cursor: pointer;
+}
+.lisa-shell-picker select:focus-visible { outline: 3px solid #52677e; outline-offset: 2px; }
+.lisa-shell-picker select:disabled { cursor: default; color: #6d7983; background: #f6f7f8; }
+.lisa-shell-location {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+.lisa-shared-shell[data-navigation-ready="true"]:not([data-navigation-aggregate="true"]) [data-lisa-context-field="analysis"],
+.lisa-shared-shell[data-navigation-ready="true"]:not([data-navigation-aggregate="true"]) [data-lisa-context-field="collection"] { display: none; }
+.lisa-shared-shell[data-navigation-ready="true"] .lisa-shell-context { padding-bottom: 6px; }
+.lisa-shell-context {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 24px 10px;
+  color: #243341;
+  font-size: 13px;
+}
+.lisa-shell-context-fields { display: flex; flex-wrap: wrap; gap: 4px 16px; min-width: 0; }
+.lisa-shell-context-field { overflow-wrap: anywhere; }
+.lisa-shell-context-label { color: #566474; font-weight: 450; }
+.lisa-shell-context [data-lisa-context="analysis"],
+.lisa-shell-context [data-lisa-context="selection"] { font-weight: 650; }
+.lisa-shell-identifiers { margin: 0; color: #566474; font-size: 12px; }
+.lisa-shell-identifiers summary { cursor: pointer; padding: 3px 0; }
+.lisa-shell-identifiers dl { margin: 5px 0 0; max-height: 180px; overflow-y: auto; }
+.lisa-shell-identifiers dl > div { display: flex; flex-wrap: wrap; gap: 3px 8px; }
+.lisa-shell-identifiers dt { font-weight: 650; }
+.lisa-shell-identifiers dd { margin: 0; overflow-wrap: anywhere; }
+.lisa-shell-identifiers code { color: inherit; background: transparent; font-size: 12px; }
+.lisa-shell-main { box-sizing: border-box; max-width: 1680px; margin: 0 auto; padding: 24px; }
+.lisa-shell-page [id], .lisa-shell-page :focus {
+  scroll-margin-top: calc(var(--lisa-shell-height) + 16px);
+}
+.lisa-shell-skip {
+  position: fixed;
+  z-index: 1000;
+  top: 8px;
+  left: 12px;
+  transform: translateY(-180%);
+  padding: 10px 16px;
+  color: #fff;
+  background: #202a35;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  font: 600 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-decoration: none;
+}
+.lisa-shell-skip:focus { transform: translateY(0); outline: 2px solid #202a35; }
+.lisa-shared-shell a:focus-visible,
+.lisa-shared-shell button:focus-visible,
+.lisa-shared-shell summary:focus-visible { outline: 3px solid #52677e; outline-offset: 2px; }
+.lisa-shared-shell [hidden] { display: none !important; }
+@media (max-width: 760px) {
+  .lisa-shell-bar { flex-wrap: wrap; gap: 4px 14px; padding: 8px 14px; min-height: 58px; }
+  .lisa-shell-brand { font-size: 18px; }
+  .lisa-shell-brand img { width: 362px; height: 113px; }
+  .lisa-shell-nav { flex-basis: 100%; margin: 4px 0 0; padding-top: 4px; border-top: 1px solid #e2e6eb; }
+  .lisa-shell-nav a { flex-grow: 1; justify-content: center; }
+  .lisa-shared-shell[data-menu-ready="true"] .lisa-shell-menu { display: inline-flex; align-items: center; }
+  .lisa-shared-shell[data-menu-ready="true"]:not([data-menu-open="true"]) .lisa-shell-nav { display: none; }
+  .lisa-shell-context { gap: 2px 12px; padding: 0 14px 8px; font-size: 12px; }
+  .lisa-shell-context-fields { gap: 2px 12px; }
+  .lisa-shell-explorer { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px 10px; padding: 0 14px 8px; }
+  .lisa-shell-picker:first-child { grid-column: 1 / -1; }
+  .lisa-shell-picker select { min-height: 36px; font-size: 12px; }
+  .lisa-shell-main { padding: 16px 12px; }
+}
+@media (max-width: 600px) {
+  .lisa-shell-brand img { width: 63px; height: 63px; }
+  .lisa-shell-brand-short { display: inline; font-size: 22px; }
+  .lisa-shell-bar { min-height: 54px; padding-top: 4px; padding-bottom: 4px; }
+}
+@media (max-width: 760px) and (max-height: 480px) {
+  /* Keep navigation available in landscape without covering the data. */
+  .lisa-shell-bar { min-height: 45px; padding-top: 0; padding-bottom: 0; }
+  .lisa-shell-brand img { width: 269px; height: 84px; }
+  .lisa-shell-explorer { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .lisa-shell-picker:first-child { grid-column: auto; }
+  .lisa-shell-picker select { min-height: 30px; }
+  .lisa-shell-context { font-size: 11px; }
+}
+@media (max-width: 600px) and (max-height: 480px) {
+  .lisa-shell-brand img { width: 57px; height: 57px; }
+}
+@media print {
+  .lisa-shared-shell, .lisa-shell-skip { display: none !important; }
+  body.lisa-shell-page { background: #fff; }
+  .lisa-shell-main { max-width: none; margin: 0; padding: 0; }
+}
+.hommel-support-help{max-width:min(760px,90vw);max-height:85vh;padding:24px;border:1px solid #64748b;border-radius:10px;color:#172b3a;background:#fff;line-height:1.55;overflow:auto}
+.hommel-support-help::backdrop{background:rgb(15 23 42 / 55%)}
+.hommel-help-heading{display:flex;justify-content:space-between;align-items:start;gap:24px;position:sticky;top:-24px;background:#fff;padding:12px 0}
+.hommel-help-heading h2{margin:0}.hommel-help-button,.hommel-help-heading button{font:inherit;color:#172b3a;background:#fff;border:1px solid #64748b;border-radius:5px;padding:7px 12px;cursor:pointer}
+.hommel-help-button:focus-visible,.hommel-help-heading button:focus-visible{outline:3px solid #2166ac;outline-offset:3px}
+.hommel-support-summary{padding:16px 20px;margin:16px 0;border:1px solid #cbd5e1;border-left:4px solid #172b3a;border-radius:6px;background:#f8fafc}
+.hommel-support-summary h3{margin-top:0}.hommel-support-statistics{display:flex;flex-wrap:wrap;gap:12px 32px}.hommel-support-statistics dt{font-size:.85em;color:#475569}.hommel-support-statistics dd{margin:4px 0 8px;font-weight:700}
+.hommel-method-reference{font-size:.9em;line-height:1.6}.hommel-support-technical{margin-top:24px;border-top:1px solid #cbd5e1;padding-top:16px}.hommel-support-technical>summary{font-weight:700;cursor:pointer}
+.category-navigator svg[data-hommel-support]{min-width:1740px}

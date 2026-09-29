@@ -1,0 +1,265 @@
+---
+title: "Troubleshooting a lisaR run"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Troubleshooting a lisaR run}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Keep the complete error message and the exact configuration that produced it.
+Use the section matching what you can see, correct the named problem and repeat
+only the failed check or request. Do not edit a completed report to make an
+error disappear.
+
+## Find the failing readiness stage
+
+```{r troubleshooting-readiness, eval=FALSE}
+library(lisaR)
+
+validation <- validate_lisa_config("study.yml", check_files = TRUE)
+validation$readiness
+validation$inputs
+validation$dependencies
+validation$resources
+```
+
+`structural_valid` answers whether the file follows the configuration contract.
+`execution_ready` also requires available inputs, dependencies and resources.
+`check_files = FALSE` is structural prevalidation only. `run_lisa()` performs
+strict validation, so an unknown field is not a setting that can be ignored to
+start execution.
+
+| Symptom | Inspect | Current response |
+|---|---|---|
+| Rejected field or value | Exact field path and schema version | Correct the named field, then validate again. |
+| Structurally valid but not ready | `readiness` and its failed-stage tables | Restore the missing input, dependency or registered resource. |
+| Run stops during work | Original condition and `run_events.tsv` | Keep the staging tree for diagnosis; do not promote it manually. |
+| Missing report item | Resolved report settings and output-policy/status tables | Check whether the product was requested, applicable and completed. |
+| Verification gate is `FAIL` | `findings` | Treat the run as unverified until the findings are resolved. |
+
+## Correct a configuration or lifecycle message
+
+| Code | Meaning | Action |
+|---|---|---|
+| `LISA-CONFIG-UNKNOWN-001` | A key is not part of the recognised configuration. | Correct or remove the key named in the message. |
+| `LISA-CONFIG-MIGRATION-000` or `001` | Earlier schema or output keys require explicit migration. | Preserve the original, migrate a reviewed copy, validate and inspect its plan. |
+| `LISA-CONFIG-GSEA-001` | `gsea_padj_cutoff` is not one finite number from 0 to 1. | Set one valid cutoff. |
+| `LISA-DUP-001` | A required duplicate policy is absent. | Declare policies for DE tables, matrices and mapped-ID collisions. |
+| `LISA-EVIDENCE-002` | The chosen evidence mode lacks a required role or source column. | Correct the column mapping or use a compatible evidence mode. |
+| `LISA-RUN-005` | The final output directory already exists. | Choose a new final directory. |
+| `LISA-RESUME-001` | Resume was requested for an interrupted run. | Set `resume: false` and start a new run ID and destination. |
+
+`resume` is unsupported in version 1.0 because lisaR cannot prove that an
+abandoned staging tree is complete and compatible. It preserves that tree for
+inspection, but does not reuse it as scientific output.
+
+## Migrate an earlier configuration {#configuration-migration}
+
+Schema `1.0.0` is the current configuration contract. lisaR does not silently
+convert a file that declares `0.5.0`, `0.6.0` or an unsupported version.
+Preserve the original file and make the reviewed copy beside it so relative
+input paths keep the same meaning.
+
+```{r copy-configuration-for-migration, eval=FALSE}
+old_config <- file.choose()
+extension <- tools::file_ext(old_config)
+new_config <- file.path(
+  dirname(old_config), paste0("study-schema-1.0.", extension)
+)
+stopifnot(!file.exists(new_config))
+stopifnot(file.copy(old_config, new_config))
+new_config
+```
+
+Open `new_config` in RStudio and make the following changes there. Do not edit
+the original.
+
+For a 0.5.0 file, replace these old pipeline keys explicitly:
+
+| Old key | Current destination |
+|---|---|
+| `pipeline.plot_formats` | `report.formats.png`, `report.formats.svg` and `report.formats.pdf` |
+| `pipeline.export_formats` | `report.source_data`; canonical TSV tables remain mandatory |
+| `pipeline.run_reports` | `report.mode` |
+| `pipeline.run_gene_level` | Selected products requested through `render_lisa_categories()` |
+
+For a 0.6.0 file, review `report.mode`, evidence options and
+`report.category_nes_variants`. Choose one to four distinct values from
+`clean`, `percentages`, `direction` and `dispersion`; all four are used by
+default.
+
+In the reviewed copy:
+
+1. Remove or replace every obsolete key named by validation.
+2. Set `pipeline.schema_version: "1.0.0"`.
+3. Choose a new `pipeline.output_dir`.
+4. Leave input paths, comparisons, resource identities and other scientific
+   settings unchanged unless you intend and review a separate scientific
+   change.
+
+Then validate and inspect the plan without running the study:
+
+```{r migrate-configuration, eval=FALSE}
+validation <- validate_lisa_config(
+  new_config, check_files = TRUE, strict = TRUE
+)
+validation$readiness
+stopifnot(validation$execution_ready)
+
+plan <- plan_lisa_outputs(new_config)
+plan$summary
+plan$products
+```
+
+Changing the schema declaration does not rerun or revalidate an old result.
+Do not renumber dictionary, TERM2GENE or category-map resources merely because
+the configuration schema changed.
+
+## Inputs, dependencies and resources
+
+For an input readiness failure, use the table's resolved path and message to
+check file presence, readability and declared columns. RDS input is suitable
+only for a stable local file from a source you fully trust. Its size limit is a
+diagnostic limit, not a sandbox.
+
+For missing dependencies, inspect `validation$dependencies` in the R session
+that will run the study. Record session details outside a completed lisaR run
+directory. Do not add diagnostic files to a verified run.
+
+| Resource finding | Meaning | Action |
+|---|---|---|
+| `LISA-RESOURCE-006` | Reference does not resolve to one registered version. | Use an approved versioned ID for the study species. |
+| `LISA-RESOURCE-008` | Registered file is absent from its managed location. | Restore the reviewed registered artifact. |
+| `LISA-RESOURCE-009` | Observed SHA-256 differs from the registered reviewed value. | Replace altered bytes through the reviewed resource route. |
+| `LISA-RESOURCE-017` | Resource schema does not match its configured role. | Select the intended dictionary, category map or TERM2GENE release. |
+| `LISA-SPECIES-003` | Membership resource targets another species. | Select a species-matched release. |
+
+See [Resources and provenance](resources-and-provenance.html) for resource
+registration and provenance.
+
+## Report, cache and worker symptoms
+
+Inspect the resolved configuration before deciding that a report product is
+missing:
+
+```{r troubleshooting-report-settings, eval=FALSE}
+validation$config$report
+validation$configuration_provenance
+```
+
+`report.category_evidence = FALSE` disables linked evidence products.
+`report.category_nes_variants` selects a non-empty subset of `clean`,
+`percentages`, `direction` and `dispersion`; it does not change the underlying
+GSEA calculation. All static formats set to `FALSE` suppress static figures,
+not HTML navigation or evidence tables. Direct `HALLMARKS` is not a semantic
+category universe.
+
+`pipeline.cache_mode` defaults to `off`. `readonly` computes on a miss without
+writing; `readwrite` may store a miss; `refresh` recomputes and may replace an
+entry. Active modes require `cache_dir`. The per-analysis
+`qc/<comparison>_content_cache.tsv` records the actual hit or miss reason.
+The cache is neither a resource registry nor a completed result.
+
+If the category-significance panel is absent, first distinguish a historical
+run without saved inference from a current run whose inference stage did not
+complete. Check the run's product/status table, source manifest and exact
+collection; direct `HALLMARKS` and A/B contrasts are intentionally excluded.
+An incomplete semantic collection must not silently shrink the Hommel family.
+For a verified earlier run without inference, `add_lisa_category_inference()`
+can calculate it in a new directory using the exact saved resources. For a
+verified run **with** inference, `refresh_lisa_support_grades()` updates only
+presentation in a new directory. Neither function repairs a failed verification
+gate or permits overwriting an existing report.
+
+If a worker or parallel-backend message appears, preserve the exact message and
+follow [Parallel execution](parallel-execution.html) for the supported backend
+and worker settings on your system.
+
+## Resolve a Shiny figure or export problem
+
+If the browser does not open automatically, keep the saved report path and run:
+
+```{r troubleshooting-shiny-launch, eval=FALSE}
+explore_lisa_run("path/to/your/saved-run", launch.browser = FALSE)
+```
+
+Open the loopback URL printed by Shiny in the browser available to that
+environment. This leaves the application running while you open its address
+yourself.
+
+| Visible state or message | Action |
+|---|---|
+| `ungenerated` | Choose the exact item and press its named **Generate** button. |
+| `queued` | Leave R open; the request waits for the figure-worker slot. |
+| `running` | Wait for a terminal state before moving its workspace files. |
+| `available` | Inspect the figure and use only the download links actually shown. |
+| `not_applicable` | Read the missing-input or product explanation; do not interpret it as a negative biological result. |
+| `failed` | Preserve the message, correct the named problem and press the same **Generate** button again. There is no separate **Retry** button. |
+
+The interface has **Cancel export**, but no visible per-figure cancel button.
+For an export cancellation, wait until the status becomes terminal. A running
+job stops at its next safe point, not at the instant cancellation is requested.
+The [Shiny guide](shiny-app.html) gives the separate advanced R API for
+cancelling a figure submitted with a retained `job_id`.
+
+An expanded export requires a new destination outside the source report. It
+captures figures that are available when export starts and does not generate
+pending figures. If the destination exists, choose another name. If the export
+is refused while a figure is running, wait for that figure to finish and submit
+the export again.
+
+## Figure reproduction and portable copies
+
+A recipe is tied to its saved source data and settings. Use the matching lisaR
+version, format, dimensions and graphics dependencies when reproducing a
+figure. Matching scientific values and matching image pixels are different
+checks: platform graphics, fonts and devices can affect a rendered image.
+
+If a rerender differs, first compare the source TSV and settings against their
+recorded identities. Keep any diagnostic output outside the immutable source
+run. Do not rerun DE or GSEA solely to investigate a rendering difference, and
+do not modify a validated image to make it appear to match.
+
+When report links fail after copying, copy the intended report bundle with its
+relative files rather than only an entry HTML file. Do not copy a staging tree
+while it is being written. `shareable_report_manifest.tsv` identifies the
+relative files intended for review or distribution.
+
+## Check planning, extensions and verification
+
+A dry run returns `PLAN_PASS` and a separate planning directory. It does not
+create a completed scientific result. A selected or full extension starts from
+a canonical run whose verification gate is `PASS`, writes to a new directory
+and leaves the source run unchanged.
+
+```{r troubleshooting-verify, eval=FALSE}
+check <- verify_lisa_run("results/my-study")
+check$gate
+check$findings
+```
+
+Do not overwrite a completed result, repair files inside it or promote a
+staging tree after a failure. Keep the original condition, configuration and
+relevant status rows with any private support request, omitting sensitive data
+and credentials.
+
+## Windows reports a path or file-copy error
+
+Use a short writable project root, such as `D:/lisa/sample`, `D:/lisa/riaz` or
+`D:/lisa/cptac`. The example configuration writes to `out/`. Its installed
+inputs do not require another package installation.
+
+`LISA-PATH-001` reports the full destination and its length in UTF-16 units.
+lisaR checks planned result paths before enrichment and checks protected writes
+again at runtime. Choose a shorter new destination or shorter analysis IDs,
+then validate again. Do not rename files inside an existing verified result.
+The conservative 240-unit budget leaves room below common Windows API limits;
+it is not a guarantee for arbitrary paths or third-party programs. No registry
+change or administrator access is required.

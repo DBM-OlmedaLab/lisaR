@@ -1,0 +1,46 @@
+pipeline:
+  schema_version: "1.0.0"
+  profile: "transcriptomic/genomic"
+  evidence_mode: "full_de"
+  output_dir: "results/installation-smoke"
+  dry_run: false
+  workers: 1
+  dictionary_resource: "lisa_quickstart_dictionary@3.0.0"
+  term2gene_resource: "lisa_quickstart_term2gene@2.0.0"
+  category_map_resource: "lisa_quickstart_category_map@1.0.0"
+  run_ora: false
+  run_kegg_maps: false
+  run_hallmarks: false
+  sufficiency_action: "ignore_with_reason"
+  sufficiency_ignore_reason: "Bundled synthetic installation fixture; the restricted universe is intentional."
+  duplicate_policies:
+    de_table_duplicate_policy: "error"
+    matrix_duplicate_policy: "error"
+    mapped_id_collision_policy: "error"
+
+report:
+  mode: "standard"
+  formats:
+    png: true
+    svg: false
+    pdf: false
+  source_data: true
+  recipes: false
+
+collections:
+  - "GOBP-C2"
+  - "GOMF"
+  - "GOCC"
+  - "PATHWAYS"
+
+single_de:
+  - analysis_id: "installation_smoke"
+    label: "Synthetic installation check"
+    comparison: "Positive minus negative fixture"
+    positive_direction: "Positive values are the first synthetic programme."
+    de_path: "de.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    logfc_col: "log2FoldChange"
+    pvalue_col: "pvalue"
+    padj_col: "padj"

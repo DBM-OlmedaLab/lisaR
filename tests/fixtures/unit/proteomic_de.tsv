@@ -1,0 +1,3 @@
+symbol	log2FoldChange	padj	rank_value
+PR_A	0.7	0.03	2
+PR_B	-0.4	0.40	-1

@@ -1,0 +1,152 @@
+name: Installed-package portability
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform gate to validate (avoid repeating a passed platform)
+        type: choice
+        options: [both, windows, macos]
+        default: both
+permissions:
+  contents: read
+jobs:
+  portability:
+    name: ${{ matrix.os }} / ${{ matrix.shard }}
+    # Dependency setup counts toward the job limit; Windows needs more time.
+    timeout-minutes: ${{ matrix.os == 'windows-latest' && 60 || 30 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: >-
+          ${{ inputs.platform == 'windows' && fromJSON('["windows-latest"]') ||
+              inputs.platform == 'macos' && fromJSON('["macos-latest"]') ||
+              fromJSON('["windows-latest", "macos-latest"]') }}
+        # test-quick-start.R is one installed-package integration run and is
+        # ~78% of the suite's wall time; on Windows every step is ~2.5-3.4x
+        # slower than macOS, so suite + dependency setup + check did not fit in
+        # one job. The two shards partition the 96 test files exactly
+        # (1 + 95): nothing is skipped, filtered away or weakened, and the
+        # per-shard gates below are the same gates as before.
+        shard: [quick-start, core]
+    runs-on: ${{ matrix.os }}
+    env:
+      NCPUS: 1
+      MAKEFLAGS: -j1
+      R_KEEP_PKG_SOURCE: "yes"
+      LISAR_PORTABILITY_SHARD: ${{ matrix.shard }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - name: macOS graphics libraries
+        if: runner.os == 'macOS'
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+        run: brew install --cask xquartz
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+      - name: Build and install in an isolated library
+        shell: Rscript --vanilla {0}
+        run: |
+          source_root <- normalizePath(".", winslash="/")
+          root <- file.path(Sys.getenv("RUNNER_TEMP"), "lisaR-portability")
+          dir.create(root, recursive=TRUE)
+          lib <- file.path(root, "library"); dir.create(lib)
+          # Preserve setup-r-dependencies libraries across Rscript steps AND child R.
+          # R uses ';' on Windows, ':' on Unix for its library environment lists.
+          paths <- unique(c(normalizePath(lib, winslash="/"), .libPaths()))
+          joined <- paste(paths, collapse=.Platform$path.sep)
+          writeLines(c(paste0("R_LIBS=",joined), paste0("R_LIBS_USER=",joined),
+                       paste0("LISAR_PORTABILITY_LIB=",paths[[1L]]), paste0("LISAR_PORTABILITY_ROOT=",root)),
+                     Sys.getenv("GITHUB_ENV"), useBytes=TRUE)
+          writeLines(c(R.version.string, paste0("Rscript=",file.path(R.home("bin"),"Rscript")),
+                       "Dependency libraries before candidate install:", .libPaths(),
+                       "Libraries for subsequent steps:", paths), file.path(root,"build-preflight.txt"))
+          setwd(root)
+          cmd <- file.path(R.home("bin"), "R")
+          stopifnot(system2(cmd, c("CMD", "build", "--no-manual", shQuote(source_root)),
+                            stdout=file.path(root,"build.log"), stderr=file.path(root,"build.log")) == 0L)
+          tar <- list.files(root, "^lisaR_.*[.]tar[.]gz$", full.names=TRUE)
+          stopifnot(length(tar)==1L)
+          stopifnot(system2(cmd, c("CMD", "INSTALL", shQuote(paste0("--library=",lib)), shQuote(tar)),
+                            stdout=file.path(root,"install.log"), stderr=file.path(root,"install.log"))==0L)
+      - name: Installed regression suite once, synthetic fixtures only
+        shell: Rscript --vanilla {0}
+        run: |
+          Sys.unsetenv("NCPUS")
+          shard <- Sys.getenv("LISAR_PORTABILITY_SHARD")
+          stopifnot(shard %in% c("quick-start", "core"))
+          # One regexp, used positively by one shard and inverted by the other,
+          # so the two shards cannot overlap and cannot leave a file unrun.
+          shard_filter <- "^quick-start$"
+          shard_invert <- identical(shard, "core")
+          root <- Sys.getenv("LISAR_PORTABILITY_ROOT")
+          lib <- Sys.getenv("LISAR_PORTABILITY_LIB")
+          .libPaths(c(lib, .libPaths()))
+          needed <- c("lisaR", "testthat", "jsonlite", "rcmdcheck")
+          available <- vapply(needed, requireNamespace, logical(1), quietly=TRUE)
+          writeLines(c(R.version.string, paste0("Rscript=",file.path(R.home("bin"),"Rscript")),
+                       ".libPaths:", .libPaths(), paste(names(available), available, sep="=")),
+                     file.path(root,"suite-preflight.txt"))
+          stopifnot(all(available))
+          Sys.setenv(http_proxy="http://127.0.0.1:9", https_proxy="http://127.0.0.1:9", HTTP_PROXY="http://127.0.0.1:9", HTTPS_PROXY="http://127.0.0.1:9")
+          library(lisaR); library(testthat)
+          stopifnot(identical(normalizePath(find.package("lisaR"),winslash="/"),
+                              normalizePath(file.path(lib,"lisaR"),winslash="/")))
+          print(sessionInfo())
+          stopifnot(nrow(tools::getVignetteInfo(package="lisaR")) == 18L)
+          set.seed(20260910)
+          # Preserve every failing expectation; the default summary truncates at ten.
+          testthat::set_max_fails(Inf)
+          # Refuse to run a shard that silently selected nothing or everything.
+          selected <- testthat:::find_test_scripts("tests/testthat", filter=shard_filter, invert=shard_invert, full.names=FALSE)
+          total <- testthat:::find_test_scripts("tests/testthat", filter=NULL, full.names=FALSE)
+          writeLines(c(paste0("shard=",shard), paste0("files_selected=",length(selected)),
+                       paste0("files_total=",length(total)), selected),
+                     file.path(root,"suite-shard.txt"), useBytes=TRUE)
+          stopifnot(length(selected) > 0L, length(selected) < length(total))
+          res <- testthat::test_dir("tests/testthat",package="lisaR",load_package="installed",filter=shard_filter,invert=shard_invert,reporter="summary",stop_on_failure=FALSE)
+          saveRDS(res, file.path(root,"suite-results.rds"))
+          details <- unlist(lapply(res, function(test) {
+            bad <- Filter(function(x) inherits(x,"expectation_failure") ||
+              inherits(x,"expectation_error") || inherits(x,"expectation_skip"), test$results)
+            if (!length(bad)) return(character())
+            c(paste("FILE",test$file,"TEST",test$test),
+              unlist(lapply(bad, function(x) capture.output(print(x)))))
+          }), use.names=FALSE)
+          writeLines(details, file.path(root,"suite-details.txt"), useBytes=TRUE)
+          df <- as.data.frame(res)
+          write.table(df[,c("file","test","nb","failed","error","skipped","passed")], file.path(Sys.getenv("LISAR_PORTABILITY_ROOT"),"suite.tsv"),sep="\t",quote=TRUE,row.names=FALSE)
+          writeLines(jsonlite::toJSON(list(passed=sum(df$passed),failed=sum(df$failed),errors=sum(df$error),skipped=sum(df$skipped),warnings=sum(df$warning)),auto_unbox=TRUE,pretty=TRUE),file.path(Sys.getenv("LISAR_PORTABILITY_ROOT"),"suite-totals.json"))
+          stopifnot(sum(df$failed)==0L,!any(df$error))
+      - name: Package check without repeating test suite or vignette rendering
+        # The check is shard-independent (it runs with --no-tests), so one shard
+        # per platform performs it instead of duplicating it in both.
+        if: always() && env.LISAR_PORTABILITY_ROOT != '' && matrix.shard == 'core'
+        shell: Rscript --vanilla {0}
+        run: |
+          root <- Sys.getenv("LISAR_PORTABILITY_ROOT")
+          .libPaths(c(Sys.getenv("LISAR_PORTABILITY_LIB"), .libPaths()))
+          available <- requireNamespace("rcmdcheck", quietly=TRUE)
+          writeLines(c(R.version.string, ".libPaths:", .libPaths(), paste0("rcmdcheck=",available)),
+                     file.path(root,"check-preflight.txt"))
+          stopifnot(available)
+          tar <- list.files(root,"^lisaR_.*[.]tar[.]gz$",full.names=TRUE)
+          result <- rcmdcheck::rcmdcheck(tar,args=c("--no-tests","--no-build-vignettes","--no-vignettes","--no-manual"),check_dir=file.path(root,"check"),error_on="never")
+          saveRDS(result,file.path(root,"check.rds"))
+          writeLines(c("ERRORS",result$errors,"WARNINGS",result$warnings,"NOTES",result$notes),file.path(root,"check-summary.txt"))
+          stopifnot(length(result$errors)==0L)
+      - name: Save bounded validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portability-${{ runner.os }}-${{ matrix.shard }}
+          retention-days: 3
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/lisaR-portability/suite.tsv
+            ${{ runner.temp }}/lisaR-portability/suite-totals.json

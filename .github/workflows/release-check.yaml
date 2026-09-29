@@ -1,0 +1,59 @@
+name: Release validation
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    name: Package / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      NCPUS: '1'
+      MAKEFLAGS: '-j1'
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      R_KEEP_PKG_SOURCE: 'yes'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Validate release identity
+        shell: python
+        run: |
+          import pathlib, re, subprocess
+          root = pathlib.Path('.')
+          desc = (root/'DESCRIPTION').read_text()
+          assert re.search(r'^Version: 1\.0\.0$', desc, re.M)
+          assert re.search(r'^Config/lisaR/release-stage: stable$', desc, re.M)
+          cff = (root/'CITATION.cff').read_text()
+          assert 'version: 1.0.0' in cff
+          assert 'GPL-3.0-or-later' in cff
+          allowed = {'dolmeda@iib.uam.es', '303991465+dolmeda-DBM@users.noreply.github.com'}
+          roots = subprocess.check_output(['git','rev-list','--max-parents=0','HEAD'], text=True).splitlines()
+          assert len(roots) == 1, 'Expected a single reviewed initial commit'
+          for commit in roots:
+              identities = subprocess.check_output(['git','show','-s','--format=%ae%n%ce',commit], text=True).splitlines()
+              assert identities and set(identities) <= allowed, 'Unreviewed initial commit identity'
+              message = subprocess.check_output(['git','show','-s','--format=%B',commit], text=True)
+              for address in re.findall(r'(?im)^Co-authored-by:.*<([^>]+)>', message):
+                  assert address in allowed, 'Unreviewed initial attribution trailer'
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          args: 'c("--no-manual")'
+          error-on: '"error"'

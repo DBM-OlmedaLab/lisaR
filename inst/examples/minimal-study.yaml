@@ -1,0 +1,61 @@
+pipeline:
+  schema_version: "1.0.0"
+  profile: "transcriptomic/genomic"
+  evidence_mode: "full_de"
+  output_dir: "results/minimal-study"
+  workers: 4
+  dry_run: true
+  dictionary_resource: "lisa_dictionary_quickstart@1.1.0"
+  term2gene_resource: "lisa_quickstart_term2gene@2.1.0"
+  category_map_resource: "lisa_quickstart_category_map@1.1.0"
+  run_kegg_maps: false
+  run_hallmarks: false
+  sufficiency_action: "ignore_with_reason"
+  sufficiency_ignore_reason: "Bundled synthetic sample dataset; the restricted universe is intentional."
+  duplicate_policies:
+    de_table_duplicate_policy: "error"
+    matrix_duplicate_policy: "error"
+    mapped_id_collision_policy: "error"
+
+report:
+  mode: "standard"
+  category_evidence: true
+  # Render all four by default; choose [clean] or [dispersion] for one.
+  # Keep at least one variant; names must be unique.
+  category_nes_variants: [clean, percentages, direction, dispersion]
+  legacy_gene_products: false
+  # Initial visible matrix limits; complete evidence tables remain intact.
+  evidence_max_sets: 25
+  evidence_max_genes: 40
+  formats:
+    png: true
+    svg: false
+    pdf: false
+  source_data: true
+  recipes: false
+
+collections:
+  - "GOBP-C2"
+  - "GOMF"
+  - "GOCC"
+  - "PATHWAYS"
+
+single_de:
+  - analysis_id: "treatment"
+    de_path: "../extdata/minimal/de_A.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    logfc_col: "log2FC"
+    padj_col: "padj"
+  - analysis_id: "control"
+    de_path: "../extdata/minimal/de_B.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    logfc_col: "log2FC"
+    padj_col: "padj"
+
+contrasts:
+  - contrast_id: "treatment_vs_control"
+    analysis_a: "treatment"
+    analysis_b: "control"
+    contrast_label: "Treatment versus control"

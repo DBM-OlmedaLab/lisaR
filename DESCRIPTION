@@ -1,0 +1,74 @@
+Package: lisaR
+Title: LISA: LLM-Inferred Semantic Annotation Pipeline
+Version: 1.0.0
+Date: 2026-09-29
+Config/lisaR/release-stage: stable
+Config/lisaR/release-label: 1.0.0
+Config/lisaR/pipeline-production-version: 1
+Config/lisaR/pipeline-production-label: lisaR-1.0.0
+Config/lisaR/pipeline-production-date: 2026-09-29
+Authors@R: c(
+    person("David", "Olmeda Casadomé", role = c("aut", "cre"),
+           email = "dolmeda@iib.uam.es",
+           comment = c(ORCID = "0000-0001-5513-5621")),
+    person("Agencia Estatal Consejo Superior de Investigaciones Científicas",
+           role = "cph"))
+Description: Implements LISA (LLM-Inferred Semantic Annotation) for
+    differential-expression results. The package integrates enrichment results
+    into biologically interpretable categories, compares compatible analyses,
+    generates
+    gene-level evidence products and builds portable HTML reports with linked
+    source data and optional KEGG gene-set figures.
+License: GPL (>= 3)
+URL: https://github.com/DBM-OlmedaLab/lisaR
+BugReports: https://github.com/DBM-OlmedaLab/lisaR/issues
+biocViews: DifferentialExpression, GeneExpression, GeneSetEnrichment,
+    KEGG, Pathways, ReportWriting, Visualization
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1.0)
+Imports:
+    digest,
+    fgsea,
+    fs,
+    ggplot2,
+    graphics,
+    grDevices,
+    grid,
+    hommel (>= 1.8),
+    jsonlite,
+    methods,
+    openxlsx,
+    parallel,
+    readr,
+    stats,
+    tools,
+    utils,
+    yaml
+Suggests:
+    AnnotationDbi,
+    callr,
+    data.table,
+    DESeq2,
+    edgeR,
+    ggrepel,
+    gridExtra,
+    KEGGREST,
+    knitr,
+    msigdbr,
+    org.Hs.eg.db,
+    org.Mm.eg.db,
+    patchwork (>= 1.0.0),
+    png,
+    ps,
+    readxl,
+    rmarkdown,
+    shiny,
+    SummarizedExperiment,
+    svglite,
+    testthat (>= 3.1.7),
+    withr
+VignetteBuilder: knitr
+Config/testthat/edition: 3

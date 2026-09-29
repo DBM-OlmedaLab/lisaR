@@ -1,0 +1,52 @@
+---
+title: "Install lisaR"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+vignette: >
+  %\VignetteIndexEntry{Install lisaR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+You need **R 4.1 or later** and internet access. RStudio is optional.
+If you only want to read an existing HTML report, you do not need R.
+
+## Install the package
+
+Run this once in R or the RStudio Console:
+
+```{r install-lisar, eval=FALSE}
+install.packages(c("BiocManager", "remotes"))
+BiocManager::install("fgsea", update = FALSE, ask = FALSE)
+remotes::install_github(
+  "DBM-OlmedaLab/lisaR",
+  upgrade = "never",
+  build_vignettes = FALSE
+)
+
+library(lisaR)
+packageVersion("lisaR")
+```
+
+The installer brings in the required dependencies, including `hommel`.
+lisaR includes its LISA dictionaries and category hierarchy. There is no
+second source-file installation.
+
+The external gene-set membership resource is prepared in the next step,
+alongside the Riaz data. You do not need to locate those files yourself.
+
+## If installation fails
+
+Restart R if an older lisaR version is already loaded. For a missing dependency,
+compiler requirement or library-path problem, see
+[Installation details](advanced-installation.html).
+
+The guides are available online; building HTML vignettes is not required to
+run an analysis. Source `.Rmd` files remain in the repository's `vignettes/`
+directory.
+
+**Next: [Run Riaz ON](riaz-on-quick-start.html).**

@@ -1,0 +1,7 @@
+category_id	display_name	macrogroup_id	macrogroup_name	macrogroup_order	category_order_within_macrogroup	notes
+CAT_A	Category A	ORA_FIXTURE	ORA fixture	1	1	Strong-hit first mapping
+CAT_B	Category B	ORA_FIXTURE	ORA fixture	1	2	Strong-hit second mapping
+CAT_C	Category C	ORA_FIXTURE	ORA fixture	1	3	Weak-hit mapping
+CAT_D	Category D	ORA_FIXTURE	ORA fixture	1	4	Zero-overlap mapping A
+CAT_E	Category E	ORA_FIXTURE	ORA fixture	1	5	Zero-overlap mapping B
+CAT_F	Category F	ORA_FIXTURE	ORA fixture	1	6	Outside-background mapping

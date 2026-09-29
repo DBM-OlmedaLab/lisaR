@@ -1,0 +1,99 @@
+pipeline:
+  schema_version: "1.0.0"
+  profile: "transcriptomic/genomic"
+  evidence_mode: "full_de"
+  output_dir: "out"
+  dry_run: false
+  workers: 4
+  dictionary_resource: "lisa_dictionary_quickstart@1.1.0"
+  term2gene_resource: "lisa_quickstart_term2gene@2.1.0"
+  category_map_resource: "lisa_quickstart_category_map@1.1.0"
+  run_ora: false
+  run_kegg_maps: false
+  run_hallmarks: false
+  sufficiency_action: "ignore_with_reason"
+  sufficiency_ignore_reason: "Bundled 40-gene synthetic sample dataset; the restricted universe is intentional."
+  duplicate_policies:
+    de_table_duplicate_policy: "error"
+    matrix_duplicate_policy: "error"
+    mapped_id_collision_policy: "error"
+
+report:
+  mode: "standard"
+  category_evidence: true
+  # Render all four by default; choose [clean] or [dispersion] for one.
+  # Keep at least one variant; names must be unique.
+  category_nes_variants: [clean, percentages, direction, dispersion]
+  legacy_gene_products: false
+  # Initial visible matrix limits; complete evidence tables remain intact.
+  evidence_max_sets: 25
+  evidence_max_genes: 40
+  formats:
+    png: true
+    svg: false
+    pdf: false
+  source_data: true
+  recipes: false
+
+collections:
+  - "GOBP-C2"
+  - "GOMF"
+  - "GOCC"
+  - "PATHWAYS"
+
+allowlisted_source_paths:
+  - "data/de_a.tsv"
+  - "data/de_b.tsv"
+  - "data/expr.tsv"
+
+source_data:
+  - path: "data/de_a.tsv"
+    role: "synthetic differential expression for response A"
+    target_subdir: "inputs"
+  - path: "data/de_b.tsv"
+    role: "synthetic differential expression for response B"
+    target_subdir: "inputs"
+  - path: "data/expr.tsv"
+    role: "synthetic transformed expression matrix"
+    target_subdir: "inputs"
+
+single_de:
+  - analysis_id: "response_a"
+    label: "Synthetic response A"
+    comparison: "Synthetic treatment A minus control"
+    positive_direction: "Positive values mean higher synthetic expression after treatment A."
+    model_note: "Synthetic sample comparison; no biological inference is intended."
+    de_path: "data/de_a.tsv"
+    expression_matrix_path: "data/expr.tsv"
+    matrix_feature_col: "symbol"
+    sample_include_regex: "^A_"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    rank_col: "stat"
+    logfc_col: "log2FoldChange"
+    pvalue_col: "pvalue"
+    padj_col: "padj"
+  - analysis_id: "response_b"
+    label: "Synthetic response B"
+    comparison: "Synthetic treatment B minus control"
+    positive_direction: "Positive values mean higher synthetic expression after treatment B."
+    model_note: "Synthetic sample comparison; no biological inference is intended."
+    de_path: "data/de_b.tsv"
+    expression_matrix_path: "data/expr.tsv"
+    matrix_feature_col: "symbol"
+    sample_include_regex: "^B_"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    rank_col: "stat"
+    logfc_col: "log2FoldChange"
+    pvalue_col: "pvalue"
+    padj_col: "padj"
+
+contrasts:
+  - contrast_id: "response_a_vs_b"
+    output_id: "response_profiles"
+    analysis_a: "response_a"
+    analysis_b: "response_b"
+    contrast_label: "Synthetic response A versus B"
+    comparison: "LISA profile A minus LISA profile B"
+    positive_direction: "Positive values indicate a larger mean NES in synthetic response A."

@@ -1,0 +1,106 @@
+name: Native Windows tutorial validation
+on:
+  workflow_dispatch:
+    inputs:
+      example:
+        description: Tutorial to validate
+        required: true
+        default: all
+        type: choice
+        options: [all, sample, riaz, cptac]
+permissions:
+  contents: read
+jobs:
+  tutorials:
+    name: Windows / ${{ matrix.example }}
+    runs-on: windows-latest
+    timeout-minutes: ${{ matrix.example == 'riaz' && 360 || 120 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        example: ${{ fromJSON(inputs.example == 'all' && '["sample","riaz","cptac"]' || format('["{0}"]', inputs.example)) }}
+    env:
+      R_KEEP_PKG_SOURCE: "yes"
+      MAKEFLAGS: -j1
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      NCPUS: "1"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5.3'
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache: always
+          extra-packages: |
+            any::testthat
+            any::processx
+          needs: check
+      - name: Build and install documented candidate
+        shell: Rscript --vanilla {0}
+        run: |
+          stopifnot(system2(file.path(R.home("bin"),"R"),c("CMD","build","--no-manual","."))==0L)
+          tar <- list.files(".","^lisaR_.*[.]tar[.]gz$",full.names=TRUE)
+          stopifnot(length(tar)==1L)
+          stopifnot(system2(file.path(R.home("bin"),"R"),c("CMD","INSTALL",shQuote(tar)))==0L)
+          library(lisaR)
+          stopifnot(packageVersion("lisaR")=="1.0.0",nrow(tools::getVignetteInfo(package="lisaR"))==25L)
+      - name: Check native Windows checkpoint archiver before analysis
+        shell: pwsh
+        run: |
+          $tar = Join-Path $env:SystemRoot 'System32/tar.exe'
+          if (!(Test-Path $tar)) { throw "Native Windows tar missing" }
+          $probe = Join-Path $env:RUNNER_TEMP 'archive probe'
+          New-Item -ItemType Directory -Path $probe -Force | Out-Null
+          Set-Content -Path "$probe/probe.txt" -Value 'checkpoint preflight'
+          & $tar -czf "$probe/probe.tar.gz" -C $probe probe.txt
+          if ($LASTEXITCODE -ne 0) { throw "Checkpoint preflight creation failed" }
+          & $tar -tzf "$probe/probe.tar.gz"
+          if ($LASTEXITCODE -ne 0) { throw "Checkpoint preflight read failed" }
+      - name: Prepare and verify STANDARD (two DE for Riaz)
+        id: standard
+        shell: Rscript --vanilla {0}
+        run: |
+          status <- system2(file.path(R.home("bin"),"Rscript"),c("--vanilla",".github/scripts/tutorials-native.R","${{ matrix.example }}","standard"))
+          stopifnot(status==0L)
+      - name: Save verified Riaz checkpoint for targeted recovery
+        if: matrix.example == 'riaz'
+        shell: pwsh
+        run: |
+          & "$env:SystemRoot/System32/tar.exe" -czf "$env:RUNNER_TEMP/riaz-standard.tar.gz" -C "D:/lisa test" riaz
+          if ($LASTEXITCODE -ne 0) { throw "Checkpoint archive failed" }
+      - name: Complete FULL from verified saved results
+        if: always() && steps.standard.outcome == 'success'
+        shell: Rscript --vanilla {0}
+        run: |
+          status <- system2(file.path(R.home("bin"),"Rscript"),c("--vanilla",".github/scripts/tutorials-native.R","${{ matrix.example }}","full"))
+          stopifnot(status==0L)
+      - name: Preserve internal diagnostic logs
+        if: always()
+        shell: Rscript --vanilla {0}
+        run: |
+          root <- "D:/lisa test/${{ matrix.example }}"
+          dest <- file.path(Sys.getenv("RUNNER_TEMP"), "lisa-${{ matrix.example }}", "internal")
+          logs <- list.files(root, pattern="[.]log$", recursive=TRUE, full.names=TRUE)
+          dir.create(dest,recursive=TRUE,showWarnings=FALSE)
+          index <- data.frame(source=substring(logs,nchar(root)+2L), file=sprintf("log-%04d.txt",seq_along(logs)))
+          write.table(index,file.path(dest,"index.tsv"),sep="\t",row.names=FALSE)
+          for (i in seq_along(logs)) {
+            p <- logs[[i]]
+            target <- file.path(dest,index$file[[i]])
+            dir.create(dirname(target),recursive=TRUE,showWarnings=FALSE)
+            stopifnot(file.copy(p,target))
+          }
+      - name: Preserve bounded validation receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tutorial-${{ matrix.example }}-windows
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/lisa-${{ matrix.example }}/result.json
+            ${{ runner.temp }}/lisa-${{ matrix.example }}/standard-verified.txt

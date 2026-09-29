@@ -1,0 +1,154 @@
+---
+title: "Parallel execution"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Parallel execution}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Use this guide to choose a worker request, confirm what the platform actually
+used and prepare a clean retry after a failure. `pipeline.workers` controls
+concurrent independent tasks in a configuration-defined study. It is a
+resource request, not a speed or memory guarantee. See
+[Configuration reference](configuration-reference.html) for the complete field
+contract and [Troubleshooting](troubleshooting.html) when a run stops.
+
+## Choose workers and check the actual backend
+
+The configuration schema default is `workers: 4`. Quick Start deliberately
+overrides this with one worker for its demonstration run; that does not change the
+schema default. On Linux, lisaR can use its multicore
+backend for independent tasks. On Windows, macOS and other platforms it uses a
+serial backend even when a larger number is requested. The effective worker
+count is limited by task count, visible cores, recognised scheduler allocation
+and R-check limits.
+
+```yaml
+pipeline:
+  workers: 1
+```
+
+Use `workers: 1` for a serial route. Request more workers only within the CPU
+and memory allocation of the current machine or scheduler job. lisaR does not
+measure per-task memory or reserve RAM. Shared report assembly, final
+verification and some cache operations remain serial.
+
+The post-LISA category-inference stage is also serial across the completed
+semantic collections of one analysis. `pipeline.workers` does not create
+separate Hommel families or make category P values comparable as an A/B test.
+
+| Situation | Current behaviour |
+|---|---|
+| Linux and more than one effective worker | Independent tasks may use the multicore backend. |
+| Windows, macOS or other platform | Serial backend. |
+| Fewer tasks than requested workers | Effective count is reduced to task count. |
+| Scheduler or visible-core limit | Effective count is capped and recorded. |
+| Insufficient memory or a worker error | The run stops; no partial result is promoted as complete. |
+
+The supported scheduler limits include `SLURM_CPUS_PER_TASK`, `PBS_NP`,
+`NSLOTS`, `NCPUS` and `LSB_DJOB_NUMPROC`. The record, rather than the request
+alone, identifies the effective backend and worker count.
+
+## Use one worker for the recorded contrast-evidence path
+
+A Quick Start run with two DE analyses, one contrast, four semantic
+collections and enabled category evidence failed with `workers: 4` while concurrently creating a contrast-evidence directory. The
+recorded condition began:
+
+```text
+Could not create the destination parent ... report_pages/contrast_evidence/...
+```
+
+The same scientific scope completed with `workers: 1`, and
+`verify_lisa_run()` returned `PASS`. Until this directory-creation issue is
+resolved, use `workers: 1` for this contrast-evidence path. Other parallel
+workloads were not covered by that check.
+
+## Compare seeds, order and execution records
+
+lisaR derives a task seed from a root seed and stable task identifier, records
+the planned task context, and sets one inner numerical thread for each outer
+task. These controls support reproducible task setup, but do not by themselves
+guarantee identical numerical output for every operating system, package
+version, library or workload.
+
+After a completed run, inspect the execution receipt and task seeds:
+
+```{r parallel-record-template, eval=FALSE}
+run_dir <- "results/study"
+execution <- read.delim(file.path(run_dir, "parallel_execution.tsv"))
+seeds <- read.delim(file.path(run_dir, "parallel_task_seeds.tsv"))
+execution
+head(seeds)
+```
+
+`parallel_execution.tsv` records requested and effective workers, backend,
+platform and `cap_reason`. `parallel_task_seeds.tsv` records task IDs and
+seeds. Keep these with the configuration and resource provenance when
+comparing runs.
+
+## Keep cache controls separate from workers
+
+The optional content cache stores reusable raw GSEA results. It is not a
+resource registry and does not replace a completed run. Active cache modes
+require an explicit local `pipeline.cache_dir`.
+
+| `pipeline.cache_mode` | On a cache hit | On a miss |
+|---|---|---|
+| `off` | Does not read a cache | Computes without cache access. |
+| `readonly` | Reuses the compatible entry | Computes without writing an entry. |
+| `readwrite` | Reuses the compatible entry | Computes and attempts to store an entry. |
+| `refresh` | Recomputes | Attempts to replace the entry. |
+
+A hit requires the exact relevant ranking, selected memberships, task identity,
+parameters, seed and runtime contract. Inspect
+`qc/<comparison>_content_cache.tsv` for its recorded hit or miss reason. A
+miss is not an analysis failure.
+
+## Recover after a failure without replacing output
+
+If a task fails, retain its configuration, logs and staging tree for diagnosis.
+Do not rename the staging tree as a result and do not delete an earlier output
+to make room for a retry. lisaR does not resume interrupted runs:
+`pipeline.resume: true` stops with `LISA-RESUME-001`. A completed final output
+directory is immutable and cannot be reused as a destination.
+
+Prepare a reviewed retry beside the original configuration. Use one worker if
+you encountered the contrast-evidence limitation above; otherwise keep a
+worker request supported by your allocation. Always give the retry a new run
+ID and output directory:
+
+```{r parallel-retry-template, eval=FALSE}
+retry <- yaml::read_yaml("study.yml")
+retry$pipeline$workers <- 1L
+retry$pipeline$run_id <- "study-retry-01"
+retry$pipeline$output_dir <- "results/study-retry-01"
+retry$pipeline$resume <- FALSE
+
+retry_config <- "study-retry-01.yml"
+stopifnot(!file.exists(retry_config))
+yaml::write_yaml(retry, retry_config)
+
+validation <- lisaR::validate_lisa_config(retry_config, check_files = TRUE)
+stopifnot(validation$execution_ready)
+plan <- lisaR::plan_lisa_outputs(retry_config)
+plan$summary
+```
+
+Review the validation and plan before calling `run_lisa(retry_config)`. This
+starts a new run; it does not continue or mutate the failed attempt.
+
+```{r parallel-verify-template, eval=FALSE}
+check <- lisaR::verify_lisa_run("results/study-retry-01")
+stopifnot(identical(check$gate, "PASS"))
+```
+
+Verification applies to a completed run only. A dry-run planning directory is
+not a scientific result and returns a failed verification gate by design.

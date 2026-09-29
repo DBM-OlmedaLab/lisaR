@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="970" viewBox="0 0 1100 970" role="img" aria-labelledby="title desc">
+<title id="title">From a prepared study to reusable results</title><desc id="desc">An upstream model supplies differential-expression results. lisaR runs enrichment, annotates gene sets with a pre-built dictionary and hierarchy, and saves the results and HTML report. Saved results branch into static browsing, selected figure generation and reuse, and portable export. These later tasks do not repeat DE, GSEA or ORA or change fixed assignments. Exported static reports contain no live generation controls.</desc>
+<rect width="100%" height="100%" fill="white"/>
+<text x="35" y="45" font-family="DejaVu Sans, sans-serif" font-size="28" font-weight="700" fill="#183347">From a prepared study to reusable results</text>
+<text x="35" y="80" font-family="DejaVu Sans, sans-serif" font-size="17" font-weight="400" fill="#183347">Existing results enter the pipeline; semantic resources are prepared beforehand.</text>
+<rect x="25" y="220" width="218" height="165" rx="10" fill="#F5F3EF" stroke="#B9CBD5"/>
+<text x="42" y="251" font-family="DejaVu Sans, sans-serif" font-size="14" font-weight="700" fill="#183347">UPSTREAM</text>
+<text x="42" y="283" font-family="DejaVu Sans, sans-serif" font-size="20" font-weight="700" fill="#183347">DE results</text>
+<text x="42" y="314" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Complete result table</text>
+<text x="42" y="339" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Gene IDs and statistic</text>
+<text x="42" y="364" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Effect and adjusted P</text>
+<rect x="268" y="125" width="805" height="305" rx="10" fill="#F7FBFC" stroke="#C2DFE2"/>
+<text x="287" y="155" font-family="DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#087E8B">lisaR</text>
+<rect x="287" y="190" width="220" height="66" rx="10" fill="#EEF5F8" stroke="#B9CBD5"/>
+<text x="302" y="216" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Gene-set memberships</text>
+<text x="302" y="239" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">TERM2GENE</text>
+<rect x="287" y="310" width="220" height="95" rx="10" fill="#EEF5F8" stroke="#B9CBD5"/>
+<text x="302" y="339" font-family="DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#183347">Enrichment</text>
+<text x="302" y="367" font-family="DejaVu Sans, sans-serif" font-size="14" font-weight="400" fill="#183347">Ranked genes → GSEA</text>
+<text x="302" y="390" font-family="DejaVu Sans, sans-serif" font-size="14" font-weight="400" fill="#183347">ORA: optional separate test</text>
+<line x1="243" y1="344" x2="287" y2="344" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="287,344 277.0950818741206,348.78462087522354 277.0950818741206,339.21537912477646" fill="#087E8B"/>
+<line x1="394" y1="256" x2="394" y2="310" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="394,310 389.21537912477646,300.0950818741206 398.78462087522354,300.0950818741206" fill="#087E8B"/>
+<rect x="542" y="190" width="242" height="66" rx="10" fill="#EEF5F8" stroke="#B9CBD5"/>
+<text x="557" y="216" font-family="DejaVu Sans, sans-serif" font-size="15" font-weight="400" fill="#183347">LISA dictionary + hierarchy</text>
+<text x="557" y="239" font-family="DejaVu Sans, sans-serif" font-size="15" font-weight="400" fill="#183347">Gene sets → categories</text>
+<rect x="542" y="310" width="242" height="95" rx="10" fill="#EEF5F8" stroke="#B9CBD5"/>
+<text x="557" y="338" font-family="DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#183347">LISA annotation</text>
+<text x="557" y="366" font-family="DejaVu Sans, sans-serif" font-size="15" font-weight="400" fill="#183347">Category summaries</text>
+<text x="557" y="389" font-family="DejaVu Sans, sans-serif" font-size="15" font-weight="400" fill="#183347">Gene-set and gene evidence</text>
+<line x1="663" y1="256" x2="663" y2="310" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="663,310 658.2153791247765,300.0950818741206 667.7846208752235,300.0950818741206" fill="#087E8B"/>
+<line x1="507" y1="358" x2="542" y2="358" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="542,358 532.0950818741205,362.78462087522354 532.0950818741205,353.21537912477646" fill="#087E8B"/>
+<rect x="820" y="310" width="231" height="95" rx="10" fill="#EEF5F8" stroke="#B9CBD5"/>
+<text x="836" y="338" font-family="DejaVu Sans, sans-serif" font-size="19" font-weight="700" fill="#183347">Saved results</text>
+<text x="836" y="366" font-family="DejaVu Sans, sans-serif" font-size="14" font-weight="400" fill="#183347">HTML report and tables</text>
+<text x="836" y="389" font-family="DejaVu Sans, sans-serif" font-size="14" font-weight="400" fill="#183347">Inputs, settings and resources</text>
+<line x1="784" y1="358" x2="820" y2="358" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="820,358 810.0950818741205,362.78462087522354 810.0950818741205,353.21537912477646" fill="#087E8B"/>
+<polyline points="937,405 937,477 550,477" fill="none" stroke="#087E8B" stroke-width="2.5"/>
+<line x1="550" y1="477" x2="550" y2="530" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="550,530 545.2153791247765,520.0950818741205 554.7846208752235,520.0950818741205" fill="#087E8B"/>
+<text x="35" y="488" font-family="DejaVu Sans, sans-serif" font-size="24" font-weight="700" fill="#183347">Once the run is saved</text>
+<text x="35" y="518" font-family="DejaVu Sans, sans-serif" font-size="17" font-weight="400" fill="#183347">Choose the task you need.</text>
+<rect x="35" y="555" width="310" height="172" rx="10" fill="#EAF6F4" stroke="#B9CBD5"/>
+<text x="50" y="590" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="700" fill="#183347">Browse the report</text>
+<text x="50" y="629" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Open report_index.html</text>
+<text x="50" y="658" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Inspect figures and tables</text>
+<text x="50" y="687" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">No R or Shiny needed</text>
+<rect x="395" y="555" width="310" height="172" rx="10" fill="#EAF6F4" stroke="#B9CBD5"/>
+<text x="410" y="590" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="700" fill="#183347">Generate selected figures</text>
+<text x="410" y="629" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Use Shiny or the R API</text>
+<text x="410" y="658" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Reuse the saved results</text>
+<text x="410" y="687" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Download data and scripts</text>
+<rect x="755" y="555" width="310" height="172" rx="10" fill="#EAF6F4" stroke="#B9CBD5"/>
+<text x="770" y="590" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="700" fill="#183347">Export and share</text>
+<text x="770" y="629" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Include available figures</text>
+<text x="770" y="658" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Keep every subfolder</text>
+<text x="770" y="687" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Open without R or Shiny</text>
+<polyline points="550,530 190,530" fill="none" stroke="#087E8B" stroke-width="2.5"/>
+<line x1="190" y1="530" x2="190" y2="555" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="190,555 185.21537912477646,545.0950818741205 194.78462087522354,545.0950818741205" fill="#087E8B"/>
+<line x1="550" y1="530" x2="550" y2="555" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="550,555 545.2153791247765,545.0950818741205 554.7846208752235,545.0950818741205" fill="#087E8B"/>
+<polyline points="550,530 910,530" fill="none" stroke="#087E8B" stroke-width="2.5"/>
+<line x1="910" y1="530" x2="910" y2="555" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="910,555 905.2153791247765,545.0950818741205 914.7846208752235,545.0950818741205" fill="#087E8B"/>
+<line x1="705" y1="649" x2="755" y2="649" stroke="#087E8B" stroke-width="2.5"/>
+<polygon points="755,649 745.0950818741205,653.7846208752235 745.0950818741205,644.2153791247765" fill="#087E8B"/>
+<text x="35" y="772" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="700" fill="#183347">Browsing, figure generation and export do not repeat DE, GSEA or ORA.</text>
+<text x="35" y="804" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#183347">Original scientific results and fixed LISA assignments stay unchanged.</text>
+<text x="35" y="836" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="400" fill="#183347">Exported static copies have no live generation controls.</text>
+<text x="35" y="878" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Optional profile contrast: A minus B, with each side&#x27;s evidence retained.</text>
+<text x="35" y="905" font-family="DejaVu Sans, sans-serif" font-size="16" font-weight="400" fill="#183347">Category summaries and profile differences are descriptive, not new tests.</text>
+<text x="35" y="941" font-family="DejaVu Sans, sans-serif" font-size="18" font-weight="700" fill="#183347">No LLM is called when lisaR analyses a study.</text>
+</svg>

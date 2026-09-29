@@ -1,0 +1,3 @@
+category_id	category_display_name	macrogroup_name	pathway	padj	NES	leadingEdge
+CAT_SIGNAL	Signaling	Signal transduction	HALLMARK_SIGNALING	0.02	1.8	GENE1;GENE4
+CAT_STRESS	Stress response	Stress and death	HALLMARK_STRESS	0.10	-1.3	GENE2;GENE3

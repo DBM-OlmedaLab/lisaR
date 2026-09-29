@@ -1,0 +1,221 @@
+# Riaz et al. GSE91061: complete lisaR worked-example configuration.
+#
+# Paths are relative to this file. Keep the configuration under a writable
+# project config/ directory and the reconstructed inputs under outputs/ so the
+# relative paths below remain valid. Validate, plan, run and verify from R or
+# RStudio with lisaR's public functions.
+
+pipeline:
+  schema_version: "1.0.0"
+  profile: "transcriptomic/genomic"
+  evidence_mode: "full_de"
+  output_dir: "../results/lisa_standard"
+
+  # Parallel execution is explicit and deterministic. Allocate at least this
+  # many CPU cores; lisaR caps the request to visible and scheduler-provided
+  # limits. Use 1 for the serial reference route.
+  workers: 4
+
+  # This single inclusive FDR threshold defines significant GSEA support in
+  # single analyses, A/B summaries and their figures.
+  gsea_padj_cutoff: 0.25
+
+  # Versioned semantic resources make the analysis auditable.
+  dictionary_resource: "lisa_dictionary_core@1.0.0"
+  term2gene_resource: "msigdb_term2gene@2026.1"
+  category_map_resource: "lisa_category_map@1.0.0"
+  lisa_dictionary: "core"
+
+  file_label_prefix: "RIAZ_GSE91061"
+  report_title: "Riaz GSE91061: a longitudinal nivolumab response worked example"
+  # The worked example uses the bounded standard report. Optional KEGG maps
+  # and HALLMARKS are deliberately not requested.
+  run_kegg_maps: false
+  run_hallmarks: false
+
+  # Start with true for validation-only demonstration runs. The canonical executed
+  # example uses false and writes transactionally to the directory above.
+  dry_run: false
+  resume: false
+  sufficiency_action: "warn"
+
+  duplicate_policies:
+    de_table_duplicate_policy: "error"
+    matrix_duplicate_policy: "error"
+    mapped_id_collision_policy: "error"
+
+report:
+  # The standard report keeps each selected figure as a portable PNG plus its
+  # figure-specific source table and reproduction recipe. Script 09 validates,
+  # plans and completes a dry run before it may start scientific computation.
+  mode: "standard"
+  category_evidence: true
+  # Render all four by default; choose [clean] or [dispersion] for one.
+  # Keep at least one variant; names must be unique.
+  category_nes_variants: [clean, percentages, direction, dispersion]
+  legacy_gene_products: false
+  # Initial visible matrix limits; complete evidence tables remain intact.
+  evidence_max_sets: 25
+  evidence_max_genes: 40
+  formats:
+    png: true
+    svg: false
+    pdf: false
+  source_data: true
+  recipes: true
+
+project:
+  title: "Riaz GSE91061 longitudinal nivolumab response"
+
+# lisaR supports five collections. This bounded example selects the four LISA
+# semantic collections and deliberately excludes the optional HALLMARKS
+# cross-check.
+collections:
+  - "GOBP-C2"
+  - "GOMF"
+  - "GOCC"
+  - "PATHWAYS"
+
+single_de:
+  # Within responders: treatment-associated change.
+  - analysis_id: "responders_on_vs_pre"
+    label: "Responders: ON vs PRE"
+    comparison: "CR/PR ON-treatment minus CR/PR PRE-treatment"
+    positive_direction: "Positive values indicate an on-treatment increase in responders."
+    model_note: "Paired, patient-blocked; marginal over prior ipilimumab strata."
+    de_path: "../outputs/lisa_inputs/responders_on_vs_pre.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    rank_col: "stat"
+    logfc_col: "log2FoldChange"
+    pvalue_col: "pvalue"
+    padj_col: "padj"
+    expression_matrix_path: "../outputs/lisa_inputs/paired_log2_normalized_counts_by_symbol.tsv"
+    matrix_feature_col: "symbol"
+    # Optional heatmap scope. Patient IDs are fixed by the audited paired
+    # cohort reconstructed in scripts/02_build_analysis_cohort.R.
+    heatmap_sample_include_regex: "^(Pt101|Pt18|Pt30|Pt34|Pt44|Pt48|Pt49|Pt94)_"
+
+  # Within progressive disease: treatment-associated change.
+  - analysis_id: "pd_on_vs_pre"
+    label: "Progressive disease: ON vs PRE"
+    comparison: "PD ON-treatment minus PD PRE-treatment"
+    positive_direction: "Positive values indicate an on-treatment increase in PD."
+    model_note: "Paired, patient-blocked; marginal over prior ipilimumab strata."
+    de_path: "../outputs/lisa_inputs/pd_on_vs_pre.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    rank_col: "stat"
+    logfc_col: "log2FoldChange"
+    pvalue_col: "pvalue"
+    padj_col: "padj"
+    expression_matrix_path: "../outputs/lisa_inputs/paired_log2_normalized_counts_by_symbol.tsv"
+    matrix_feature_col: "symbol"
+    heatmap_sample_include_regex: "^(Pt1|Pt103|Pt106|Pt11|Pt17|Pt27|Pt28|Pt31|Pt46|Pt47|Pt5|Pt52|Pt62|Pt78|Pt8|Pt84|Pt85|Pt9)_"
+
+  # Between outcome groups before nivolumab.
+  - analysis_id: "responders_vs_pd_pre"
+    label: "Baseline: responders vs PD"
+    comparison: "CR/PR PRE-treatment minus PD PRE-treatment"
+    positive_direction: "Positive values are higher in future responders at baseline."
+    model_note: "Cross-sectional PRE comparison adjusted for prior ipilimumab."
+    de_path: "../outputs/lisa_inputs/responders_vs_pd_pre.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    rank_col: "stat"
+    logfc_col: "log2FoldChange"
+    pvalue_col: "pvalue"
+    padj_col: "padj"
+    expression_matrix_path: "../outputs/lisa_inputs/paired_log2_normalized_counts_by_symbol.tsv"
+    matrix_feature_col: "symbol"
+    heatmap_sample_include_regex: "_Pre_"
+
+  # Between outcome groups while receiving nivolumab.
+  - analysis_id: "responders_vs_pd_on"
+    label: "On-treatment: responders vs PD"
+    comparison: "CR/PR ON-treatment minus PD ON-treatment"
+    positive_direction: "Positive values are higher in responders on treatment."
+    model_note: "Cross-sectional ON comparison adjusted for prior ipilimumab."
+    de_path: "../outputs/lisa_inputs/responders_vs_pd_on.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    rank_col: "stat"
+    logfc_col: "log2FoldChange"
+    pvalue_col: "pvalue"
+    padj_col: "padj"
+    expression_matrix_path: "../outputs/lisa_inputs/paired_log2_normalized_counts_by_symbol.tsv"
+    matrix_feature_col: "symbol"
+    heatmap_sample_include_regex: "_On_"
+
+  # Formal difference-in-differences interaction.
+  - analysis_id: "differential_longitudinal_response"
+    label: "Differential longitudinal response"
+    comparison: "(CR/PR ON − PRE) minus (PD ON − PRE)"
+    positive_direction: "Positive values indicate a greater on-treatment increase in responders than in PD."
+    model_note: "Patient-blocked time-by-response interaction, adjusted for time-by-prior-ipilimumab."
+    de_path: "../outputs/lisa_inputs/differential_longitudinal_response.tsv"
+    species: "Homo sapiens"
+    symbol_col: "symbol"
+    rank_col: "stat"
+    logfc_col: "log2FoldChange"
+    pvalue_col: "pvalue"
+    padj_col: "padj"
+    expression_matrix_path: "../outputs/lisa_inputs/paired_log2_normalized_counts_by_symbol.tsv"
+    matrix_feature_col: "symbol"
+    # A dot intentionally selects every paired sample for the interaction.
+    heatmap_sample_include_regex: "."
+
+# LISA contrasts compare category-level profiles descriptively. They help
+# explain the formal models but do not replace the gene-level interaction test.
+contrasts:
+  - contrast_id: "response_dynamics"
+    analysis_a: "responders_on_vs_pre"
+    analysis_b: "pd_on_vs_pre"
+    contrast_label: "Treatment dynamics: responders minus PD"
+    comparison: "LISA profile(Responders ON − PRE) minus LISA profile(PD ON − PRE)"
+    positive_direction: "Positive values indicate a stronger category response in responders."
+
+  - contrast_id: "response_separation_by_time"
+    analysis_a: "responders_vs_pd_on"
+    analysis_b: "responders_vs_pd_pre"
+    contrast_label: "Response-group separation: ON minus PRE"
+    comparison: "LISA profile(CR/PR − PD at ON) minus LISA profile(CR/PR − PD at PRE)"
+    positive_direction: "Positive values indicate that responder-versus-PD separation is stronger on treatment."
+
+# Source packaging is allowlist-based. No other local file can be copied into
+# the portable LISA report by this configuration.
+allowlisted_source_paths:
+  - "../outputs/lisa_inputs/responders_on_vs_pre.tsv"
+  - "../outputs/lisa_inputs/pd_on_vs_pre.tsv"
+  - "../outputs/lisa_inputs/responders_vs_pd_pre.tsv"
+  - "../outputs/lisa_inputs/responders_vs_pd_on.tsv"
+  - "../outputs/lisa_inputs/differential_longitudinal_response.tsv"
+  - "../outputs/lisa_inputs/paired_log2_normalized_counts_by_symbol.tsv"
+  - "../outputs/lisa_inputs/paired_sample_annotation.tsv"
+  - "../outputs/lisa_inputs/lisa_input_validation.tsv"
+
+source_data:
+  - path: "../outputs/lisa_inputs/responders_on_vs_pre.tsv"
+    role: "differential_expression"
+    target_subdir: "de_inputs"
+  - path: "../outputs/lisa_inputs/pd_on_vs_pre.tsv"
+    role: "differential_expression"
+    target_subdir: "de_inputs"
+  - path: "../outputs/lisa_inputs/responders_vs_pd_pre.tsv"
+    role: "differential_expression"
+    target_subdir: "de_inputs"
+  - path: "../outputs/lisa_inputs/responders_vs_pd_on.tsv"
+    role: "differential_expression"
+    target_subdir: "de_inputs"
+  - path: "../outputs/lisa_inputs/differential_longitudinal_response.tsv"
+    role: "adjusted_time_response_interaction"
+    target_subdir: "de_inputs"
+  - path: "../outputs/lisa_inputs/paired_log2_normalized_counts_by_symbol.tsv"
+    role: "expression_matrix"
+    target_subdir: "expression"
+  - path: "../outputs/lisa_inputs/paired_sample_annotation.tsv"
+    role: "sample_annotation"
+    target_subdir: "metadata"
+  - path: "../outputs/lisa_inputs/lisa_input_validation.tsv"
+    role: "quality_control"
+    target_subdir: "metadata"

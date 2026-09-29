@@ -1,0 +1,7 @@
+universe	gene_set_id	gene_set_name	source_id	category_id	category_display_name	LISA_score	tier
+GOBP-C2	SYN_BP_RESPONSE	Synthetic biological response	SYNTHETIC_CUSTOM_EXAMPLE	IMMUNE_RESPONSE	Immune response		custom
+GOBP-C2	SYN_BP_RESPONSE	Synthetic biological response	SYNTHETIC_CUSTOM_EXAMPLE	SIGNAL_TRANSDUCTION	Signal transduction		custom
+GOMF	SYN_MF_BINDING	Synthetic molecular binding	SYNTHETIC_CUSTOM_EXAMPLE	SIGNAL_TRANSDUCTION	Signal transduction		custom
+GOCC	SYN_CC_COMPLEX	Synthetic cellular complex	SYNTHETIC_CUSTOM_EXAMPLE	CELL_STRUCTURE	Cell structure		custom
+PATHWAYS	SYN_PATHWAY_CASCADE	Synthetic signalling cascade	SYNTHETIC_CUSTOM_EXAMPLE	IMMUNE_RESPONSE	Immune response		custom
+PATHWAYS	SYN_PATHWAY_CASCADE	Synthetic signalling cascade	SYNTHETIC_CUSTOM_EXAMPLE	SIGNAL_TRANSDUCTION	Signal transduction		custom

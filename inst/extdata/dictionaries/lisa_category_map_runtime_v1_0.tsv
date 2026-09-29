@@ -1,0 +1,159 @@
+category_id	display_name	macrogroup_id	macrogroup_name	macrogroup_order	category_order_within_macrogroup	notes	family_id	pathway_id
+EGFR_ERBB_SIGNALING	EGFR/ERBB signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	EGFR_ERBB_SIGNALING
+MF_AMINO_ACID_METAB	Amino-acid metabolic enzyme activity	MF_CATALYTIC_METABOLIC	Catalytic and metabolic enzyme functions	1	1	Built-in fixed LISA GOMF plotting macrogroup.		
+FGFR_SIGNALING	FGFR signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	FGFR_SIGNALING
+MF_ANTIOX_REDOX	Antioxidant and redox activity	MF_CATALYTIC_METABOLIC	Catalytic and metabolic enzyme functions	1	2	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_CARBOHYDRATE_METAB	Carbohydrate metabolic enzyme activity	MF_CATALYTIC_METABOLIC	Catalytic and metabolic enzyme functions	1	3	Built-in fixed LISA GOMF plotting macrogroup.		
+VEGF_VEGFR_SIGNALING	VEGF/VEGFR signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	VEGF_VEGFR_SIGNALING
+MF_DETOX_XENOBIOTIC	Detoxification and xenobiotic activity	MF_CATALYTIC_METABOLIC	Catalytic and metabolic enzyme functions	1	4	Built-in fixed LISA GOMF plotting macrogroup.		
+PDGF_PDGFRA_B_SIGNALING	PDGF/PDGFR signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	4	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	PDGF_PDGFRA_B_SIGNALING
+MET_HGF_SIGNALING	MET/HGF signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	5	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	MET_HGF_SIGNALING
+MF_CATALYTIC	General catalytic activity	MF_CATALYTIC_METABOLIC	Catalytic and metabolic enzyme functions	1	5	Built-in fixed LISA GOMF plotting macrogroup.		
+KIT_SIGNALING	KIT signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	6	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	KIT_SIGNALING
+MF_METABOLIC_ENZ	General metabolic enzyme activity	MF_CATALYTIC_METABOLIC	Catalytic and metabolic enzyme functions	1	6	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_LIPID_METAB	Lipid metabolic enzyme activity	MF_CATALYTIC_METABOLIC	Catalytic and metabolic enzyme functions	1	7	Built-in fixed LISA GOMF plotting macrogroup.		
+RET_SIGNALING	RET signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	8	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	RET_SIGNALING
+INSULIN_IGF_SIGNALING	Insulin/IGF signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	9	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	INSULIN_IGF_SIGNALING
+RAS_ACTIVATION	RAS activation	RTK_RAS_MAPK	RTK_RAS_MAPK	1	10	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	RAS_ACTIVATION
+RAF_MEK_ERK_CASCADE	RAF-MEK-ERK cascade	RTK_RAS_MAPK	RTK_RAS_MAPK	1	11	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	RAF_MEK_ERK_CASCADE
+ALK_SIGNALING	ALK signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	13	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	ALK_SIGNALING
+NTRK_TRK_SIGNALING	NTRK/TRK signaling	RTK_RAS_MAPK	RTK_RAS_MAPK	1	15	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_RAS_MAPK	NTRK_TRK_SIGNALING
+CC_EXTRACELLULAR_MATRIX	Extracellular matrix compartment	CC_SURFACE_ADHESION_ECM	Cell surface, adhesion and ECM compartments	2	1	Built-in fixed LISA GOCC plotting macrogroup.		
+P38_MAPK_SIGNALING	p38 MAPK signaling	STRESS_MAPK	STRESS_MAPK	2	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	STRESS_MAPK	P38_MAPK_SIGNALING
+CC_JUNCTION_ADHESION_CYTOSKELETON	Junction, adhesion and cytoskeletal compartment	CC_SURFACE_ADHESION_ECM	Cell surface, adhesion and ECM compartments	2	2	Built-in fixed LISA GOCC plotting macrogroup.		
+JNK_SIGNALING	JNK signaling	STRESS_MAPK	STRESS_MAPK	2	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	STRESS_MAPK	JNK_SIGNALING
+CC_PLASMA_MEMBRANE_CELL_SURFACE	Plasma membrane and cell-surface compartment	CC_SURFACE_ADHESION_ECM	Cell surface, adhesion and ECM compartments	2	3	Built-in fixed LISA GOCC plotting macrogroup.		
+MF_CELL_CYCLE_REG	Cell-cycle regulatory activity	MF_CELL_CYCLE_DEVELOPMENT	Cell-cycle and developmental regulatory functions	3	1	Built-in fixed LISA GOMF plotting macrogroup.		
+PI3K_CLASS_I_SIGNALING	Class I PI3K signaling	PI3K_AKT_MTOR	PI3K_AKT_MTOR	3	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	PI3K_AKT_MTOR	PI3K_CLASS_I_SIGNALING
+AKT_SIGNALING	AKT signaling	PI3K_AKT_MTOR	PI3K_AKT_MTOR	3	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	PI3K_AKT_MTOR	AKT_SIGNALING
+MF_DEVELOPMENT_REG	Developmental regulator activity	MF_CELL_CYCLE_DEVELOPMENT	Cell-cycle and developmental regulatory functions	3	2	Built-in fixed LISA GOMF plotting macrogroup.		
+MTORC1_SIGNALING	mTORC1 signaling	PI3K_AKT_MTOR	PI3K_AKT_MTOR	3	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	PI3K_AKT_MTOR	MTORC1_SIGNALING
+MTORC2_SIGNALING	mTORC2 signaling	PI3K_AKT_MTOR	PI3K_AKT_MTOR	3	4	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	PI3K_AKT_MTOR	MTORC2_SIGNALING
+AMPK_SIGNALING	AMPK signaling	PI3K_AKT_MTOR	PI3K_AKT_MTOR	3	5	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	PI3K_AKT_MTOR	AMPK_SIGNALING
+DEVELOPMENT_MORPHOGENESIS	Development and morphogenesis	DEVELOPMENT_NEURAL	Developmental and neural programs	4	1	Embryonic development, organogenesis and morphogenesis.		
+RAC1_SIGNALING	RAC1 signaling	RHO_GTPASE_CYTOSKELETON	RHO_GTPASE_CYTOSKELETON	4	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RHO_GTPASE_CYTOSKELETON	RAC1_SIGNALING
+NEUROGENESIS_SYNAPSE	Neurogenesis and synapse	DEVELOPMENT_NEURAL	Developmental and neural programs	4	2	Neuronal differentiation, axon guidance, synapse and neurotransmission.		
+RHOA_ROCK_SIGNALING	RHOA-ROCK signaling	RHO_GTPASE_CYTOSKELETON	RHO_GTPASE_CYTOSKELETON	4	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RHO_GTPASE_CYTOSKELETON	RHOA_ROCK_SIGNALING
+CDC42_SIGNALING	CDC42 signaling	RHO_GTPASE_CYTOSKELETON	RHO_GTPASE_CYTOSKELETON	4	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RHO_GTPASE_CYTOSKELETON	CDC42_SIGNALING
+PAK_SIGNALING	PAK signaling	RHO_GTPASE_CYTOSKELETON	RHO_GTPASE_CYTOSKELETON	4	4	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RHO_GTPASE_CYTOSKELETON	PAK_SIGNALING
+FAK_SRC_SIGNALING	FAK/SRC adhesion signaling	RHO_GTPASE_CYTOSKELETON	RHO_GTPASE_CYTOSKELETON	4	5	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RHO_GTPASE_CYTOSKELETON	FAK_SRC_SIGNALING
+ACTIN_REGULATORY_SIGNALING	Actin regulatory signaling	RHO_GTPASE_CYTOSKELETON	RHO_GTPASE_CYTOSKELETON	4	6	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RHO_GTPASE_CYTOSKELETON	ACTIN_REGULATORY_SIGNALING
+MF_EPIGENETIC	Epigenetic and chromatin activity	MF_GENE_EXPRESSION	Gene-expression molecular functions	5	1	Built-in fixed LISA GOMF plotting macrogroup.		
+TGF_BETA_SMAD_SIGNALING	TGF-beta/SMAD signaling	TGF_BETA_SMAD	TGF_BETA_SMAD	5	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	TGF_BETA_SMAD	TGF_BETA_SMAD_SIGNALING
+BMP_SMAD_SIGNALING	BMP/SMAD signaling	TGF_BETA_SMAD	TGF_BETA_SMAD	5	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	TGF_BETA_SMAD	BMP_SMAD_SIGNALING
+MF_RNA_PROCESSING	RNA processing activity	MF_GENE_EXPRESSION	Gene-expression molecular functions	5	2	Built-in fixed LISA GOMF plotting macrogroup.		
+ACTIVIN_NODAL_SIGNALING	Activin/Nodal signaling	TGF_BETA_SMAD	TGF_BETA_SMAD	5	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	TGF_BETA_SMAD	ACTIVIN_NODAL_SIGNALING
+MF_TRANSCRIPTION_REG	Transcription regulation activity	MF_GENE_EXPRESSION	Gene-expression molecular functions	5	3	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_TRANSLATION_REG	Translation regulation activity	MF_GENE_EXPRESSION	Gene-expression molecular functions	5	4	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_BINDING	Binding activity	MF_GENERIC_OTHER	Generic or host-interaction functions	6	1	Built-in fixed LISA GOMF plotting macrogroup.		
+WNT_BETA_CATENIN_SIGNALING	WNT/beta-catenin signaling	WNT_NOTCH_HEDGEHOG	WNT_NOTCH_HEDGEHOG	6	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	WNT_NOTCH_HEDGEHOG	WNT_BETA_CATENIN_SIGNALING
+MF_VIRAL_HOST	Viral-host molecular function	MF_GENERIC_OTHER	Generic or host-interaction functions	6	2	Built-in fixed LISA GOMF plotting macrogroup.		
+NONCANONICAL_WNT_PCP_SIGNALING	Non-canonical WNT/PCP signaling	WNT_NOTCH_HEDGEHOG	WNT_NOTCH_HEDGEHOG	6	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	WNT_NOTCH_HEDGEHOG	NONCANONICAL_WNT_PCP_SIGNALING
+NOTCH_SIGNALING	NOTCH signaling	WNT_NOTCH_HEDGEHOG	WNT_NOTCH_HEDGEHOG	6	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	WNT_NOTCH_HEDGEHOG	NOTCH_SIGNALING
+HEDGEHOG_SIGNALING	Hedgehog signaling	WNT_NOTCH_HEDGEHOG	WNT_NOTCH_HEDGEHOG	6	4	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	WNT_NOTCH_HEDGEHOG	HEDGEHOG_SIGNALING
+DNA_DAMAGE_REPAIR_CHECKPOINTS	DNA damage, repair and checkpoints	GENOME_GENE_EXPRESSION	Genome and gene expression	7	1	Genome maintenance, repair and checkpoint biology.		
+HIPPO_YAP_TAZ_SIGNALING	Hippo/YAP/TAZ signaling	HIPPO_MECHANOSIGNALING	HIPPO_MECHANOSIGNALING	7	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	HIPPO_MECHANOSIGNALING	HIPPO_YAP_TAZ_SIGNALING
+MECHANOTRANSDUCTION_SIGNALING	Mechanotransduction signaling	HIPPO_MECHANOSIGNALING	HIPPO_MECHANOSIGNALING	7	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	HIPPO_MECHANOSIGNALING	MECHANOTRANSDUCTION_SIGNALING
+RNA_PROCESSING_SPLICING_RNP	RNA processing and RNP biology	GENOME_GENE_EXPRESSION	Genome and gene expression	7	2	Post-transcriptional RNA biology and RNP processes.		
+TRANSCRIPTION_CHROMATIN_EPIGENETICS	Transcription, chromatin and epigenetics	GENOME_GENE_EXPRESSION	Genome and gene expression	7	3	Transcriptional regulation, chromatin remodeling and epigenetics.		
+TRANSLATION_RIBOSOME	Translation and ribosome	GENOME_GENE_EXPRESSION	Genome and gene expression	7	4	Translation, ribosome biogenesis and tRNA-related processes.		
+IMMUNE_ADAPTIVE_ANTIGEN_MHC	Adaptive immunity and antigen presentation	IMMUNE_INFLAMMATION	Immune and inflammatory biology	8	1	Adaptive immune pathways, antigen processing and MHC.		
+TYPE_I_INTERFERON_SIGNALING	Type I interferon signaling	CYTOKINE_JAK_STAT	CYTOKINE_JAK_STAT	8	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	CYTOKINE_JAK_STAT	TYPE_I_INTERFERON_SIGNALING
+IMMUNE_CYTOKINE_INFLAMMATORY	Cytokine and inflammatory signaling	IMMUNE_INFLAMMATION	Immune and inflammatory biology	8	2	Cytokine, chemokine, IFN, TNF and inflammatory cascades.		
+TYPE_II_INTERFERON_SIGNALING	Type II interferon signaling	CYTOKINE_JAK_STAT	CYTOKINE_JAK_STAT	8	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	CYTOKINE_JAK_STAT	TYPE_II_INTERFERON_SIGNALING
+IL6_JAK_STAT3_SIGNALING	IL6/JAK/STAT3 signaling	CYTOKINE_JAK_STAT	CYTOKINE_JAK_STAT	8	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	CYTOKINE_JAK_STAT	IL6_JAK_STAT3_SIGNALING
+IMMUNE_CORE	Immune core	IMMUNE_INFLAMMATION	Immune and inflammatory biology	8	3	Broad immune activation and leukocyte biology.		
+IL2_STAT5_SIGNALING	IL2/STAT5 signaling	CYTOKINE_JAK_STAT	CYTOKINE_JAK_STAT	8	4	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	CYTOKINE_JAK_STAT	IL2_STAT5_SIGNALING
+IMMUNE_INNATE_COMPLEMENT_PRR	Innate immunity, complement and PRR	IMMUNE_INFLAMMATION	Immune and inflammatory biology	8	4	Innate sensing, complement, inflammasome and PRR biology.		
+IL10_STAT3_SIGNALING	IL10/STAT3 signaling	CYTOKINE_JAK_STAT	CYTOKINE_JAK_STAT	8	5	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	CYTOKINE_JAK_STAT	IL10_STAT3_SIGNALING
+IL12_IL23_STAT4_3_SIGNALING	IL12/IL23 signaling	CYTOKINE_JAK_STAT	CYTOKINE_JAK_STAT	8	6	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	CYTOKINE_JAK_STAT	IL12_IL23_STAT4_3_SIGNALING
+CC_IMMUNE_SIGNALING_COMPLEX	Immune signaling and inflammatory complex compartment	CC_IMMUNE_COMPLEXES	Immune and signaling complexes	9	1	Built-in fixed LISA GOCC plotting macrogroup.		
+TNF_NFKB_SIGNALING	TNF/NF-kB signaling	INFLAMMATORY_NFKB	INFLAMMATORY_NFKB	9	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	INFLAMMATORY_NFKB	TNF_NFKB_SIGNALING
+IL1_TLR_NFKB_SIGNALING	IL1/TLR-NF-kB signaling	INFLAMMATORY_NFKB	INFLAMMATORY_NFKB	9	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	INFLAMMATORY_NFKB	IL1_TLR_NFKB_SIGNALING
+CANONICAL_NFKB_SIGNALING	Canonical NF-kB signaling	INFLAMMATORY_NFKB	INFLAMMATORY_NFKB	9	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	INFLAMMATORY_NFKB	CANONICAL_NFKB_SIGNALING
+NONCANONICAL_NFKB_SIGNALING	Non-canonical NF-kB signaling	INFLAMMATORY_NFKB	INFLAMMATORY_NFKB	9	4	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	INFLAMMATORY_NFKB	NONCANONICAL_NFKB_SIGNALING
+MF_COMPLEMENT	Complement molecular function	MF_IMMUNE_LIGAND_RECEPTOR	Immune, ligand and receptor functions	10	1	Built-in fixed LISA GOMF plotting macrogroup.		
+TLR_SIGNALING	TLR signaling	INNATE_IMMUNE_SIGNALING	INNATE_IMMUNE_SIGNALING	10	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	INNATE_IMMUNE_SIGNALING	TLR_SIGNALING
+MF_CYTOKINE_GROWTH	Cytokine, chemokine, growth-factor and hormone ligand activity	MF_IMMUNE_LIGAND_RECEPTOR	Immune, ligand and receptor functions	10	2	Built-in fixed LISA GOMF plotting macrogroup.		
+RIG_I_MDA5_SIGNALING	RIG-I/MDA5 signaling	INNATE_IMMUNE_SIGNALING	INNATE_IMMUNE_SIGNALING	10	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	INNATE_IMMUNE_SIGNALING	RIG_I_MDA5_SIGNALING
+CGAS_STING_SIGNALING	cGAS-STING signaling	INNATE_IMMUNE_SIGNALING	INNATE_IMMUNE_SIGNALING	10	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	INNATE_IMMUNE_SIGNALING	CGAS_STING_SIGNALING
+MF_IMMUNE_RECEPTOR	Immune receptor and antigen-recognition activity	MF_IMMUNE_LIGAND_RECEPTOR	Immune, ligand and receptor functions	10	3	Built-in fixed LISA GOMF plotting macrogroup.		
+NLRP3_INFLAMMASOME_SIGNALING	NLRP3 inflammasome signaling	INNATE_IMMUNE_SIGNALING	INNATE_IMMUNE_SIGNALING	10	4	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	INNATE_IMMUNE_SIGNALING	NLRP3_INFLAMMASOME_SIGNALING
+CC_MITOCHONDRIAL_METABOLIC	Mitochondrial and metabolic organelle compartment	CC_METABOLIC_ORGANELLES	Metabolic organelles	11	1	Built-in fixed LISA GOCC plotting macrogroup.		
+GPCR_CAMP_PKA_SIGNALING	GPCR-cAMP-PKA signaling	GPCR_SECOND_MESSENGER	GPCR_SECOND_MESSENGER	11	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	GPCR_SECOND_MESSENGER	GPCR_CAMP_PKA_SIGNALING
+GPCR_PLC_CALCIUM_SIGNALING	GPCR-PLC-calcium signaling	GPCR_SECOND_MESSENGER	GPCR_SECOND_MESSENGER	11	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	GPCR_SECOND_MESSENGER	GPCR_PLC_CALCIUM_SIGNALING
+PLC_GAMMA_SIGNALING	PLC-gamma signaling	GPCR_SECOND_MESSENGER	GPCR_SECOND_MESSENGER	11	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	GPCR_SECOND_MESSENGER	PLC_GAMMA_SIGNALING
+CALCIUM_CALMODULIN_CALCINEURIN	Calcium/calcineurin/NFAT signaling	GPCR_SECOND_MESSENGER	GPCR_SECOND_MESSENGER	11	4	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	GPCR_SECOND_MESSENGER	CALCIUM_CALMODULIN_CALCINEURIN
+S1P_EDG_SIGNALING	S1P/EDG receptor signaling	GPCR_SECOND_MESSENGER	GPCR_SECOND_MESSENGER	11	5	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	GPCR_SECOND_MESSENGER	S1P_EDG_SIGNALING
+METABOLISM_AA_ONECARBON	Amino acid and one-carbon metabolism	METABOLISM_BIOENERGETICS	Metabolism and bioenergetics	12	1	Amino acid, folate, methionine and one-carbon metabolism.		
+TCR_SIGNALING	T-cell receptor signaling	T_CELL_B_CELL_RECEPTOR_SIGNALING	T_CELL_B_CELL_RECEPTOR_SIGNALING	12	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	T_CELL_B_CELL_RECEPTOR_SIGNALING	TCR_SIGNALING
+BCR_SIGNALING	B-cell receptor signaling	T_CELL_B_CELL_RECEPTOR_SIGNALING	T_CELL_B_CELL_RECEPTOR_SIGNALING	12	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	T_CELL_B_CELL_RECEPTOR_SIGNALING	BCR_SIGNALING
+METABOLISM_CARBOHYDRATE_GLYCOLYSIS	Carbohydrate metabolism and glycolysis	METABOLISM_BIOENERGETICS	Metabolism and bioenergetics	12	2	Glycolysis, gluconeogenesis, pentose phosphate, glycogen and sugar metabolism.		
+CD28_COSTIMULATION_SIGNALING	CD28 costimulation signaling	T_CELL_B_CELL_RECEPTOR_SIGNALING	T_CELL_B_CELL_RECEPTOR_SIGNALING	12	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	T_CELL_B_CELL_RECEPTOR_SIGNALING	CD28_COSTIMULATION_SIGNALING
+DETOX_XENOBIOTIC_METABOLISM	Detoxification and xenobiotic metabolism	METABOLISM_BIOENERGETICS	Metabolism and bioenergetics	12	3	CYP, xenobiotic and phase I/II detoxification metabolism.		
+METABOLISM_CORE	General metabolism	METABOLISM_BIOENERGETICS	Metabolism and bioenergetics	12	4	Broad metabolic processes without a more specific metabolic subtype.		
+METABOLISM_LIPID_FA	Lipid and fatty acid metabolism	METABOLISM_BIOENERGETICS	Metabolism and bioenergetics	12	5	Fatty acid, lipid, cholesterol, sphingolipid and phospholipid metabolism.		
+MITOCHONDRIA_OXPHOS_ETC	Mitochondria, OXPHOS and ETC	METABOLISM_BIOENERGETICS	Metabolism and bioenergetics	12	6	Mitochondrial respiration, ETC, OXPHOS and TCA-linked bioenergetics.		
+METABOLISM_NUCLEOTIDE	Nucleotide metabolism	METABOLISM_BIOENERGETICS	Metabolism and bioenergetics	12	7	Purine, pyrimidine, salvage and nucleotide-pool biology.		
+PEROXISOME_FAO	Peroxisome and fatty acid oxidation	METABOLISM_BIOENERGETICS	Metabolism and bioenergetics	12	8	Peroxisomal metabolism and fatty-acid oxidation.		
+ECM_MATRIX_REMODELING	ECM and matrix remodeling	MICROENVIRONMENT_VASCULAR_ECM	Microenvironment, vascular and ECM	13	1	Extracellular matrix, collagen, basement membrane and MMP biology.		
+FAS_DEATH_RECEPTOR_SIGNALING	FAS/death receptor signaling	DEATH_RECEPTOR_SIGNALING	DEATH_RECEPTOR_SIGNALING	13	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	DEATH_RECEPTOR_SIGNALING	FAS_DEATH_RECEPTOR_SIGNALING
+TRAIL_DEATH_RECEPTOR_SIGNALING	TRAIL death receptor signaling	DEATH_RECEPTOR_SIGNALING	DEATH_RECEPTOR_SIGNALING	13	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	DEATH_RECEPTOR_SIGNALING	TRAIL_DEATH_RECEPTOR_SIGNALING
+VASCULAR_LYMPHATIC	Vascular, angiogenic and lymphatic biology	MICROENVIRONMENT_VASCULAR_ECM	Microenvironment, vascular and ECM	13	2	Angiogenesis, lymphangiogenesis, endothelial and vascular remodeling programs.		
+CC_NUCLEAR_CHROMATIN	Nuclear and chromatin compartment	CC_NUCLEAR_GENE_EXPRESSION	Nuclear and gene-expression compartments	14	1	Built-in fixed LISA GOCC plotting macrogroup.		
+ESTROGEN_RECEPTOR_SIGNALING	Estrogen receptor signaling	NUCLEAR_RECEPTOR_SIGNALING	NUCLEAR_RECEPTOR_SIGNALING	14	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	NUCLEAR_RECEPTOR_SIGNALING	ESTROGEN_RECEPTOR_SIGNALING
+ANDROGEN_RECEPTOR_SIGNALING	Androgen receptor signaling	NUCLEAR_RECEPTOR_SIGNALING	NUCLEAR_RECEPTOR_SIGNALING	14	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	NUCLEAR_RECEPTOR_SIGNALING	ANDROGEN_RECEPTOR_SIGNALING
+CC_TRANSCRIPTION_RNA_RIBOSOME	Transcription, RNA and ribosome complexes	CC_NUCLEAR_GENE_EXPRESSION	Nuclear and gene-expression compartments	14	2	Built-in fixed LISA GOCC plotting macrogroup.		
+PPAR_SIGNALING	PPAR signaling	NUCLEAR_RECEPTOR_SIGNALING	NUCLEAR_RECEPTOR_SIGNALING	14	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	NUCLEAR_RECEPTOR_SIGNALING	PPAR_SIGNALING
+NRF2_KEAP1_SIGNALING	NRF2/KEAP1 signaling	STRESS_RESPONSE_SIGNALING	STRESS_RESPONSE_SIGNALING	15	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	STRESS_RESPONSE_SIGNALING	NRF2_KEAP1_SIGNALING
+UPR_PERK_ATF4_SIGNALING	PERK/ATF4 UPR signaling	STRESS_RESPONSE_SIGNALING	STRESS_RESPONSE_SIGNALING	15	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	STRESS_RESPONSE_SIGNALING	UPR_PERK_ATF4_SIGNALING
+IRE1_XBP1_SIGNALING	IRE1/XBP1 UPR signaling	STRESS_RESPONSE_SIGNALING	STRESS_RESPONSE_SIGNALING	15	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	STRESS_RESPONSE_SIGNALING	IRE1_XBP1_SIGNALING
+ATF6_UPR_SIGNALING	ATF6 UPR signaling	STRESS_RESPONSE_SIGNALING	STRESS_RESPONSE_SIGNALING	15	4	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	STRESS_RESPONSE_SIGNALING	ATF6_UPR_SIGNALING
+CELL_CYCLE_PROLIFERATION	Cell cycle and proliferation	PROLIFERATION_CELL_CYCLE	Proliferation and cell cycle	16	1	Cell-cycle machinery, mitosis and proliferation programs.		
+EPHRIN_EPH_SIGNALING	Ephrin/EPH signaling	RTK_MATRIX_GUIDANCE_SIGNALING	RTK_MATRIX_GUIDANCE_SIGNALING	16	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_MATRIX_GUIDANCE_SIGNALING	EPHRIN_EPH_SIGNALING
+DDR1_DDR2_COLLAGEN_RECEPTOR_SIGNALING	DDR1/DDR2 collagen receptor signaling	RTK_MATRIX_GUIDANCE_SIGNALING	RTK_MATRIX_GUIDANCE_SIGNALING	16	2	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_MATRIX_GUIDANCE_SIGNALING	DDR1_DDR2_COLLAGEN_RECEPTOR_SIGNALING
+SEMAPHORIN_PLEXIN_NEUROPILIN_SIGNALING	Semaphorin/Plexin/Neuropilin signaling	RTK_MATRIX_GUIDANCE_SIGNALING	RTK_MATRIX_GUIDANCE_SIGNALING	16	3	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	RTK_MATRIX_GUIDANCE_SIGNALING	SEMAPHORIN_PLEXIN_NEUROPILIN_SIGNALING
+CC_OTHER_GENERIC_COMPLEX	Other generic protein/macromolecular complex	CC_PROTEOSTASIS_GENERIC_COMPLEXES	Proteostasis and generic complexes	17	1	Built-in fixed LISA GOCC plotting macrogroup.		
+CXCR4_CXCL12_SIGNALING	CXCR4/CXCL12 signaling	CHEMOKINE_GPCR_SIGNALING	CHEMOKINE_GPCR_SIGNALING	17	1	Bundled PATHWAYS hierarchy from PATHWAYS_STRICT_SIGNALING_v0_3.tsv	CHEMOKINE_GPCR_SIGNALING	CXCR4_CXCL12_SIGNALING
+CC_PROTEOSTASIS_COMPLEX	Proteostasis complex compartment	CC_PROTEOSTASIS_GENERIC_COMPLEXES	Proteostasis and generic complexes	17	2	Built-in fixed LISA GOCC plotting macrogroup.		
+MF_APOPTOSIS_REG	Apoptosis and cell-death regulatory activity	MF_PROTEOSTASIS_STRESS_DEATH	Proteostasis, stress and cell-death functions	18	1	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_PROTEASE_INHIB	Protease and protease inhibitor activity	MF_PROTEOSTASIS_STRESS_DEATH	Proteostasis, stress and cell-death functions	18	2	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_PROTEIN_FOLDING_DEG	Protein folding and degradation activity	MF_PROTEOSTASIS_STRESS_DEATH	Proteostasis, stress and cell-death functions	18	3	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_STRESS_RESPONSE	Stress-response molecular activity	MF_PROTEOSTASIS_STRESS_DEATH	Proteostasis, stress and cell-death functions	18	4	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_LIGASE_SUMOYL	Ubiquitin and SUMO ligase activity	MF_PROTEOSTASIS_STRESS_DEATH	Proteostasis, stress and cell-death functions	18	5	Built-in fixed LISA GOMF plotting macrogroup.		
+CC_ENDOLYSOSOME_AUTOPHAGY_VESICLE	Endolysosome, autophagy and intracellular vesicle compartment	CC_SECRETORY_ENDOMEMBRANE	Secretory and endomembrane compartments	19	1	Built-in fixed LISA GOCC plotting macrogroup.		
+CC_ER_GOLGI_SECRETORY	ER, Golgi and secretory-route compartment	CC_SECRETORY_ENDOMEMBRANE	Secretory and endomembrane compartments	19	2	Built-in fixed LISA GOCC plotting macrogroup.		
+CC_EXTRACELLULAR_VESICLE_SECRETOME	Extracellular vesicle and secretome compartment	CC_SECRETORY_ENDOMEMBRANE	Secretory and endomembrane compartments	19	3	Built-in fixed LISA GOCC plotting macrogroup.		
+SIGNALING_CORE	Core cell signaling	SIGNALING_COMMUNICATION	Signaling and cell communication	20	1	Generic intracellular signaling, kinases, phosphatases, GPCR and second messenger pathways.		
+ENDOCRINE_HORMONAL	Endocrine and hormonal pathways	SIGNALING_COMMUNICATION	Signaling and cell communication	20	2	Hormone-level signaling, including steroid, thyroid, androgen, estrogen and insulin-axis pathways.		
+GROWTH_FACTOR_RTK	Growth factor and RTK pathways	SIGNALING_COMMUNICATION	Signaling and cell communication	20	3	Growth-factor and receptor tyrosine kinase pathways.		
+TGFB_SMAD	TGF-beta and SMAD signaling	SIGNALING_COMMUNICATION	Signaling and cell communication	20	4	TGF-beta, BMP, activin and SMAD-family signaling.		
+WNT_NOTCH_HEDGEHOG_HIPPO	Wnt, Notch, Hedgehog and Hippo	SIGNALING_COMMUNICATION	Signaling and cell communication	20	5	Developmental signaling families frequently reused in plasticity and growth control.		
+MF_ENZYME_REG	Enzyme regulator activity	MF_SIGNALING_REGULATION	Signaling and regulatory functions	21	1	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_SIGNALING	Intracellular signaling activity	MF_SIGNALING_REGULATION	Signaling and regulatory functions	21	2	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_KINASE_PHOSPHATASE	Kinase and phosphatase activity	MF_SIGNALING_REGULATION	Signaling and regulatory functions	21	3	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_RECEPTOR	Receptor activity	MF_SIGNALING_REGULATION	Signaling and regulatory functions	21	4	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_SCAFFOLD_ADAPTER	Scaffold and adaptor activity	MF_SIGNALING_REGULATION	Signaling and regulatory functions	21	5	Built-in fixed LISA GOMF plotting macrogroup.		
+APOPTOSIS_CELL_DEATH	Apoptosis and regulated cell death	STRESS_DEATH_PROTEOSTASIS	Stress, proteostasis and cell death	22	1	Apoptosis, necroptosis, ferroptosis, pyroptosis and other regulated death programs.		
+AUTOPHAGY_LYSOSOME	Autophagy, lysosome and phagosome maturation	STRESS_DEATH_PROTEOSTASIS	Stress, proteostasis and cell death	22	2	Autophagy and degradative lysosome/phagosome biology.		
+ER_STRESS_UPR	ER stress and unfolded protein response	STRESS_DEATH_PROTEOSTASIS	Stress, proteostasis and cell death	22	3	UPR and ER stress response.		
+HEAT_SHOCK_STRESS_RESPONSE	Heat shock and acute stress response	STRESS_DEATH_PROTEOSTASIS	Stress, proteostasis and cell death	22	4	Heat shock and acute stress responses not better captured by ER stress, ROS or hypoxia.		
+HYPOXIA_HIF	Hypoxia and HIF programs	STRESS_DEATH_PROTEOSTASIS	Stress, proteostasis and cell death	22	5	Low-oxygen and HIF-driven adaptive programs.		
+OXIDATIVE_STRESS_REDOX_ROS	Oxidative stress, redox and ROS	STRESS_DEATH_PROTEOSTASIS	Stress, proteostasis and cell death	22	6	ROS, antioxidant and redox stress biology.		
+PROTEOSTASIS_UBIQUITIN_PROTEASOME	Proteostasis, ubiquitin and proteasome	STRESS_DEATH_PROTEOSTASIS	Stress, proteostasis and cell death	22	7	Protein folding, ubiquitin-proteasome and ERAD modules.		
+MF_ADHESION	Adhesion molecular function	MF_STRUCTURE_ADHESION_ECM	Structure, adhesion and ECM functions	23	1	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_CYTOSKELETON_MOTOR	Cytoskeleton and motor activity	MF_STRUCTURE_ADHESION_ECM	Structure, adhesion and ECM functions	23	2	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_EXTRACELL_MATRIX	Extracellular matrix molecular function	MF_STRUCTURE_ADHESION_ECM	Structure, adhesion and ECM functions	23	3	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_STRUCTURAL_CONSTITUENT	Structural constituent activity	MF_STRUCTURE_ADHESION_ECM	Structure, adhesion and ECM functions	23	4	Built-in fixed LISA GOMF plotting macrogroup.		
+ADHESION_JUNCTION_POLARITY	Adhesion, junctions and polarity	STRUCTURE_MOTILITY_PLASTICITY	Structure, motility and plasticity	24	1	Integrins, cadherins, junctions and epithelial polarity.		
+CYTOSKELETON_CONTRACTILITY	Cytoskeleton and contractility	STRUCTURE_MOTILITY_PLASTICITY	Structure, motility and plasticity	24	2	Actin, microtubules, myosin, Rho/Rac and contractile machinery.		
+EMT_PLASTICITY	EMT and cell-state plasticity	STRUCTURE_MOTILITY_PLASTICITY	Structure, motility and plasticity	24	3	EMT, epithelial plasticity, stemness and state transition programs.		
+MIGRATION_INVASION	Migration, invasion and motility programs	STRUCTURE_MOTILITY_PLASTICITY	Structure, motility and plasticity	24	4	Migration, invasion, chemotaxis, wound response and metastatic motility.		
+ION_TRANSPORT_HOMEOSTASIS	Ion transport and homeostasis	TRANSPORT_TRAFFICKING_HOMEOSTASIS	Transport, trafficking and homeostasis	25	1	Ion channels, ion transport, pH and metal homeostasis.		
+TRANSPORT_LOCALIZATION	Transport and localization	TRANSPORT_TRAFFICKING_HOMEOSTASIS	Transport, trafficking and homeostasis	25	2	General solute transport, protein localization and import/export.		
+VESICLE_SECRETORY_TRAFFICKING	Vesicle, endocytosis, exocytosis and secretion	TRANSPORT_TRAFFICKING_HOMEOSTASIS	Transport, trafficking and homeostasis	25	3	Vesicle trafficking, endocytosis, exocytosis, Golgi/ER trafficking and secretion.		
+MF_ION_SENSING	Ion and physicochemical sensing activity	MF_TRANSPORT_SENSING	Transport, vesicle traffic and sensing functions	26	1	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_ION_CHANNEL_PUMP	Ion channel and pump activity	MF_TRANSPORT_SENSING	Transport, vesicle traffic and sensing functions	26	2	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_OLFACTORY	Olfactory and taste receptor activity	MF_TRANSPORT_SENSING	Transport, vesicle traffic and sensing functions	26	3	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_TRANSPORTER	Transporter activity	MF_TRANSPORT_SENSING	Transport, vesicle traffic and sensing functions	26	4	Built-in fixed LISA GOMF plotting macrogroup.		
+MF_VESICLE_TRAFFIC	Vesicle trafficking activity	MF_TRANSPORT_SENSING	Transport, vesicle traffic and sensing functions	26	5	Built-in fixed LISA GOMF plotting macrogroup.		

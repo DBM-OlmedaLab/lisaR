@@ -1,0 +1,397 @@
+---
+title: "Custom dictionaries and supercategories"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Custom dictionaries and supercategories}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+A custom dictionary lets you organise gene sets using a classification that
+fits your study. It is useful when a specialised assay or a laboratory-curated
+collection is not represented well by the built-in LISA categories.
+
+You need three related TSV files. TERM2GENE defines which genes belong to each
+gene set. The dictionary assigns those gene sets to categories. The category
+map names and orders the categories within broader supercategories. Register
+the three files under new resource identities so that they do not replace the
+built-in resources.
+
+This guide follows one synthetic example from table construction to a saved
+report. It reuses the 40-gene sample project included with lisaR, including
+its gene-set memberships and differential-expression data. The custom category
+assignments below are example labels, not a biological classification to
+reuse.
+
+## 1. Create a fresh sample project
+
+Run the sections in order in an ordinary R or RStudio session. Start with a new
+copy of the sample project. `lisa_init_project()` refuses to overwrite an
+existing directory, so choose a new name if you have used this one before.
+
+```{r create-project, eval=FALSE}
+library(lisaR)
+
+project <- lisa_init_project("custom")
+resource_dir <- file.path(project, "custom-resources")
+stopifnot(!dir.exists(resource_dir))
+dir.create(resource_dir)
+```
+
+The copied project already contains the two synthetic analyses and their
+40-gene input tables. The following sections construct only the custom
+dictionary resources.
+
+## 2. Construct the three resource tables
+
+The sample TERM2GENE file contains 48 synthetic gene sets, each with 12
+members drawn from `GENE01` to `GENE40`. Read those memberships and the
+associated sample gene-set names from the installed package:
+
+```{r construct-memberships, eval=FALSE}
+sample_root <- system.file("extdata", "quick-start", package = "lisaR")
+read_sample <- function(name) utils::read.delim(
+  file.path(sample_root, name), sep = "\t", quote = "", comment.char = "",
+  check.names = FALSE, stringsAsFactors = FALSE,
+  colClasses = "character", na.strings = character()
+)
+
+term2gene <- read_sample("example_term2gene_v2_0.tsv")
+sample_dictionary <- read_sample("lisa_dictionary_quickstart_v1_1.tsv")
+gene_sets <- unique(sample_dictionary[, c(
+  "universe", "gene_set_id", "gene_set_name"
+)])
+
+print(utils::head(term2gene, 12))
+print(gene_sets)
+```
+
+Now define a new example classification. Each token selects one known family
+of synthetic gene-set IDs. The category IDs, display names and two
+supercategories are specific to this custom example.
+
+```{r construct-classification, eval=FALSE}
+classification <- data.frame(
+  token = c("_SIGNAL_", "_STRESS_", "_PROLIF_", "_MATRIX_"),
+  category_id = c(
+    "LAB_SIGNAL", "LAB_STRESS", "LAB_PROLIFERATION", "LAB_MATRIX"
+  ),
+  category_display_name = c(
+    "Example of signal response", "Example of stress response",
+    "Example of proliferation", "Example of matrix remodelling"
+  ),
+  stringsAsFactors = FALSE
+)
+
+category_index <- vapply(gene_sets$gene_set_id, function(gene_set_id) {
+  hits <- vapply(
+    classification$token, grepl, logical(1),
+    x = gene_set_id, fixed = TRUE
+  )
+  stopifnot(sum(hits) == 1L)
+  which(hits)
+}, integer(1))
+
+dictionary <- data.frame(
+  universe = gene_sets$universe,
+  gene_set_id = gene_sets$gene_set_id,
+  gene_set_name = gene_sets$gene_set_name,
+  source_id = rep("CUSTOM_SAMPLE40", nrow(gene_sets)),
+  category_id = classification$category_id[category_index],
+  category_display_name =
+    classification$category_display_name[category_index],
+  tier = rep("custom", nrow(gene_sets)),
+  stringsAsFactors = FALSE
+)
+
+category_map <- data.frame(
+  category_id = classification$category_id,
+  display_name = classification$category_display_name,
+  macrogroup_id = c(
+    "LAB_RESPONSES", "LAB_RESPONSES",
+    "LAB_GROWTH_STRUCTURE", "LAB_GROWTH_STRUCTURE"
+  ),
+  macrogroup_name = c(
+    "Example response programmes", "Example response programmes",
+    "Example growth and structure", "Example growth and structure"
+  ),
+  macrogroup_order = c(1L, 1L, 2L, 2L),
+  category_order_within_macrogroup = c(1L, 2L, 1L, 2L),
+  stringsAsFactors = FALSE
+)
+
+stopifnot(
+  setequal(dictionary$gene_set_id, term2gene$gs_name),
+  all(dictionary$tier == "custom"),
+  all(dictionary$category_id %in% category_map$category_id),
+  all(dictionary$category_display_name ==
+    category_map$display_name[match(
+      dictionary$category_id, category_map$category_id
+    )])
+)
+
+print(dictionary)
+print(category_map)
+```
+
+These are the exact required fields:
+
+| Table and schema | Required fields |
+|---|---|
+| TERM2GENE, `term2gene@1` | `gs_collection`, `gs_subcollection`, `gs_name`, `gs_exact_source`, `gene_symbol` |
+| Dictionary, `lisa_dictionary@2` | `universe`, `gene_set_id`, `gene_set_name`, `source_id`, `category_id`, `category_display_name`, `tier` |
+| Category map, `category_map@1` | `category_id`, `display_name`, `macrogroup_id`, `macrogroup_name`, `macrogroup_order`, `category_order_within_macrogroup` |
+
+Use one TERM2GENE row for each exact gene-set and gene pair. Within a gene set,
+keep `gs_collection`, `gs_subcollection` and `gs_exact_source` consistent.
+`gene_symbol` must use the namespace expected for the declared species.
+
+In the dictionary, `gene_set_id` must exactly match TERM2GENE `gs_name`. A gene
+set may have more than one category assignment, but the same assignment must
+not be repeated. Use `tier = "custom"`. The current schema does not have a
+`LISA_score` column.
+
+Each dictionary `category_id` needs one row in the category map, and
+`category_display_name` must equal the map's `display_name`. A supercategory is
+identified by `macrogroup_id` and named by `macrogroup_name`. Give each
+supercategory a unique positive `macrogroup_order`, then number its categories
+with unique positive `category_order_within_macrogroup` values.
+
+## 3. Choose the collection for each gene set
+
+The dictionary `universe` field accepts these semantic collections:
+
+| Identifier | Scope |
+|---|---|
+| `GOBP-C2` | Broad biological programmes, combining GO Biological Process with selected curated pathway families from MSigDB C2:CP. |
+| `GOMF` | GO Molecular Function gene sets. |
+| `GOCC` | GO Cellular Component gene sets. |
+| `PATHWAYS` | A strict signalling view of the GOBP-C2 gene-set space. |
+
+`HALLMARKS` is not a custom dictionary universe. It is a direct TERM2GENE
+collection and is analysed without semantic LISA remapping. A study can add
+`HALLMARKS` only when its registered TERM2GENE resource contains compatible
+`H` or `MH` rows.
+
+## 4. Save and review the files
+
+Save the three objects in the new project directory. These commands will not
+silently replace an existing custom-resource directory because section 1
+stops if that directory is already present.
+
+```{r save-tables, eval=FALSE}
+resource_files <- c(
+  lisa_dictionary = file.path(resource_dir, "sample_dict.tsv"),
+  category_map = file.path(resource_dir, "sample_map.tsv"),
+  term2gene = file.path(resource_dir, "sample_t2g.tsv")
+)
+
+utils::write.table(
+  dictionary, resource_files[["lisa_dictionary"]],
+  sep = "\t", quote = FALSE, row.names = FALSE, na = ""
+)
+utils::write.table(
+  category_map, resource_files[["category_map"]],
+  sep = "\t", quote = FALSE, row.names = FALSE, na = ""
+)
+utils::write.table(
+  term2gene, resource_files[["term2gene"]],
+  sep = "\t", quote = FALSE, row.names = FALSE, na = ""
+)
+```
+
+Stop before registration. Review the saved tables as files, not only the R
+objects that created them. Confirm that all 48 gene sets have memberships,
+that every dictionary category occurs in the map, and that the sample
+species and pipeline profile are appropriate for this example. The sample
+labels are synthetic and should not be presented as a reviewed classification
+for another study.
+
+## 5. Record the reviewed checksums in a manifest
+
+Run this section only after the file review. It records the SHA-256 values of
+the exact saved files in a persistent manifest. The review note is supplied by
+the person performing the review rather than invented by the tutorial.
+
+```{r create-manifest, eval=FALSE}
+reviewer <- trimws(readline("Reviewer name or initials: "))
+review_note <- trimws(readline("What did you check? "))
+stopifnot(nzchar(reviewer), nzchar(review_note))
+
+reviewed_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+approved_origin <- paste0(
+  "Local sample custom-resource review by ", reviewer,
+  " on ", reviewed_at, ": ", review_note
+)
+
+reviewed_sha256 <- vapply(resource_files, function(path) {
+  digest::digest(file = path, algo = "sha256", serialize = FALSE)
+}, character(1))
+
+manifest <- data.frame(
+  logical_id = c(
+    "my_lab_sample_dictionary",
+    "my_lab_sample_category_map",
+    "my_lab_sample_term2gene"
+  ),
+  version = rep("1.0.0", 3),
+  species = rep("Homo sapiens", 3),
+  modality = rep("transcriptomic/genomic", 3),
+  schema = c("lisa_dictionary@2", "category_map@1", "term2gene@1"),
+  sha256 = unname(reviewed_sha256),
+  compatibility = rep("lisaR>=0.6.0", 3),
+  approved_origin = rep(approved_origin, 3),
+  artifact = basename(unname(resource_files)),
+  stringsAsFactors = FALSE
+)
+
+manifest_path <- file.path(resource_dir, "resource_manifest.tsv")
+utils::write.table(
+  manifest, manifest_path,
+  sep = "\t", quote = FALSE, row.names = FALSE, na = ""
+)
+print(manifest)
+```
+
+The manifest is a record of the review. Computing a digest does not by itself
+review a biological assignment or grant distribution rights. If a table or
+its registry metadata changes after review, review it again and assign a new
+version. Do not replace the digest under an existing version.
+
+Choose logical IDs in your own namespace. The `my_lab_...` IDs above are
+tutorial examples and do not reuse a built-in lisaR identity.
+
+## 6. Register and validate the same tables persistently
+
+This block reads the manifest just written and installs those same three files
+in lisaR's ordinary resource cache and registry. The registration remains
+available to later R sessions. Nothing deletes the cache when the example
+finishes.
+
+```{r register-persistent, eval=FALSE}
+manifest <- utils::read.delim(
+  manifest_path, sep = "\t", quote = "", comment.char = "",
+  check.names = FALSE, stringsAsFactors = FALSE,
+  colClasses = "character", na.strings = character()
+)
+
+installed <- lapply(seq_len(nrow(manifest)), function(i) {
+  row <- manifest[i, , drop = FALSE]
+  install_lisa_resource(
+    source = file.path(resource_dir, row$artifact),
+    logical_id = row$logical_id,
+    version = row$version,
+    species = row$species,
+    modality = row$modality,
+    schema = row$schema,
+    approved_origin = row$approved_origin,
+    expected_sha256 = row$sha256,
+    compatibility = row$compatibility
+  )
+})
+
+refs <- setNames(
+  paste0(manifest$logical_id, "@", manifest$version),
+  manifest$schema
+)
+
+checked <- validate_lisa_custom_resources(
+  dictionary_resource = refs[["lisa_dictionary@2"]],
+  category_map_resource = refs[["category_map@1"]],
+  term2gene_resource = refs[["term2gene@1"]],
+  species = "Homo sapiens"
+)
+
+print(checked$resources[, c("config_key", "resource_id", "schema", "ready")])
+print(as.data.frame(checked$summary, stringsAsFactors = FALSE))
+stopifnot(checked$valid)
+```
+
+For this example, the summary should report 48 dictionary assignments, 4
+categories, 48 gene sets, 576 TERM2GENE memberships and 40 genes. The
+validator also checks the registered schema, species, profile compatibility,
+digest and cross-table relationships. It cannot judge whether a biological
+classification is appropriate.
+
+Running the block again with the same identities, bytes and metadata reuses
+the immutable registrations. Changed content or metadata requires a new
+version.
+
+## 7. Select the registered bundle in the sample study
+
+Use the references created from that same manifest. Remove
+`pipeline.lisa_dictionary`, because `core` and `expanded` select built-in
+dictionaries.
+
+```{r select-bundle, eval=FALSE}
+study <- yaml::read_yaml(file.path(project, "study.yml"))
+study$pipeline$workers <- 1L
+study$pipeline$lisa_dictionary <- NULL
+study$pipeline$dictionary_resource <- refs[["lisa_dictionary@2"]]
+study$pipeline$category_map_resource <- refs[["category_map@1"]]
+study$pipeline$term2gene_resource <- refs[["term2gene@1"]]
+
+custom_config <- file.path(project, "study-custom.yml")
+yaml::write_yaml(study, custom_config)
+
+validation <- validate_lisa_config(custom_config, check_files = TRUE)
+print(validation$resources[, c(
+  "config_key", "configured_id", "resource_id", "species",
+  "schema", "ready", "message"
+)])
+stopifnot(validation$execution_ready)
+```
+
+An execution-ready result means that the configuration, sample inputs and
+registered resources passed the preflight checks. Validation does not run the
+analysis.
+
+## 8. Run, verify and recognise the custom output
+
+After validation passes, run the same configuration and open its report:
+
+```{r run-custom-study, eval=FALSE}
+result <- run_lisa(custom_config)
+check <- verify_lisa_run(result$output_dir)
+stopifnot(identical(result$gate, "PASS"), identical(check$gate, "PASS"))
+
+resolved <- utils::read.delim(
+  file.path(result$output_dir, "config", "resource_resolution.tsv"),
+  sep = "\t", quote = "", comment.char = "", check.names = FALSE
+)
+print(resolved[, c("config_key", "configured_id", "resource_id", "schema")])
+
+browseURL(file.path(result$output_dir, "report_index.html"))
+```
+
+The resource table must show these exact selected identities:
+
+* `my_lab_sample_dictionary@1.0.0`
+* `my_lab_sample_category_map@1.0.0`
+* `my_lab_sample_term2gene@1.0.0`
+
+In the report, open **Synthetic response A** and then its **GOBP-C2** category
+view. Custom results use the category labels **Example of signal response**,
+**Example of stress response**, **Example of proliferation** and **Example of matrix remodelling**. The category map places the first two under **Example response programmes** and the others under **Example growth and structure**.
+
+A category appears in a particular plot only when it has relevant member
+gene-set results under that plot's filters. The exact resource identities in
+`config/resource_resolution.tsv` and `resource_inventory.tsv` distinguish a
+filtered category from accidental use of a built-in bundle.
+
+In a completed configured study, an applicable custom semantic collection also
+participates in the per-analysis category-inference family with the other
+configured semantic collections. This is independent of how the dictionary
+was constructed; it does not rebuild assignments. Check the exact collection
+and category in the saved inference table before interpreting any stars. A
+historical descriptive figure cannot acquire a category P from its mean NES.
+
+See [Resources and provenance](resources-and-provenance.html) for registry and
+licensing details, and [Configuration reference](configuration-reference.html)
+for the remaining study settings.

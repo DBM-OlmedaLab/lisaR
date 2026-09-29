@@ -1,0 +1,731 @@
+---
+title: "Semantic categories and supercategories"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Semantic categories and supercategories}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Use this guide to find one of the 158 LISA categories and understand the
+biological scope in which the fixed dictionary places it. The catalogue
+records dictionary assignments and representative member gene sets, not the
+enrichment result of a particular study.
+
+## Search for a category
+
+In R or RStudio, read the installed catalogue as an ordinary data frame:
+
+```{r semantic-lookup, eval=FALSE}
+catalog_path <- system.file(
+  "extdata", "semantic-catalog", "semantic_category_catalog.tsv",
+  package = "lisaR", mustWork = TRUE
+)
+semantic_catalog <- read.delim(
+  catalog_path, sep = "\t", quote = "", comment.char = "",
+  colClasses = "character", check.names = FALSE
+)
+
+View(semantic_catalog)
+```
+
+Filter by words in the display name or description when you do not yet know an
+ID:
+
+```{r semantic-search, eval=FALSE}
+query <- "repair|checkpoint"
+matches <- grepl(
+  query,
+  paste(
+    semantic_catalog$category_display_name,
+    semantic_catalog$category_description
+  ),
+  ignore.case = TRUE
+)
+semantic_catalog[matches, c(
+  "universe", "category_id", "category_display_name",
+  "macrogroup_name", "core_member_gene_sets"
+)]
+```
+
+Once you have an exact ID, select it together with its collection. This avoids
+matching a similar label in the wrong biological scope:
+
+```{r semantic-select, eval=FALSE}
+chosen <- semantic_catalog[
+  semantic_catalog$universe == "GOBP-C2" &
+    semantic_catalog$category_id == "DNA_DAMAGE_REPAIR_CHECKPOINTS",
+  c("category_display_name", "macrogroup_name", "core_member_gene_sets",
+    "example_gene_set_1", "example_gene_set_2", "example_gene_set_3")
+]
+stopifnot(nrow(chosen) == 1L)
+print(chosen, row.names = FALSE)
+```
+
+`View()` opens the data frame in RStudio's viewer; the other examples print
+subsets in the R console. The count is membership in the core dictionary. The
+one to three examples illustrate the category's scope. They are not its full
+membership list or the strongest results from your study. The report's
+evidence sheet, not this catalogue, supplies NES, FDR, leading edges and
+gene-level DE.
+
+## Member sets and category assignments
+
+A gene set may be assigned to two categories in one supercategory. It then
+contributes **one distinct set but two assignments**. The bundled count table
+lets you check that distinction directly:
+
+```{r semantic-distinct-support, eval=FALSE}
+semantic_counts <- read.delim(system.file(
+  "extdata", "semantic-catalog", "semantic_supercategory_counts.tsv",
+  package = "lisaR", mustWork = TRUE
+), sep = "\t", check.names = FALSE)
+pi3k <- semantic_counts[
+  semantic_counts$macrogroup_id == "PI3K_AKT_MTOR",
+  c("universe", "macrogroup_id", "core_distinct_gene_sets",
+    "core_member_assignments")
+]
+stopifnot(nrow(pi3k) == 1L,
+          pi3k$core_distinct_gene_sets == 59L,
+          pi3k$core_member_assignments == 88L)
+print(pi3k, row.names = FALSE)
+```
+
+The 59 distinct gene sets have 88 assignments across categories in this
+supercategory. Assignment counts and distinct gene-set counts therefore
+measure different properties of the dictionary.
+
+To open the corresponding study evidence, use the category navigator or
+gene search described in the [report guide](scientific-report.html).
+
+## Catalogue sources and scope
+
+The four semantic collections are `GOBP-C2`, `GOMF`, `GOCC` and `PATHWAYS`.
+`HALLMARKS` is a separate direct gene-set collection, not another LISA category
+catalogue. Category descriptions and one to three exact member identifiers
+were checked against `lisa_dictionary_core@1.0.0`. The existing provenance also
+checks the same category vocabulary in
+`lisa_dictionary_expanded@1.0.0`; this guide does not compare tiers or study
+results.
+
+The biological summary before each table describes the supercategory. Within a
+table, read the exact category label and representative member IDs together.
+The installed catalogue also includes a `category_description` field for text
+searches. Its descriptions restate the category labels.
+
+Descriptions and examples delimit a theme; they do not assert activation,
+inhibition or causality. Example selection uses semantic representativeness
+and stable tie-breaking on specificity, lexical match and gene-set identifier.
+Dictionary membership supplies no numerical weight or gene-priority score.
+Study evidence uses the member gene sets' enrichment and gene-level results.
+
+Unassigned gene sets remain in the complete tested universe. The
+`OTHER_UNCLASSIFIED` residual is tabular, not a biological category or figure.
+For `GOBP-C2`, `GOMF` and `GOCC` it has dedicated residual tables; `PATHWAYS`
+retains the complete GSEA ledger without a separate residual table.
+
+The core and expanded classification dictionaries and category map are
+included in lisaR. Gene-set-to-gene memberships are a separate external
+resource. Source conditions are recorded in `THIRD_PARTY_NOTICES.md`. See
+[Resources and provenance](resources-and-provenance.html) for those resource
+roles; no additional resource installation is needed to read this catalogue.
+
+Source versions and checksums accompany the installed catalogue in
+`extdata/semantic-catalog/SEMANTIC_CATALOG_PROVENANCE.tsv`.
+
+The active category map contains only categories with at least one exact
+assignment in the core or expanded dictionary. Supercategories without a
+retained category are absent from the active map.
+
+| Collection | Supercategories | Categories | Core member assignments |
+|---|---:|---:|---:|
+| `GOBP-C2` | 10 | 40 | 11729 |
+| `GOMF` | 9 | 37 | 1860 |
+| `GOCC` | 6 | 12 | 1003 |
+| `PATHWAYS` | 17 | 69 | 921 |
+
+# Catalogue
+
+## `GOBP-C2`
+
+Use this collection for biological processes and programmes. It combines Gene
+Ontology Biological Process with selected curated C2 pathway families, so one
+supercategory can span cellular mechanisms, tissues and organismal
+development. Read the exact member IDs before narrowing a broad category to
+one experimental mechanism.
+
+### Developmental and neural programs (`DEVELOPMENT_NEURAL`)
+
+Groups developmental, morphogenetic, neurogenic and synaptic biological programmes.
+
+Verified membership: 2 categories, 1738 distinct core gene sets and 1801 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Development and morphogenesis (`DEVELOPMENT_MORPHOGENESIS`) | 1010 | `GOBP_DEVELOPMENTAL_GROWTH_INVOLVED_IN_MORPHOGENESIS`<br>`GOBP_EAR_DEVELOPMENT`<br>`WP_HEART_DEVELOPMENT` |
+| Neurogenesis and synapse (`NEUROGENESIS_SYNAPSE`) | 791 | `GOBP_NEUROGENESIS`<br>`GOBP_REGULATION_OF_NEUROGENESIS`<br>`GOBP_SYNAPSE_PRUNING` |
+
+### Genome and gene expression (`GENOME_GENE_EXPRESSION`)
+
+Groups genome maintenance and the transcriptional, post-transcriptional and translational control of gene expression.
+
+Verified membership: 4 categories, 1076 distinct core gene sets and 1090 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| DNA damage, repair and checkpoints (`DNA_DAMAGE_REPAIR_CHECKPOINTS`) | 295 | `GOBP_REGULATION_OF_DNA_DAMAGE_CHECKPOINT`<br>`GOBP_DNA_REPAIR`<br>`REACTOME_DNA_REPAIR` |
+| RNA processing and RNP biology (`RNA_PROCESSING_SPLICING_RNP`) | 263 | `GOBP_RNA_PROCESSING`<br>`GOBP_MITOCHONDRIAL_RNA_PROCESSING`<br>`GOBP_RNA_3_END_PROCESSING` |
+| Transcription, chromatin and epigenetics (`TRANSCRIPTION_CHROMATIN_EPIGENETICS`) | 416 | `GOBP_CHROMATIN_LOOPING`<br>`GOBP_MRNA_TRANSCRIPTION`<br>`GOBP_RRNA_TRANSCRIPTION` |
+| Translation and ribosome (`TRANSLATION_RIBOSOME`) | 116 | `KEGG_RIBOSOME`<br>`GOBP_TRANSLATION`<br>`REACTOME_TRANSLATION` |
+
+### Immune and inflammatory biology (`IMMUNE_INFLAMMATION`)
+
+Groups adaptive, innate, cytokine, complement and antigen-presentation programmes in immune and inflammatory biology.
+
+Verified membership: 4 categories, 1321 distinct core gene sets and 1356 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Adaptive immunity and antigen presentation (`IMMUNE_ADAPTIVE_ANTIGEN_MHC`) | 328 | `GOBP_ANTIGEN_PROCESSING_AND_PRESENTATION`<br>`KEGG_ANTIGEN_PROCESSING_AND_PRESENTATION`<br>`GOBP_REGULATION_OF_ANTIGEN_PROCESSING_AND_PRESENTATION` |
+| Cytokine and inflammatory signaling (`IMMUNE_CYTOKINE_INFLAMMATORY`) | 535 | `WP_CYTOKINES_AND_INFLAMMATORY_RESPONSE`<br>`BIOCARTA_INFLAM_PATHWAY`<br>`BIOCARTA_CYTOKINE_PATHWAY` |
+| Immune core (`IMMUNE_CORE`) | 185 | `GOBP_REGULATION_OF_IMMUNE_RESPONSE`<br>`GOBP_IMMUNE_EFFECTOR_PROCESS`<br>`GOBP_ACTIVATION_OF_IMMUNE_RESPONSE` |
+| Innate immunity, complement and PRR (`IMMUNE_INNATE_COMPLEMENT_PRR`) | 308 | `WP_COMPLEMENT_SYSTEM`<br>`WP_COMPLEMENT_ACTIVATION`<br>`GOBP_COMPLEMENT_ACTIVATION` |
+
+### Metabolism and bioenergetics (`METABOLISM_BIOENERGETICS`)
+
+Groups amino-acid, carbohydrate, lipid, nucleotide, mitochondrial and detoxification programmes that support metabolism and energy balance.
+
+Verified membership: 8 categories, 1560 distinct core gene sets and 1576 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Amino acid and one-carbon metabolism (`METABOLISM_AA_ONECARBON`) | 251 | `WP_AMINO_ACID_METABOLISM`<br>`GOBP_AMINO_ACID_METABOLIC_PROCESS`<br>`GOBP_ONE_CARBON_METABOLIC_PROCESS` |
+| Carbohydrate metabolism and glycolysis (`METABOLISM_CARBOHYDRATE_GLYCOLYSIS`) | 172 | `GOBP_CARBOHYDRATE_METABOLIC_PROCESS`<br>`GOBP_REGULATION_OF_CARBOHYDRATE_METABOLIC_PROCESS`<br>`GOBP_CARBOHYDRATE_DERIVATIVE_METABOLIC_PROCESS` |
+| Detoxification and xenobiotic metabolism (`DETOX_XENOBIOTIC_METABOLISM`) | 126 | `GOBP_XENOBIOTIC_METABOLIC_PROCESS`<br>`GOBP_DETOXIFICATION`<br>`REACTOME_XENOBIOTICS` |
+| General metabolism (`METABOLISM_CORE`) | 51 | `GOBP_ATP_METABOLIC_PROCESS`<br>`GOBP_RECEPTOR_METABOLIC_PROCESS`<br>`REACTOME_METABOLISM_OF_COFACTORS` |
+| Lipid and fatty acid metabolism (`METABOLISM_LIPID_FA`) | 637 | `KEGG_FATTY_ACID_METABOLISM`<br>`REACTOME_FATTY_ACID_METABOLISM`<br>`GOBP_FATTY_ACID_METABOLIC_PROCESS` |
+| Mitochondria, OXPHOS and ETC (`MITOCHONDRIA_OXPHOS_ETC`) | 143 | `BIOCARTA_ETC_PATHWAY`<br>`GOBP_MITOCHONDRIAL_FUSION`<br>`GOBP_MITOCHONDRIAL_FISSION` |
+| Nucleotide metabolism (`METABOLISM_NUCLEOTIDE`) | 175 | `WP_NUCLEOTIDE_METABOLISM`<br>`GOBP_NUCLEOBASE_METABOLIC_PROCESS`<br>`GOBP_NUCLEOSIDE_METABOLIC_PROCESS` |
+| Peroxisome and fatty acid oxidation (`PEROXISOME_FAO`) | 21 | `GOBP_FATTY_ACID_ALPHA_OXIDATION`<br>`KEGG_PEROXISOME`<br>`GOBP_FATTY_ACID_BETA_OXIDATION_USING_ACYL_COA_OXIDASE` |
+
+### Microenvironment, vascular and ECM (`MICROENVIRONMENT_VASCULAR_ECM`)
+
+Groups extracellular-matrix remodelling, vascular, angiogenic and lymphatic programmes in the tissue microenvironment.
+
+Verified membership: 2 categories, 333 distinct core gene sets and 334 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| ECM and matrix remodeling (`ECM_MATRIX_REMODELING`) | 183 | `REACTOME_ECM_PROTEOGLYCANS`<br>`WP_MATRIX_METALLOPROTEINASES`<br>`KEGG_ECM_RECEPTOR_INTERACTION` |
+| Vascular, angiogenic and lymphatic biology (`VASCULAR_LYMPHATIC`) | 151 | `WP_ANGIOGENESIS`<br>`GOBP_VASCULOGENESIS`<br>`GOBP_REGULATION_OF_VASCULOGENESIS` |
+
+### Proliferation and cell cycle (`PROLIFERATION_CELL_CYCLE`)
+
+Groups programmes governing DNA replication, mitosis and cell proliferation.
+
+Verified membership: 1 category, 555 distinct core gene sets and 555 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Cell cycle and proliferation (`CELL_CYCLE_PROLIFERATION`) | 555 | `WP_CELL_CYCLE`<br>`GOBP_CELL_CYCLE`<br>`KEGG_CELL_CYCLE` |
+
+### Signaling and cell communication (`SIGNALING_COMMUNICATION`)
+
+Groups broad growth-factor, hormonal and developmental pathways used for intercellular communication.
+
+Verified membership: 5 categories, 1964 distinct core gene sets and 2015 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Core cell signaling (`SIGNALING_CORE`) | 714 | `GOBP_CELL_CELL_SIGNALING`<br>`GOBP_CELL_ACTIVATION`<br>`GOBP_NEGATIVE_REGULATION_OF_CELL_COMMUNICATION` |
+| Endocrine and hormonal pathways (`ENDOCRINE_HORMONAL`) | 497 | `GOBP_ENDOCRINE_HORMONE_SECRETION`<br>`GOBP_ENDOCRINE_PROCESS`<br>`GOBP_REGULATION_OF_ENDOCRINE_PROCESS` |
+| Growth factor and RTK pathways (`GROWTH_FACTOR_RTK`) | 412 | `GOBP_RESPONSE_TO_GROWTH_FACTOR`<br>`GOBP_NERVE_GROWTH_FACTOR_SIGNALING_PATHWAY`<br>`GOBP_GROWTH` |
+| TGF-beta and SMAD signaling (`TGFB_SMAD`) | 129 | `KEGG_TGF_BETA_SIGNALING_PATHWAY`<br>`REACTOME_TGFBR3_REGULATES_TGF_BETA_SIGNALING`<br>`KEGG_MEDICUS_REFERENCE_TGF_BETA_SIGNALING_PATHWAY` |
+| Wnt, Notch, Hedgehog and Hippo (`WNT_NOTCH_HEDGEHOG_HIPPO`) | 263 | `WNT_SIGNALING`<br>`WP_WNT_SIGNALING`<br>`PID_NOTCH_PATHWAY` |
+
+### Stress, proteostasis and cell death (`STRESS_DEATH_PROTEOSTASIS`)
+
+Groups stress adaptation, autophagy, proteostasis and regulated cell-death programmes.
+
+Verified membership: 7 categories, 879 distinct core gene sets and 901 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Apoptosis and regulated cell death (`APOPTOSIS_CELL_DEATH`) | 321 | `SA_PROGRAMMED_CELL_DEATH`<br>`GOBP_PYROPTOTIC_CELL_DEATH`<br>`GOBP_B_CELL_APOPTOTIC_PROCESS` |
+| Autophagy, lysosome and phagosome maturation (`AUTOPHAGY_LYSOSOME`) | 154 | `GOBP_PHAGOSOME_MATURATION`<br>`GOBP_AUTOPHAGOSOME_MATURATION`<br>`GOBP_REGULATION_OF_AUTOPHAGOSOME_MATURATION` |
+| ER stress and unfolded protein response (`ER_STRESS_UPR`) | 48 | `WP_UNFOLDED_PROTEIN_RESPONSE`<br>`REACTOME_UNFOLDED_PROTEIN_RESPONSE_UPR`<br>`GOBP_CELLULAR_RESPONSE_TO_UNFOLDED_PROTEIN` |
+| Heat shock and acute stress response (`HEAT_SHOCK_STRESS_RESPONSE`) | 17 | `REACTOME_CELLULAR_RESPONSE_TO_HEAT_STRESS`<br>`REACTOME_REGULATION_OF_HSF1_MEDIATED_HEAT_SHOCK_RESPONSE` |
+| Hypoxia and HIF programs (`HYPOXIA_HIF`) | 31 | `BIOCARTA_HIF_PATHWAY`<br>`REACTOME_CELLULAR_RESPONSE_TO_HYPOXIA`<br>`GOBP_REGULATION_OF_CELLULAR_RESPONSE_TO_HYPOXIA` |
+| Oxidative stress, redox and ROS (`OXIDATIVE_STRESS_REDOX_ROS`) | 116 | `WP_OXIDATIVE_STRESS_RESPONSE`<br>`GOBP_RESPONSE_TO_OXIDATIVE_STRESS`<br>`GOBP_REGULATION_OF_RESPONSE_TO_OXIDATIVE_STRESS` |
+| Proteostasis, ubiquitin and proteasome (`PROTEOSTASIS_UBIQUITIN_PROTEASOME`) | 214 | `KEGG_UBIQUITIN_MEDIATED_PROTEOLYSIS`<br>`KEGG_PROTEASOME`<br>`GOBP_PROTEOLYSIS` |
+
+### Structure, motility and plasticity (`STRUCTURE_MOTILITY_PLASTICITY`)
+
+Groups adhesion, polarity, cytoskeletal, migratory and cell-state-plasticity programmes.
+
+Verified membership: 4 categories, 911 distinct core gene sets and 928 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Adhesion, junctions and polarity (`ADHESION_JUNCTION_POLARITY`) | 260 | `KEGG_GAP_JUNCTION`<br>`WP_FOCAL_ADHESION`<br>`GOBP_CELL_ADHESION` |
+| Cytoskeleton and contractility (`CYTOSKELETON_CONTRACTILITY`) | 419 | `GOBP_MUSCLE_CONTRACTION`<br>`REACTOME_MUSCLE_CONTRACTION`<br>`GOBP_CYTOSKELETON_ORGANIZATION` |
+| EMT and cell-state plasticity (`EMT_PLASTICITY`) | 34 | `GOBP_MESENCHYMAL_CELL_MIGRATION`<br>`GOBP_MESENCHYMAL_CELL_DIFFERENTIATION`<br>`GOBP_NEURAL_CREST_CELL_DIFFERENTIATION` |
+| Migration, invasion and motility programs (`MIGRATION_INVASION`) | 215 | `GOBP_CELL_MOTILITY`<br>`GOBP_CELL_MIGRATION`<br>`GOBP_NEURON_MIGRATION` |
+
+### Transport, trafficking and homeostasis (`TRANSPORT_TRAFFICKING_HOMEOSTASIS`)
+
+Groups membrane transport, localisation, vesicle traffic and ionic homeostasis programmes.
+
+Verified membership: 3 categories, 1150 distinct core gene sets and 1173 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Ion transport and homeostasis (`ION_TRANSPORT_HOMEOSTASIS`) | 382 | `REACTOME_ION_HOMEOSTASIS`<br>`GOBP_IRON_ION_TRANSPORT`<br>`GOBP_ZINC_ION_TRANSPORT` |
+| Transport and localization (`TRANSPORT_LOCALIZATION`) | 418 | `GOBP_REGULATION_OF_TRANSPORT`<br>`GOBP_ADP_TRANSPORT`<br>`GOBP_ATP_TRANSPORT` |
+| Vesicle, endocytosis, exocytosis and secretion (`VESICLE_SECRETORY_TRAFFICKING`) | 373 | `GOBP_SYNAPTIC_VESICLE_EXOCYTOSIS`<br>`GOBP_ACROSOMAL_VESICLE_EXOCYTOSIS`<br>`GOBP_REGULATION_OF_SYNAPTIC_VESICLE_EXOCYTOSIS` |
+
+## `GOMF`
+
+Use this collection for the molecular activity performed by a gene product,
+such as binding, catalysis, transport or receptor activity. It does not by
+itself say which broader biological process is active. Categories can overlap
+when one GO molecular-function set fits more than one functional grouping.
+
+### Catalytic and metabolic enzyme functions (`MF_CATALYTIC_METABOLIC`)
+
+Groups molecular functions carried out by metabolic, redox, detoxification and other catalytic enzymes.
+
+Verified membership: 7 categories, 358 distinct core gene sets and 368 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Amino-acid metabolic enzyme activity (`MF_AMINO_ACID_METAB`) | 7 | `GOMF_ACID_AMINO_ACID_LIGASE_ACTIVITY`<br>`GOMF_L_AMINO_ACID_N_ACETYLTRANSFERASE_ACTIVITY` |
+| Antioxidant and redox activity (`MF_ANTIOX_REDOX`) | 54 | `GOMF_ANTIOXIDANT_ACTIVITY`<br>`GOMF_PEROXIREDOXIN_ACTIVITY`<br>`GOMF_THIOL_OXIDASE_ACTIVITY` |
+| Carbohydrate metabolic enzyme activity (`MF_CARBOHYDRATE_METAB`) | 58 | `GOMF_CARBOHYDRATE_KINASE_ACTIVITY`<br>`GOMF_CARBOHYDRATE_PHOSPHATASE_ACTIVITY`<br>`GOMF_RACEMASE_AND_EPIMERASE_ACTIVITY_ACTING_ON_CARBOHYDRATES_AND_DERIVATIVES` |
+| Detoxification and xenobiotic activity (`MF_DETOX_XENOBIOTIC`) | 6 | `GOMF_ARYL_SULFOTRANSFERASE_ACTIVITY`<br>`GOMF_ESTROGEN_2_HYDROXYLASE_ACTIVITY` |
+| General catalytic activity (`MF_CATALYTIC`) | 134 | `GOMF_CATALYTIC_ACTIVITY_ACTING_ON_DNA`<br>`GOMF_CATALYTIC_ACTIVITY_ACTING_ON_RNA`<br>`GOMF_CATALYTIC_ACTIVITY_ACTING_ON_A_RRNA` |
+| General metabolic enzyme activity (`MF_METABOLIC_ENZ`) | 23 | `GOMF_COA_TRANSFERASE_ACTIVITY`<br>`GOMF_SULFOTRANSFERASE_ACTIVITY`<br>`GOMF_SULFURTRANSFERASE_ACTIVITY` |
+| Lipid metabolic enzyme activity (`MF_LIPID_METAB`) | 86 | `GOMF_LIPASE_ACTIVITY`<br>`GOMF_DEACYLASE_ACTIVITY`<br>`GOMF_COA_LIGASE_ACTIVITY` |
+
+### Cell-cycle and developmental regulatory functions (`MF_CELL_CYCLE_DEVELOPMENT`)
+
+Groups molecular regulators of cell-cycle progression, differentiation and developmental decisions.
+
+Verified membership: 2 categories, 4 distinct core gene sets and 4 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Cell-cycle regulatory activity (`MF_CELL_CYCLE_REG`) | 3 | `GOMF_CYCLIN_DEPENDENT_PROTEIN_KINASE_REGULATOR_ACTIVITY` |
+| Developmental regulator activity (`MF_DEVELOPMENT_REG`) | 1 | `GOMF_MORPHOGEN_ACTIVITY` |
+
+### Gene-expression molecular functions (`MF_GENE_EXPRESSION`)
+
+Groups chromatin, transcription, RNA-processing and translation-related molecular functions.
+
+Verified membership: 4 categories, 170 distinct core gene sets and 170 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Epigenetic and chromatin activity (`MF_EPIGENETIC`) | 73 | `GOMF_CHROMATIN_DNA_BINDING`<br>`GOMF_CHROMATIN_PROTEIN_ADAPTOR_ACTIVITY`<br>`GOMF_PROMOTER_SPECIFIC_CHROMATIN_BINDING` |
+| RNA processing activity (`MF_RNA_PROCESSING`) | 47 | `GOMF_RNA_NUCLEASE_ACTIVITY`<br>`GOMF_RNA_POLYMERASE_ACTIVITY`<br>`GOMF_RNA_EXONUCLEASE_ACTIVITY` |
+| Transcription regulation activity (`MF_TRANSCRIPTION_REG`) | 41 | `GOMF_TRANSCRIPTION_REGULATOR_ACTIVITY`<br>`GOMF_TRANSCRIPTION_COACTIVATOR_ACTIVITY`<br>`GOMF_TRANSCRIPTION_COREGULATOR_ACTIVITY` |
+| Translation regulation activity (`MF_TRANSLATION_REG`) | 9 | `GOMF_TRANSLATION_FACTOR_ACTIVITY`<br>`GOMF_TRANSLATION_ACTIVATOR_ACTIVITY` |
+
+### Generic or host-interaction functions (`MF_GENERIC_OTHER`)
+
+Groups broad binding or host-interaction molecular functions that do not fit a more specific functional class.
+
+Verified membership: 2 categories, 525 distinct core gene sets and 526 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Binding activity (`MF_BINDING`) | 525 | `GOMF_ADP_BINDING`<br>`GOMF_AMP_BINDING`<br>`GOMF_BMP_BINDING` |
+| Viral-host molecular function (`MF_VIRAL_HOST`) | 1 | `GOMF_VIRION_BINDING` |
+
+### Immune, ligand and receptor functions (`MF_IMMUNE_LIGAND_RECEPTOR`)
+
+Groups immune recognition, complement, receptor and extracellular ligand molecular functions.
+
+Verified membership: 3 categories, 53 distinct core gene sets and 53 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Complement molecular function (`MF_COMPLEMENT`) | 3 | `GOMF_COMPLEMENT_BINDING` |
+| Cytokine, chemokine, growth-factor and hormone ligand activity (`MF_CYTOKINE_GROWTH`) | 12 | `GOMF_GROWTH_FACTOR_ACTIVITY`<br>`GOMF_HORMONE_ACTIVITY` |
+| Immune receptor and antigen-recognition activity (`MF_IMMUNE_RECEPTOR`) | 38 | `GOMF_IMMUNE_RECEPTOR_ACTIVITY`<br>`GOMF_PATTERN_RECOGNITION_RECEPTOR_ACTIVITY`<br>`GOMF_PEPTIDOGLYCAN_IMMUNE_RECEPTOR_ACTIVITY` |
+
+### Proteostasis, stress and cell-death functions (`MF_PROTEOSTASIS_STRESS_DEATH`)
+
+Groups molecular functions involved in proteostasis, stress responses, proteolysis and regulated cell death.
+
+Verified membership: 5 categories, 82 distinct core gene sets and 84 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Apoptosis and cell-death regulatory activity (`MF_APOPTOSIS_REG`) | 3 | `GOMF_DEATH_RECEPTOR_ACTIVITY` |
+| Protease and protease inhibitor activity (`MF_PROTEASE_INHIB`) | 40 | `GOMF_PEPTIDASE_INHIBITOR_ACTIVITY`<br>`GOMF_METALLOENDOPEPTIDASE_INHIBITOR_ACTIVITY`<br>`GOMF_MOLECULAR_FUNCTION_INHIBITOR_ACTIVITY` |
+| Protein folding and degradation activity (`MF_PROTEIN_FOLDING_DEG`) | 11 | `GOMF_PROTEIN_FOLDING_CHAPERONE`<br>`GOMF_PROTEIN_FOLDING_CHAPERONE_BINDING` |
+| Stress-response molecular activity (`MF_STRESS_RESPONSE`) | 2 | `GOMF_HEAT_SHOCK_PROTEIN_BINDING` |
+| Ubiquitin and SUMO ligase activity (`MF_LIGASE_SUMOYL`) | 28 | `GOMF_SUMO_LIGASE_ACTIVITY`<br>`GOMF_UBIQUITIN_UBIQUITIN_LIGASE_ACTIVITY`<br>`GOMF_HISTONE_UBIQUITIN_LIGASE_ACTIVITY` |
+
+### Signaling and regulatory functions (`MF_SIGNALING_REGULATION`)
+
+Groups receptors, kinases, phosphatases, adaptors and enzyme regulators that control signalling.
+
+Verified membership: 5 categories, 306 distinct core gene sets and 313 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Enzyme regulator activity (`MF_ENZYME_REG`) | 59 | `GOMF_ENZYME_REGULATOR_ACTIVITY`<br>`GOMF_ATPASE_REGULATOR_ACTIVITY`<br>`GOMF_ENZYME_ACTIVATOR_ACTIVITY` |
+| Intracellular signaling activity (`MF_SIGNALING`) | 12 | `GOMF_GTPASE_ACTIVITY`<br>`GOMF_G_PROTEIN_ACTIVITY` |
+| Kinase and phosphatase activity (`MF_KINASE_PHOSPHATASE`) | 104 | `GOMF_PHOSPHATIDYLINOSITOL_KINASE_ACTIVITY`<br>`GOMF_MAP_KINASE_PHOSPHATASE_ACTIVITY`<br>`GOMF_INOSITOL_PHOSPHATE_KINASE_ACTIVITY` |
+| Receptor activity (`MF_RECEPTOR`) | 122 | `GOMF_BMP_RECEPTOR_ACTIVITY`<br>`GOMF_WNT_RECEPTOR_ACTIVITY`<br>`GOMF_GABA_RECEPTOR_ACTIVITY` |
+| Scaffold and adaptor activity (`MF_SCAFFOLD_ADAPTER`) | 16 | `GOMF_SIGNALING_ADAPTOR_ACTIVITY`<br>`GOMF_CARGO_ADAPTOR_ACTIVITY` |
+
+### Structure, adhesion and ECM functions (`MF_STRUCTURE_ADHESION_ECM`)
+
+Groups structural, motor, adhesion and extracellular-matrix molecular functions.
+
+Verified membership: 4 categories, 54 distinct core gene sets and 55 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Adhesion molecular function (`MF_ADHESION`) | 12 | `GOMF_CELL_ADHESION_MOLECULE_BINDING`<br>`GOMF_CELL_ADHESION_MEDIATOR_ACTIVITY` |
+| Cytoskeleton and motor activity (`MF_CYTOSKELETON_MOTOR`) | 13 | `GOMF_CYTOSKELETAL_MOTOR_ACTIVITY`<br>`GOMF_MICROTUBULE_MOTOR_ACTIVITY` |
+| Extracellular matrix molecular function (`MF_EXTRACELL_MATRIX`) | 13 | `GOMF_EXTRACELLULAR_MATRIX_BINDING`<br>`GOMF_EXTRACELLULAR_MATRIX_PROTEIN_BINDING` |
+| Structural constituent activity (`MF_STRUCTURAL_CONSTITUENT`) | 17 | `GOMF_STRUCTURAL_CONSTITUENT_OF_MUSCLE`<br>`GOMF_STRUCTURAL_CONSTITUENT_OF_SYNAPSE` |
+
+### Transport, vesicle traffic and sensing functions (`MF_TRANSPORT_SENSING`)
+
+Groups channels, pumps, transporters, vesicle-trafficking factors and physicochemical sensors.
+
+Verified membership: 5 categories, 285 distinct core gene sets and 287 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Ion and physicochemical sensing activity (`MF_ION_SENSING`) | 4 | `GOMF_METAL_ION_SENSOR_ACTIVITY` |
+| Ion channel and pump activity (`MF_ION_CHANNEL_PUMP`) | 86 | `GOMF_ATP_GATED_ION_CHANNEL_ACTIVITY`<br>`GOMF_POTASSIUM_ION_LEAK_CHANNEL_ACTIVITY`<br>`GOMF_MONOATOMIC_ION_GATED_CHANNEL_ACTIVITY` |
+| Olfactory and taste receptor activity (`MF_OLFACTORY`) | 6 | `GOMF_TASTE_RECEPTOR_ACTIVITY`<br>`GOMF_OLFACTORY_RECEPTOR_ACTIVITY` |
+| Transporter activity (`MF_TRANSPORTER`) | 188 | `GOMF_TRANSPORTER_ACTIVITY`<br>`GOMF_LIPID_TRANSPORTER_ACTIVITY`<br>`GOMF_PROTEIN_TRANSPORTER_ACTIVITY` |
+| Vesicle trafficking activity (`MF_VESICLE_TRAFFIC`) | 3 | `GOMF_SNARE_BINDING` |
+
+## `GOCC`
+
+Use this collection for cellular locations, structures and complexes. A GOCC
+category can support a compartment-level interpretation, but enrichment is not
+direct evidence that a protein moved to that compartment or that the structure
+changed in abundance.
+
+### Cell surface, adhesion and ECM compartments (`CC_SURFACE_ADHESION_ECM`)
+
+Covers plasma-membrane, cell-junction, cytoskeletal and extracellular-matrix compartments.
+
+Verified membership: 3 categories, 343 distinct core gene sets and 348 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Extracellular matrix compartment (`CC_EXTRACELLULAR_MATRIX`) | 24 | `GOCC_SPECIALIZED_EXTRACELLULAR_MATRIX`<br>`GOCC_SYNAPSE_ASSOCIATED_EXTRACELLULAR_MATRIX`<br>`GOCC_INTERSTITIAL_MATRIX` |
+| Junction, adhesion and cytoskeletal compartment (`CC_JUNCTION_ADHESION_CYTOSKELETON`) | 209 | `GOCC_GAP_JUNCTION`<br>`GOCC_TIGHT_JUNCTION`<br>`GOCC_ADHERENS_JUNCTION` |
+| Plasma membrane and cell-surface compartment (`CC_PLASMA_MEMBRANE_CELL_SURFACE`) | 115 | `GOCC_CELL_SURFACE`<br>`GOCC_CELL_BODY_MEMBRANE`<br>`GOCC_PLASMA_MEMBRANE_RAFT` |
+
+### Immune and signaling complexes (`CC_IMMUNE_COMPLEXES`)
+
+Covers cellular complexes that assemble immune and inflammatory signalling machinery.
+
+Verified membership: 1 category, 29 distinct core gene sets and 29 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Immune signaling and inflammatory complex compartment (`CC_IMMUNE_SIGNALING_COMPLEX`) | 29 | `GOCC_NLRP1_INFLAMMASOME_COMPLEX`<br>`GOCC_NLRP3_INFLAMMASOME_COMPLEX`<br>`GOCC_CANONICAL_INFLAMMASOME_COMPLEX` |
+
+### Metabolic organelles (`CC_METABOLIC_ORGANELLES`)
+
+Covers organelles that host energy production and intermediary metabolism, especially mitochondria and peroxisomes.
+
+Verified membership: 1 category, 46 distinct core gene sets and 46 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Mitochondrial and metabolic organelle compartment (`CC_MITOCHONDRIAL_METABOLIC`) | 46 | `GOCC_MITOCHONDRION`<br>`GOCC_ORGANELLAR_RIBOSOME`<br>`GOCC_MITOCHONDRIAL_CRISTA` |
+
+### Nuclear and gene-expression compartments (`CC_NUCLEAR_GENE_EXPRESSION`)
+
+Covers nuclear, chromatin, transcriptional, RNA-processing and ribosomal compartments.
+
+Verified membership: 2 categories, 275 distinct core gene sets and 277 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Nuclear and chromatin compartment (`CC_NUCLEAR_CHROMATIN`) | 137 | `GOCC_CHROMATIN`<br>`GOCC_NUCLEAR_BODY`<br>`GOCC_NUCLEAR_PORE` |
+| Transcription, RNA and ribosome complexes (`CC_TRANSCRIPTION_RNA_RIBOSOME`) | 140 | `GOCC_RNA_DECAPPING_COMPLEX`<br>`GOCC_RNA_POLYMERASE_COMPLEX`<br>`GOCC_TRANSCRIPTION_EXPORT_COMPLEX` |
+
+### Proteostasis and generic complexes (`CC_PROTEOSTASIS_GENERIC_COMPLEXES`)
+
+Covers macromolecular complexes involved in protein folding, degradation and other general protein assemblies.
+
+Verified membership: 2 categories, 76 distinct core gene sets and 76 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Other generic protein/macromolecular complex (`CC_OTHER_GENERIC_COMPLEX`) | 42 | `GOCC_PROTEIN_KINASE_COMPLEX`<br>`GOCC_MEMBRANE_PROTEIN_COMPLEX`<br>`GOCC_PROTEIN_PHOSPHATASE_4_COMPLEX` |
+| Proteostasis complex compartment (`CC_PROTEOSTASIS_COMPLEX`) | 34 | `GOCC_3M_COMPLEX`<br>`GOCC_RQC_COMPLEX`<br>`GOCC_PREFOLDIN_COMPLEX` |
+
+### Secretory and endomembrane compartments (`CC_SECRETORY_ENDOMEMBRANE`)
+
+Covers endoplasmic-reticulum, Golgi, vesicular, endolysosomal and secretory compartments.
+
+Verified membership: 3 categories, 226 distinct core gene sets and 227 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Endolysosome, autophagy and intracellular vesicle compartment (`CC_ENDOLYSOSOME_AUTOPHAGY_VESICLE`) | 116 | `GOCC_ENDOLYSOSOME`<br>`GOCC_AUTOPHAGOSOME`<br>`GOCC_VESICLE_COAT` |
+| ER, Golgi and secretory-route compartment (`CC_ER_GOLGI_SECRETORY`) | 96 | `GOCC_ENDOPLASMIC_RETICULUM_GOLGI_INTERMEDIATE_COMPARTMENT`<br>`GOCC_GOLGI_LUMEN`<br>`GOCC_GOLGI_STACK` |
+| Extracellular vesicle and secretome compartment (`CC_EXTRACELLULAR_VESICLE_SECRETOME`) | 15 | `GOCC_CHYLOMICRON`<br>`GOCC_MICROVESICLE` |
+
+## `PATHWAYS`
+
+Use this stricter signalling collection to distinguish named receptors,
+branches and downstream cascades within the broader GOBP-C2 space. Categories
+can share a gene set when a curated pathway crosses more than one branch. A
+category label organises the saved enrichment evidence; it is not a claim that
+the named pathway is activated.
+
+### RTK/RAS/MAPK signaling (`RTK_RAS_MAPK`)
+
+Groups receptor-tyrosine-kinase signalling through RAS and the RAF-MEK-ERK cascade.
+
+Verified membership: 12 categories, 252 distinct core gene sets and 279 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| EGFR/ERBB signaling (`EGFR_ERBB_SIGNALING`) | 67 | `WP_ERBB_SIGNALING`<br>`GOBP_ERBB_SIGNALING_PATHWAY`<br>`KEGG_ERBB_SIGNALING_PATHWAY` |
+| FGFR signaling (`FGFR_SIGNALING`) | 42 | `REACTOME_SIGNALING_BY_FGFR`<br>`KEGG_MEDICUS_REFERENCE_FGF_FGFR_PI3K_SIGNALING_PATHWAY`<br>`KEGG_MEDICUS_REFERENCE_FGF_FGFR_RAS_ERK_SIGNALING_PATHWAY` |
+| VEGF/VEGFR signaling (`VEGF_VEGFR_SIGNALING`) | 11 | `PID_VEGF_VEGFR_PATHWAY`<br>`BIOCARTA_VEGF_PATHWAY` |
+| PDGF/PDGFR signaling (`PDGF_PDGFRA_B_SIGNALING`) | 15 | `WP_PDGF_PATHWAY`<br>`BIOCARTA_PDGF_PATHWAY` |
+| MET/HGF signaling (`MET_HGF_SIGNALING`) | 15 | `PID_MET_PATHWAY`<br>`BIOCARTA_MET_PATHWAY` |
+| KIT signaling (`KIT_SIGNALING`) | 8 | `PID_KIT_PATHWAY`<br>`WP_KIT_RECEPTOR_SIGNALING` |
+| RET signaling (`RET_SIGNALING`) | 6 | `PID_RET_PATHWAY`<br>`REACTOME_RET_SIGNALING` |
+| Insulin/IGF signaling (`INSULIN_IGF_SIGNALING`) | 25 | `PID_INSULIN_PATHWAY`<br>`WP_INSULIN_SIGNALING`<br>`BIOCARTA_INSULIN_PATHWAY` |
+| RAS activation (`RAS_ACTIVATION`) | 16 | `PID_RAS_PATHWAY`<br>`WP_RAS_SIGNALING` |
+| RAF-MEK-ERK cascade (`RAF_MEK_ERK_CASCADE`) | 43 | `BIOCARTA_ERK_PATHWAY`<br>`WP_MAPK_CASCADE`<br>`REACTOME_RAF_ACTIVATION` |
+| ALK signaling (`ALK_SIGNALING`) | 7 | `BIOCARTA_ALK_PATHWAY`<br>`REACTOME_SIGNALING_BY_ALK` |
+| NTRK/TRK signaling (`NTRK_TRK_SIGNALING`) | 24 | `PID_MAPK_TRK_PATHWAY`<br>`PID_PI3K_PLC_TRK_PATHWAY`<br>`GOBP_NEUROTROPHIN_TRK_RECEPTOR_SIGNALING_PATHWAY` |
+
+### Stress MAPK signaling (`STRESS_MAPK`)
+
+Groups stress-responsive p38 and JNK mitogen-activated protein kinase pathways.
+
+Verified membership: 2 categories, 21 distinct core gene sets and 21 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| p38 MAPK signaling (`P38_MAPK_SIGNALING`) | 12 | `WP_P38_MAPK_SIGNALING`<br>`PID_P38_MK2_PATHWAY` |
+| JNK signaling (`JNK_SIGNALING`) | 9 | `GOBP_JNK_CASCADE`<br>`KEGG_MEDICUS_REFERENCE_FAS_JNK_SIGNALING_PATHWAY` |
+
+### PI3K/AKT/mTOR signaling (`PI3K_AKT_MTOR`)
+
+Groups PI3K, AKT, mTOR and AMPK pathways that coordinate growth, survival and nutrient sensing.
+
+Verified membership: 5 categories, 59 distinct core gene sets and 88 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Class I PI3K signaling (`PI3K_CLASS_I_SIGNALING`) | 33 | `REACTOME_PI3K_AKT_ACTIVATION`<br>`KEGG_MEDICUS_REFERENCE_P4_PR_PI3K_SIGNALING_PATHWAY`<br>`KEGG_MEDICUS_REFERENCE_HGF_MET_PI3K_SIGNALING_PATHWAY` |
+| AKT signaling (`AKT_SIGNALING`) | 37 | `BIOCARTA_AKT_PATHWAY`<br>`PID_PI3KCI_AKT_PATHWAY`<br>`REACTOME_PI3K_AKT_ACTIVATION` |
+| mTORC1 signaling (`MTORC1_SIGNALING`) | 11 | `REACTOME_MTORC1_MEDIATED_SIGNALLING`<br>`REACTOME_AMINO_ACIDS_REGULATE_MTORC1` |
+| mTORC2 signaling (`MTORC2_SIGNALING`) | 1 | `GOBP_TORC2_SIGNALING` |
+| AMPK signaling (`AMPK_SIGNALING`) | 6 | `GOBP_CAMKK_AMPK_SIGNALING_CASCADE`<br>`REACTOME_ACTIVATION_OF_AMPK_DOWNSTREAM_OF_NMDARS` |
+
+### RHO GTPase and cytoskeletal signaling (`RHO_GTPASE_CYTOSKELETON`)
+
+Groups RHO-family GTPase, adhesion and actin-regulatory pathways that organise cell shape and movement.
+
+Verified membership: 6 categories, 33 distinct core gene sets and 37 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| RAC1 signaling (`RAC1_SIGNALING`) | 10 | `PID_RAC1_PATHWAY`<br>`BIOCARTA_RAC1_PATHWAY` |
+| RHOA-ROCK signaling (`RHOA_ROCK_SIGNALING`) | 11 | `PID_RHOA_PATHWAY`<br>`REACTOME_RHOA_GTPASE_CYCLE` |
+| CDC42 signaling (`CDC42_SIGNALING`) | 8 | `PID_CDC42_PATHWAY`<br>`PID_CDC42_REG_PATHWAY` |
+| PAK signaling (`PAK_SIGNALING`) | 2 | `KEGG_MEDICUS_REFERENCE_RAC_CDC42_PAK_ERK_SIGNALING_PATHWAY` |
+| FAK/SRC adhesion signaling (`FAK_SRC_SIGNALING`) | 5 | `PID_FAK_PATHWAY` |
+| Actin regulatory signaling (`ACTIN_REGULATORY_SIGNALING`) | 1 | `REACTOME_RHO_GTPASES_ACTIVATE_WASPS_AND_WAVES` |
+
+### TGF-beta/SMAD signaling (`TGF_BETA_SMAD`)
+
+Groups TGF-beta-family ligands and their SMAD-dependent developmental and homeostatic pathways.
+
+Verified membership: 3 categories, 31 distinct core gene sets and 31 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| TGF-beta/SMAD signaling (`TGF_BETA_SMAD_SIGNALING`) | 17 | `KEGG_TGF_BETA_SIGNALING_PATHWAY`<br>`REACTOME_TGFBR3_REGULATES_TGF_BETA_SIGNALING` |
+| BMP/SMAD signaling (`BMP_SMAD_SIGNALING`) | 8 | `PID_BMP_PATHWAY`<br>`REACTOME_SIGNALING_BY_BMP` |
+| Activin/Nodal signaling (`ACTIVIN_NODAL_SIGNALING`) | 6 | `GOBP_NODAL_SIGNALING_PATHWAY`<br>`REACTOME_SIGNALING_BY_NODAL` |
+
+### Wnt, Notch and Hedgehog signaling (`WNT_NOTCH_HEDGEHOG`)
+
+Groups WNT, NOTCH and Hedgehog developmental signalling, including canonical and non-canonical branches.
+
+Verified membership: 4 categories, 94 distinct core gene sets and 94 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| WNT/beta-catenin signaling (`WNT_BETA_CATENIN_SIGNALING`) | 37 | `WNT_SIGNALING`<br>`PID_BETA_CATENIN_DEG_PATHWAY`<br>`PID_BETA_CATENIN_NUC_PATHWAY` |
+| Non-canonical WNT/PCP signaling (`NONCANONICAL_WNT_PCP_SIGNALING`) | 6 | `GOBP_NON_CANONICAL_WNT_SIGNALING_PATHWAY`<br>`REACTOME_PCP_CE_PATHWAY` |
+| NOTCH signaling (`NOTCH_SIGNALING`) | 34 | `PID_NOTCH_PATHWAY`<br>`BIOCARTA_NOTCH_PATHWAY`<br>`GOBP_NOTCH_SIGNALING_PATHWAY` |
+| Hedgehog signaling (`HEDGEHOG_SIGNALING`) | 17 | `KEGG_HEDGEHOG_SIGNALING_PATHWAY`<br>`PID_HEDGEHOG_2PATHWAY` |
+
+### Hippo and mechanosignaling (`HIPPO_MECHANOSIGNALING`)
+
+Groups Hippo/YAP/TAZ and mechanotransduction pathways that connect tissue mechanics to cell-state regulation.
+
+Verified membership: 2 categories, 7 distinct core gene sets and 8 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Hippo/YAP/TAZ signaling (`HIPPO_YAP_TAZ_SIGNALING`) | 7 | `GOBP_HIPPO_SIGNALING`<br>`WP_HIPPO_SIGNALING_REGULATION` |
+| Mechanotransduction signaling (`MECHANOTRANSDUCTION_SIGNALING`) | 1 | `WP_MECHANOREGULATION_AND_PATHOLOGY_OF_YAPTAZ_VIA_HIPPO_AND_NONHIPPO_MECHANISMS` |
+
+### Cytokine/JAK/STAT signaling (`CYTOKINE_JAK_STAT`)
+
+Groups cytokine pathways that transmit signals through JAK kinases and STAT transcription factors.
+
+Verified membership: 6 categories, 52 distinct core gene sets and 52 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Type I interferon signaling (`TYPE_I_INTERFERON_SIGNALING`) | 10 | `WP_INTERFERON_TYPE_I_SIGNALING`<br>`GOBP_TYPE_I_INTERFERON_MEDIATED_SIGNALING_PATHWAY` |
+| Type II interferon signaling (`TYPE_II_INTERFERON_SIGNALING`) | 6 | `WP_TYPE_II_INTERFERON_SIGNALING`<br>`GOBP_TYPE_II_INTERFERON_MEDIATED_SIGNALING_PATHWAY` |
+| IL6/JAK/STAT3 signaling (`IL6_JAK_STAT3_SIGNALING`) | 9 | `WP_IL6_SIGNALING`<br>`BIOCARTA_IL6_PATHWAY` |
+| IL2/STAT5 signaling (`IL2_STAT5_SIGNALING`) | 11 | `PID_IL2_STAT5_PATHWAY`<br>`WP_IL2_SIGNALING` |
+| IL10/STAT3 signaling (`IL10_STAT3_SIGNALING`) | 5 | `BIOCARTA_IL10_PATHWAY` |
+| IL12/IL23 signaling (`IL12_IL23_STAT4_3_SIGNALING`) | 11 | `PID_IL23_PATHWAY`<br>`BIOCARTA_IL12_PATHWAY` |
+
+### Inflammatory NF-kB signaling (`INFLAMMATORY_NFKB`)
+
+Groups canonical and non-canonical NF-kB pathways downstream of inflammatory receptors.
+
+Verified membership: 4 categories, 54 distinct core gene sets and 55 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| TNF/NF-kB signaling (`TNF_NFKB_SIGNALING`) | 17 | `PID_TNF_PATHWAY`<br>`REACTOME_TNF_SIGNALING` |
+| IL1/TLR-NF-kB signaling (`IL1_TLR_NFKB_SIGNALING`) | 17 | `PID_IL1_PATHWAY`<br>`WP_IL1_SIGNALING` |
+| Canonical NF-kB signaling (`CANONICAL_NFKB_SIGNALING`) | 15 | `REACTOME_TRAF6_MEDIATED_NF_KB_ACTIVATION`<br>`GOBP_CANONICAL_NF_KAPPAB_SIGNAL_TRANSDUCTION` |
+| Non-canonical NF-kB signaling (`NONCANONICAL_NFKB_SIGNALING`) | 6 | `REACTOME_TNFR2_NON_CANONICAL_NF_KB_PATHWAY`<br>`GOBP_NON_CANONICAL_NF_KAPPAB_SIGNAL_TRANSDUCTION` |
+
+### Innate immune signaling (`INNATE_IMMUNE_SIGNALING`)
+
+Groups pattern-recognition, nucleic-acid sensing and inflammasome pathways of innate immunity.
+
+Verified membership: 4 categories, 54 distinct core gene sets and 54 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| TLR signaling (`TLR_SIGNALING`) | 30 | `BIOCARTA_TOLL_PATHWAY`<br>`GOBP_TOLL_SIGNALING_PATHWAY`<br>`PID_TOLL_ENDOGENOUS_PATHWAY` |
+| RIG-I/MDA5 signaling (`RIG_I_MDA5_SIGNALING`) | 9 | `GOBP_RIG_I_SIGNALING_PATHWAY`<br>`KEGG_RIG_I_LIKE_RECEPTOR_SIGNALING_PATHWAY` |
+| cGAS-STING signaling (`CGAS_STING_SIGNALING`) | 7 | `GOBP_CGAS_STING_SIGNALING_PATHWAY`<br>`KEGG_MEDICUS_REFERENCE_CGAS_STING_SIGNALING_PATHWAY` |
+| NLRP3 inflammasome signaling (`NLRP3_INFLAMMASOME_SIGNALING`) | 8 | `REACTOME_THE_NLRP3_INFLAMMASOME`<br>`REACTOME_INFLAMMASOMES` |
+
+### GPCR and second-messenger signaling (`GPCR_SECOND_MESSENGER`)
+
+Groups GPCR and phospholipase pathways that use cyclic nucleotides, calcium and other second messengers.
+
+Verified membership: 5 categories, 64 distinct core gene sets and 69 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| GPCR-cAMP-PKA signaling (`GPCR_CAMP_PKA_SIGNALING`) | 31 | `BIOCARTA_GPCR_PATHWAY`<br>`GOBP_CAMP_PKA_SIGNAL_TRANSDUCTION`<br>`KEGG_MEDICUS_REFERENCE_PKA_HOLOENZYME` |
+| GPCR-PLC-calcium signaling (`GPCR_PLC_CALCIUM_SIGNALING`) | 16 | `BIOCARTA_GPCR_PATHWAY`<br>`KEGG_MEDICUS_REFERENCE_GPCR_PLCB_ITPR_SIGNALING_PATHWAY` |
+| PLC-gamma signaling (`PLC_GAMMA_SIGNALING`) | 2 | `KEGG_MEDICUS_REFERENCE_TCR_PLCG_ITPR_SIGNALING_PATHWAY` |
+| Calcium/calcineurin/NFAT signaling (`CALCIUM_CALMODULIN_CALCINEURIN`) | 12 | `REACTOME_CALCINEURIN_ACTIVATES_NFAT`<br>`BIOCARTA_NFAT_PATHWAY` |
+| S1P/EDG receptor signaling (`S1P_EDG_SIGNALING`) | 8 | `WP_S1P_RECEPTOR_SIGNAL_TRANSDUCTION`<br>`PID_S1P_META_PATHWAY` |
+
+### T- and B-cell receptor signaling (`T_CELL_B_CELL_RECEPTOR_SIGNALING`)
+
+Groups antigen-receptor and costimulatory signalling in T and B lymphocytes.
+
+Verified membership: 3 categories, 36 distinct core gene sets and 37 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| T-cell receptor signaling (`TCR_SIGNALING`) | 17 | `GOBP_T_CELL_RECEPTOR_SIGNALING_PATHWAY`<br>`KEGG_T_CELL_RECEPTOR_SIGNALING_PATHWAY` |
+| B-cell receptor signaling (`BCR_SIGNALING`) | 13 | `WP_B_CELL_RECEPTOR_SIGNALING`<br>`GOBP_B_CELL_RECEPTOR_SIGNALING_PATHWAY` |
+| CD28 costimulation signaling (`CD28_COSTIMULATION_SIGNALING`) | 7 | `REACTOME_CD28_DEPENDENT_VAV1_PATHWAY`<br>`REACTOME_CO_STIMULATION_BY_CD28` |
+
+### Death-receptor signaling (`DEATH_RECEPTOR_SIGNALING`)
+
+Groups extrinsic cell-death pathways initiated by death receptors and their proximal signalling complexes.
+
+Verified membership: 2 categories, 14 distinct core gene sets and 16 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| FAS/death receptor signaling (`FAS_DEATH_RECEPTOR_SIGNALING`) | 10 | `REACTOME_DEATH_RECEPTOR_SIGNALING`<br>`PID_FAS_PATHWAY` |
+| TRAIL death receptor signaling (`TRAIL_DEATH_RECEPTOR_SIGNALING`) | 6 | `REACTOME_DEATH_RECEPTOR_SIGNALING`<br>`PID_TRAIL_PATHWAY` |
+
+### Nuclear-receptor signaling (`NUCLEAR_RECEPTOR_SIGNALING`)
+
+Groups signalling and transcriptional programmes controlled by steroid and metabolic nuclear receptors.
+
+Verified membership: 3 categories, 22 distinct core gene sets and 22 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Estrogen receptor signaling (`ESTROGEN_RECEPTOR_SIGNALING`) | 9 | `WP_ESTROGEN_RECEPTOR_PATHWAY`<br>`GOBP_ESTROGEN_RECEPTOR_SIGNALING_PATHWAY` |
+| Androgen receptor signaling (`ANDROGEN_RECEPTOR_SIGNALING`) | 5 | `WP_ANDROGEN_RECEPTOR_SIGNALING` |
+| PPAR signaling (`PPAR_SIGNALING`) | 8 | `WP_PPAR_SIGNALING`<br>`KEGG_PPAR_SIGNALING_PATHWAY` |
+
+### Stress-response signaling (`STRESS_RESPONSE_SIGNALING`)
+
+Groups NRF2 antioxidant and unfolded-protein-response branches that manage oxidative and endoplasmic-reticulum stress.
+
+Verified membership: 4 categories, 24 distinct core gene sets and 26 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| NRF2/KEAP1 signaling (`NRF2_KEAP1_SIGNALING`) | 11 | `WP_NRF2_PATHWAY`<br>`KEGG_MEDICUS_REFERENCE_KEAP1_NRF2_SIGNALING_PATHWAY` |
+| PERK/ATF4 UPR signaling (`UPR_PERK_ATF4_SIGNALING`) | 8 | `KEGG_MEDICUS_VARIANT_SCRAPIE_CONFORMATION_PRPSC_TO_PERK_ATF4_SIGNALING_PATHWAY`<br>`KEGG_MEDICUS_VARIANT_MUTATION_CAUSED_ABERRANT_SNCA_TO_PERK_ATF4_SIGNALING_PATHWAY` |
+| IRE1/XBP1 UPR signaling (`IRE1_XBP1_SIGNALING`) | 3 | `GOBP_IRE1_MEDIATED_UNFOLDED_PROTEIN_RESPONSE` |
+| ATF6 UPR signaling (`ATF6_UPR_SIGNALING`) | 4 | `GOBP_ATF6_MEDIATED_UNFOLDED_PROTEIN_RESPONSE` |
+
+### RTK, matrix and guidance signaling (`RTK_MATRIX_GUIDANCE_SIGNALING`)
+
+Groups receptor and guidance pathways that connect extracellular cues, matrix interactions and directed cell behaviour.
+
+Verified membership: 3 categories, 20 distinct core gene sets and 20 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| Ephrin/EPH signaling (`EPHRIN_EPH_SIGNALING`) | 11 | `REACTOME_EPH_EPHRIN_SIGNALING`<br>`REACTOME_EPHRIN_SIGNALING` |
+| DDR1/DDR2 collagen receptor signaling (`DDR1_DDR2_COLLAGEN_RECEPTOR_SIGNALING`) | 1 | `GOBP_COLLAGEN_ACTIVATED_TYROSINE_KINASE_RECEPTOR_SIGNALING_PATHWAY` |
+| Semaphorin/Plexin/Neuropilin signaling (`SEMAPHORIN_PLEXIN_NEUROPILIN_SIGNALING`) | 8 | `GOBP_SEMAPHORIN_PLEXIN_SIGNALING_PATHWAY`<br>`REACTOME_SEMAPHORIN_INTERACTIONS` |
+
+### Chemokine GPCR signaling (`CHEMOKINE_GPCR_SIGNALING`)
+
+Groups chemokine-receptor and related GPCR signalling axes that guide cell positioning and communication.
+
+Verified membership: 1 category, 12 distinct core gene sets and 12 category assignments.
+
+| Category | Core members | Representative member gene sets |
+|---|---:|---|
+| CXCR4/CXCL12 signaling (`CXCR4_CXCL12_SIGNALING`) | 12 | `GOBP_CXCL12_ACTIVATED_CXCR4_SIGNALING_PATHWAY`<br>`PID_CXCR4_PATHWAY` |
+
+# Use a category in study evidence
+
+The catalogue describes the dictionary. Study-specific NES, adjusted
+P values and leading edges are available in the report's category evidence.
+In a single-analysis report, choose the analysis and collection, then select
+**Category evidence** in **Section** and the exact category in **Category**.
+See the [report guide](scientific-report.html) for the complete navigation and
+download distinctions.
+For custom resources and schema requirements, see
+[Custom dictionaries and supercategories](custom-dictionaries-and-supercategories.html).

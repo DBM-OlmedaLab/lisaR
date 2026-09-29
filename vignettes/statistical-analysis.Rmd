@@ -1,0 +1,112 @@
+---
+title: "Statistical analysis"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Statistical analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+lisaR separates gene-set enrichment from category-level inference. The
+quantities answer different questions and should not be used interchangeably.
+
+## Differential expression and gene-set enrichment
+
+Differential expression is calculated upstream. lisaR uses the supplied signed
+ranking and gene-set memberships to run GSEA with `fgsea`. It retains the
+gene-set normalised enrichment score (NES), raw P value, adjusted P value and
+leading edge. The adjusted P values are supplied by `fgsea`; they are not
+category-level P values.
+
+By default, GSEA uses the multilevel route. The selected ranking, gene-set size
+limits and other settings are recorded in the run. Gene-level DE adjusted P
+values, gene-set adjusted P values and category adjusted P values refer to
+different hypotheses.
+
+## Descriptive category summaries
+
+A category's `mean_NES` is the mean of its distinct individually significant
+assigned sets with finite NES, at the configured gene-set cutoff. It is not a
+category significance test. Likewise, `min_padj`, the smallest member-set
+adjusted P value, is not a category false-discovery rate.
+
+Gene sets can overlap and belong to several categories. These assignments do
+not create independent observations. Point size counts gene sets, not samples
+or independent biological mechanisms.
+
+## Category inference
+
+For each DE analysis, lisaR applies robust Hommel closed testing
+(`hommel(..., simes = FALSE)`) to the raw gene-set P values.
+The family contains all eligible unique gene-set hypotheses across the
+configured semantic collections, including unclassified sets.
+HALLMARKS is excluded and retains its direct gene-set results.
+Eligibility, not the GSEA significance cutoff or NES direction, defines this
+family.
+
+Repeated instances of the same hypothesis across collections count once, using
+the largest P value conservatively. Hypothesis identity preserves the pathway
+identifier, analysis, ranked universe, effective membership and scoring
+settings. Eligible hypotheses without a usable raw P value remain in the
+family with P = 1; they are not silently dropped.
+
+Robust closed testing allows arbitrary dependence, assuming valid individual
+input P values. It does not correct an inappropriate upstream design or an
+invalid individual test.
+
+## Adjusted category P and supported extent
+
+The adjusted category P tests the null that none of the category's evaluable
+member sets is enriched. It is already family-adjusted; lisaR does not apply
+another BH correction to it.
+
+The category card reports the exact value. Stars show only the strongest
+threshold reached:
+
+| Mark | Adjusted category P |
+|---|---:|
+| `*` | ≤ 0.05 |
+| `**` | ≤ 0.01 |
+| `***` | ≤ 0.001 |
+| `****` | ≤ 0.0001 |
+
+A significant category supports at least one enriched member set. It does not
+establish coherent activation of the whole category or the direction of its
+effect. An unmarked category can be nonsignificant or not evaluable.
+
+At the default alpha of 0.05, **d/N** gives a simultaneous 95% lower confidence
+bound: at least d of N eligible member hypotheses with usable raw P values
+are supported as enriched. The tests use the conservative deduplicated family
+P values described above. A zero bound does not demonstrate absence; N = 0
+means not evaluable.
+
+This is a minimum supported count, not the exact true count or the number
+passing the GSEA display cutoff. Do not add these bounds across overlapping
+categories. Check the card's analysed/total coverage and missing-P information.
+
+## Comparing analyses
+
+Each DE analysis has its own inference family. A difference in mean NES,
+or significance in one analysis but not another, does not establish a
+between-analysis difference. ON minus PRE and other LISA profile comparisons
+remain descriptive. Testing a condition difference requires an appropriate
+upstream statistical model.
+
+## Methods references
+
+Goeman et al. (2019), *Simultaneous control of all false discovery proportions
+in large-scale multiple hypothesis testing*, Biometrika 106, 841-856.
+[doi:10.1093/biomet/asz041](https://doi.org/10.1093/biomet/asz041).
+
+See the [hommel documentation](https://cran.r-project.org/package=hommel) and
+[fgsea documentation](https://bioconductor.org/packages/fgsea/) for their
+algorithms. The [licence and citation guide](licence-and-citation.html)
+provides the software and study attribution.
+
+Return to [Advanced guides](advanced.html).

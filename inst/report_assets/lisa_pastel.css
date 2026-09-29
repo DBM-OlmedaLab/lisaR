@@ -1,0 +1,457 @@
+/* lisaR report interface. Scientific plot colours remain unchanged. */
+body[data-style-scope] {
+  --style-ink: #253641;
+  --style-muted: #52616d;
+  --style-line: #d6e0e3;
+  --style-blue: #eaf0f6;
+  --style-blue-edge: #b8c9d9;
+  --style-blue-ink: #2f4a60;
+  --style-accent: #eaf0f6;
+  --style-accent-edge: #b8c9d9;
+  --style-accent-ink: #2f4a60;
+  background: #f6f8fa;
+}
+body[data-style-scope="analysis"] {
+  --style-accent: #eaf2ed;
+  --style-accent-edge: #a9c6b4;
+  --style-accent-ink: #284b3c;
+}
+body[data-style-scope="contrast"] {
+  --style-accent: #f0edf7;
+  --style-accent-edge: #c4b6d8;
+  --style-accent-ink: #514062;
+}
+
+/* The logo, header geometry and native mobile menu stay unchanged. */
+body[data-style-scope] .lisa-shared-shell {
+  border-bottom-color: var(--style-blue-edge);
+  box-shadow: 0 3px 12px rgb(35 53 68 / 5%);
+}
+body[data-style-scope] .lisa-shell-nav a {
+  color: var(--style-blue-ink);
+  border-radius: 7px;
+}
+body[data-style-scope] .lisa-shell-nav a:hover {
+  background: #f0f4f8;
+  border-color: #d5e0e8;
+}
+body[data-style-scope] .lisa-shell-nav a[aria-current] {
+  color: #253f54;
+  background: #e3ecf4;
+  border-color: #aebfd0;
+  box-shadow: inset 0 -2px 0 #58778f;
+}
+body[data-style-scope] .lisa-shell-explorer {
+  background: #f0f4f8;
+  border-top: 1px solid #e1e8ef;
+  border-bottom: 1px solid #dce5ee;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+body[data-style-scope] .lisa-shell-picker {
+  color: var(--style-blue-ink);
+  font-weight: 700;
+}
+body[data-style-scope] .lisa-shell-picker select {
+  border-color: #b8c8d6;
+  border-radius: 6px;
+  color: #263e51;
+  background: #fff;
+}
+body[data-style-scope] .lisa-shell-context {
+  padding-top: 7px;
+  color: #334854;
+}
+body[data-style-scope] .lisa-shell-context-label,
+body[data-style-scope] .lisa-shell-identifiers {
+  color: #546472;
+}
+
+/* Soft section identities; figure surfaces keep their original white ground. */
+body[data-style-scope] .hero,
+body[data-style-scope] .page-intro {
+  background: var(--style-accent);
+  border: 1px solid var(--style-accent-edge);
+  border-left: 4px solid var(--style-accent-edge);
+  border-radius: 9px;
+  padding: 18px 20px;
+}
+body[data-style-scope] .hero h1,
+body[data-style-scope] .page-intro h1 {
+  color: var(--style-accent-ink);
+  line-height: 1.25;
+}
+body[data-style-scope] .hero p,
+body[data-style-scope] .page-intro p {
+  color: #4b5e67;
+}
+body[data-style-scope] .panel {
+  border-color: var(--style-line);
+  border-radius: 9px;
+  box-shadow: 0 2px 7px rgb(35 53 68 / 3%);
+}
+body[data-style-scope] .panel > h2 {
+  color: var(--style-accent-ink);
+  background: var(--style-accent);
+  border: 1px solid var(--style-accent-edge);
+  border-left-width: 3px;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+body[data-style-scope] .section-head,
+body[data-style-scope] .section-heading {
+  background: var(--style-accent);
+  border: 1px solid var(--style-accent-edge);
+  border-left-width: 3px;
+  border-radius: 6px;
+  padding: 11px 13px;
+  margin-bottom: 15px;
+}
+body[data-style-scope] .section-head h2,
+body[data-style-scope] .section-heading h2 {
+  color: var(--style-accent-ink);
+}
+body[data-style-scope] .eyebrow {
+  color: var(--style-accent-ink);
+  letter-spacing: .065em;
+}
+body[data-style-scope] .analysis-block,
+body[data-style-scope] .collection-block {
+  border-color: var(--style-line);
+  border-radius: 9px;
+}
+body[data-style-scope] .analysis-block > summary {
+  background: var(--style-accent);
+  border-bottom-color: var(--style-accent-edge);
+  color: var(--style-accent-ink);
+}
+body[data-style-scope] .collection-block > summary {
+  background: #f4f7f8;
+  color: #324851;
+  border-bottom-color: #dbe5e7;
+}
+body[data-style-scope] .analysis-block > summary span,
+body[data-style-scope] .collection-block > summary span {
+  color: #52616a;
+}
+body[data-style-scope] .analysis-inner { background: #fbfcfc; }
+body[data-style-scope] details.panel > summary {
+  color: var(--style-accent-ink);
+  background: var(--style-accent);
+  border: 1px solid var(--style-accent-edge);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+body[data-style-scope] details.panel[open] > summary { margin-bottom: 14px; }
+
+/* Navigation, control groups and exports are distinguishable from the data. */
+body[data-style-scope] .toc {
+  background: #f0f4f8;
+  border-color: #cfdae4;
+}
+body[data-style-scope] .toc summary { color: #40596c; }
+body[data-style-scope] .toc a,
+body[data-style-scope] .top-tabs a {
+  background: #fff;
+  border-color: #c9d5df;
+  color: var(--style-blue-ink);
+}
+body[data-style-scope] .top-tabs a.active {
+  background: #e2ebf4;
+  color: #253f54;
+  border-color: #aebfd0;
+  font-weight: 700;
+  box-shadow: inset 0 -2px 0 #58778f;
+}
+body[data-style-scope] .toolbar,
+body[data-style-scope] .order-controls,
+body[data-style-scope] .nes-controls,
+body[data-style-scope] .filters {
+  background: #f0f4f8;
+  border: 1px solid #d5e0e9;
+  border-radius: 7px;
+  padding: 12px 14px;
+}
+body[data-style-scope] .toolbar label,
+body[data-style-scope] .nes-controls label,
+body[data-style-scope] .filters label {
+  color: #344f62;
+}
+body[data-style-scope] .toolbar select,
+body[data-style-scope] .toolbar input[type="search"],
+body[data-style-scope] .order-controls select,
+body[data-style-scope] .nes-controls select,
+body[data-style-scope] .filters select,
+body[data-style-scope] .table-search {
+  background: #fff;
+  border-color: #bccbd7;
+  border-radius: 6px;
+  color: #2b3f4c;
+}
+body[data-style-scope] .nes-downloads {
+  background: #f1f5f8;
+  border: 1px solid #d8e2e9;
+  border-radius: 7px;
+  color: var(--style-blue-ink);
+}
+body[data-style-scope] .btn,
+body[data-style-scope] .file-link,
+body[data-style-scope] .downloads a,
+body[data-style-scope] .toolbar button,
+body[data-style-scope] .pager button,
+body[data-style-scope] .modal-actions button {
+  background: #edf3f8;
+  border-color: #bed0df;
+  color: #2f4a60;
+  border-radius: 6px;
+  font-weight: 600;
+}
+body[data-style-scope] .btn:hover,
+body[data-style-scope] .file-link:hover,
+body[data-style-scope] .downloads a:hover,
+body[data-style-scope] .toolbar button:hover,
+body[data-style-scope] .pager button:hover {
+  color: #243e53;
+  background: #e0ebf4;
+  border-color: #9eb5c9;
+  text-decoration: none;
+}
+body[data-style-scope] .evidence-products-anchor {
+  background: var(--style-accent);
+  border-color: var(--style-accent-edge);
+  color: var(--style-accent-ink);
+}
+body[data-style-scope] .evidence-products-jump {
+  color: var(--style-accent-ink);
+  text-underline-offset: 3px;
+}
+
+/* Cards also cover FULL galleries. Nothing is folded or removed here. */
+body[data-style-scope] .detail-card,
+body[data-style-scope] .category-product-card,
+body[data-style-scope] .full-product-preview,
+body[data-style-scope] .fig-card {
+  border-color: #d4dfe3;
+  border-radius: 8px;
+  background: #fff;
+}
+body[data-style-scope] .detail-card {
+  border-top: 3px solid var(--style-accent-edge);
+}
+body[data-style-scope] .detail-card:hover {
+  background: #fafcfd;
+  border-color: #a8bbc7;
+}
+body[data-style-scope] .fig-caption,
+body[data-style-scope] .full-product-preview figcaption {
+  background: #f6f9fb;
+  border-top: 1px solid #e0e7ec;
+}
+body[data-style-scope] .category-product-card > h3 {
+  color: var(--style-accent-ink);
+  background: var(--style-accent);
+  border-radius: 5px;
+  padding: 8px 10px;
+}
+body[data-style-scope] .full-products-cover {
+  border-top: 3px solid var(--style-accent-edge);
+}
+body[data-style-scope] .metric,
+body[data-style-scope] .count {
+  border-color: #d4dfe3;
+  border-radius: 7px;
+}
+body[data-style-scope] .metric span,
+body[data-style-scope] .count span { color: #536570; }
+
+/* New overview uses native links and details, with scope labels in words. */
+body[data-style-scope] .style-overview-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  padding: 3px 0 6px;
+  margin: 0 0 16px;
+  color: #293f4e;
+}
+body[data-style-scope] .style-overview-title h1 {
+  margin: 0 0 9px;
+  font-size: clamp(25px, 2.2vw, 32px);
+  line-height: 1.2;
+}
+body[data-style-scope] .style-overview-title p {
+  margin: 0;
+  color: #516371;
+}
+body[data-style-scope] .style-mode-label {
+  display: block;
+  margin: 0 0 6px;
+  color: #536b7d;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+body[data-style-scope] .style-overview-title .style-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+body[data-style-scope] .style-counts > span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 14px;
+}
+body[data-style-scope] .style-counts strong {
+  color: #2d4453;
+  font-size: 25px;
+  font-weight: 700;
+}
+body[data-style-scope] .style-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 255px), 1fr));
+  gap: 18px;
+  margin: 18px 0 24px;
+}
+body[data-style-scope] .style-result-card {
+  --style-card-bg: #eaf0f6;
+  --style-card-edge: #b8c9d9;
+  --style-card-ink: #2f4a60;
+  background: #fff;
+  border: 1px solid var(--style-card-edge);
+  border-top-width: 5px;
+  border-radius: 10px;
+  padding: 20px;
+  color: #283d47;
+  box-shadow: 0 3px 10px rgb(35 53 68 / 4%);
+  min-width: 0;
+  display: block;
+  text-decoration: none;
+}
+body[data-style-scope] a.style-result-card:hover {
+  background: #fcfdfd;
+  box-shadow: 0 4px 12px rgb(35 53 68 / 9%);
+  text-decoration: none;
+}
+body[data-style-scope] a.style-result-card:focus-visible {
+  outline: 3px solid #476d8c;
+  outline-offset: 3px;
+}
+body[data-style-scope] .style-result-card > strong {
+  display: block;
+  font-size: 25px;
+  margin-bottom: 9px;
+}
+body[data-style-scope] .style-result-card > span:not(.style-card-kind):not(.style-card-action) {
+  display: block;
+  color: #52636d;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+body[data-style-scope] .style-result-card .style-card-action {
+  display: block;
+  color: var(--style-card-ink);
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--style-card-edge);
+  font-size: 14px;
+  font-weight: 700;
+}
+body[data-style-scope] .style-result-card--analysis {
+  --style-card-bg: #eaf2ed;
+  --style-card-edge: #a9c6b4;
+  --style-card-ink: #284b3c;
+}
+body[data-style-scope] .style-result-card--contrast {
+  --style-card-bg: #f0edf7;
+  --style-card-edge: #c4b6d8;
+  --style-card-ink: #514062;
+}
+body[data-style-scope] .style-result-card h2,
+body[data-style-scope] .style-result-card h3,
+body[data-style-scope] .style-result-card > strong {
+  color: var(--style-card-ink);
+  margin-top: 0;
+  line-height: 1.3;
+}
+body[data-style-scope] .style-result-card .eyebrow,
+body[data-style-scope] .style-result-card .style-card-kind,
+body[data-style-scope] .style-result-card .style-result-kind {
+  display: inline-block;
+  background: var(--style-card-bg);
+  color: var(--style-card-ink);
+  border-radius: 5px;
+  padding: 4px 8px;
+  margin: 0 0 11px;
+  font-size: 12px;
+  font-weight: 700;
+}
+body[data-style-scope] .style-result-card p {
+  color: #53636c;
+  margin: 8px 0 15px;
+}
+body[data-style-scope] .style-result-card a:not(.file-link),
+body[data-style-scope] .style-result-card .style-result-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--style-card-ink);
+  background: var(--style-card-bg);
+  border: 1px solid var(--style-card-edge);
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-weight: 650;
+  text-decoration: none;
+}
+body[data-style-scope] .style-result-card a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+body[data-style-scope] .style-report-details {
+  background: #fff;
+  border: 1px solid #d4dfe6;
+  border-radius: 8px;
+  margin: 22px 0;
+  padding: 0 16px 0;
+}
+body[data-style-scope] .style-report-details > summary {
+  cursor: pointer;
+  color: #3e5768;
+  font-weight: 650;
+  padding: 14px 1px;
+}
+body[data-style-scope] .style-report-details[open] { padding-bottom: 16px; }
+body[data-style-scope] .style-report-details[open] > summary {
+  border-bottom: 1px solid #e0e7ec;
+  margin-bottom: 16px;
+}
+
+/* Keyboard focus remains explicit, and colour is never the only cue. */
+body[data-style-scope] .lisa-shared-shell a:focus-visible,
+body[data-style-scope] .lisa-shared-shell button:focus-visible,
+body[data-style-scope] .lisa-shared-shell select:focus-visible,
+body[data-style-scope] .style-result-card a:focus-visible,
+body[data-style-scope] .style-report-details > summary:focus-visible,
+body[data-style-scope] .file-link:focus-visible,
+body[data-style-scope] .downloads a:focus-visible,
+body[data-style-scope] .btn:focus-visible,
+body[data-style-scope] .toolbar :focus-visible,
+body[data-style-scope] .nes-controls :focus-visible {
+  outline: 3px solid #476d8c;
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  body[data-style-scope] .hero,
+  body[data-style-scope] .page-intro { padding: 14px 15px; }
+  body[data-style-scope] .section-head,
+  body[data-style-scope] .section-heading { padding: 10px 11px; }
+  body[data-style-scope] .style-result-card { padding: 16px; }
+  body[data-style-scope] .style-summary-grid { gap: 12px; }
+}
+@media print {
+  body[data-style-scope] { background: #fff; }
+  body[data-style-scope] .panel,
+  body[data-style-scope] .style-result-card { box-shadow: none; }
+}

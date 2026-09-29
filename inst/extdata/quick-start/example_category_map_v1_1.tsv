@@ -1,0 +1,5 @@
+category_id	display_name	macrogroup_id	macrogroup_name	macrogroup_order	category_order_within_macrogroup	notes
+SYN_SIGNAL	Synthetic immune signalling	SYN_RESPONSE	Synthetic response programmes	1	1	Synthetic category for the sample project.
+SYN_STRESS	Synthetic stress adaptation	SYN_RESPONSE	Synthetic response programmes	1	2	Synthetic category for the sample project.
+SYN_PROLIF	Synthetic proliferation	SYN_TISSUE	Synthetic tissue programmes	2	1	Synthetic category for the sample project.
+SYN_MATRIX	Synthetic matrix remodelling	SYN_TISSUE	Synthetic tissue programmes	2	2	Synthetic category for the sample project.

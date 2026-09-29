@@ -1,0 +1,47 @@
+---
+title: "lisaR documentation"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{lisaR documentation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+If you are new to lisaR, start with the four steps below. For your own analysis,
+you need a complete
+differential-expression table; lisaR calculates enrichment from that table,
+not differential expression from sequencing reads.
+
+## Get started
+
+1. **[Install lisaR](installation.html)** in R or RStudio.
+2. **[Run Riaz ON](riaz-on-quick-start.html)** to make your first report from
+   prepared public data.
+3. **[Use your own DE](use-your-own-de.html)** by replacing the input table and
+   stating the direction of your comparison.
+4. **[Read your report](read-your-report.html)** and inspect the gene sets
+   behind a category.
+
+You can follow this route without writing YAML or choosing advanced options.
+The Riaz example downloads its data and gene-set resource. If you need an
+offline demonstration instead, use the [synthetic example](quick-start.html).
+
+## Go further
+
+[Advanced guides](advanced.html) cover statistical analysis, multiple analyses,
+custom resources and additional report products. You do not need them to
+complete the first run.
+
+For a specific argument or error, consult the
+[function reference](function-reference.html),
+[configuration reference](configuration-reference.html) or
+[troubleshooting guide](troubleshooting.html).
+
+[Licence and citation](licence-and-citation.html) explains software attribution
+and the terms that apply to external resources.

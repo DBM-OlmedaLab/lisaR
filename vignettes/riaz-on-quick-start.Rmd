@@ -1,0 +1,87 @@
+---
+title: "Run your first analysis: Riaz ON"
+lang: en-GB
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+    includes:
+      in_header: vignette-layout.inc
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Run your first analysis: Riaz ON}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This example uses melanoma biopsies collected during nivolumab treatment in
+[Riaz et al. (2017)](https://doi.org/10.1016/j.cell.2017.09.028). It compares
+complete or partial responders (CR/PR) with patients with progressive disease
+(PD). Positive values are higher in responders.
+
+## Run the example
+
+[Install lisaR](installation.html) first, then copy the following block into R
+or RStudio. It prepares the human gene-set resource, downloads the previously
+computed DE table and runs one STANDARD analysis. It does not fit DESeq2 again
+or run PRE and ON together.
+
+Use a short writable path. The `riaz-data` and `riaz-on` directories must not
+already exist; choose another root if you have run this example before.
+The resource is downloaded once and reused on later runs. The
+`accept_terms = TRUE` argument records acceptance of the
+[applicable resource terms](resources-and-provenance.html).
+
+<!-- BEGIN RIAZ ON EXAMPLE -->
+```{r riaz-on, eval=FALSE}
+library(lisaR)
+
+# Use a short, writable path. Change C:/lisa if needed.
+root <- if (.Platform$OS.type == "windows") "C:/lisa" else "~/lisa"
+root <- path.expand(root)
+dir.create(root, recursive = TRUE, showWarnings = FALSE)
+
+# Prepare the human gene-set membership resource once.
+prepare_lisa_msigdb_resource(accept_terms = TRUE)
+
+# Download the prepared Riaz data to a new directory.
+riaz <- install_lisa_example_bundle(
+  "riaz-gse91061",
+  destination = file.path(root, "riaz-data")
+)
+
+# Analyse ON only: CR/PR responders versus PD during treatment.
+result <- run_lisa(
+  de = list(responders_vs_pd_on = file.path(
+    riaz$bundle, "outputs", "lisa_inputs", "responders_vs_pd_on.tsv"
+  )),
+  output_dir = file.path(root, "riaz-on"),
+  species = "Homo sapiens",
+  method = "DESeq2",
+  positive_direction =
+    "Higher in CR/PR responders than in PD during treatment",
+  mode = "standard"
+)
+
+stopifnot(identical(result$gate, "PASS"))
+browseURL(result$report_index)
+```
+<!-- END RIAZ ON EXAMPLE -->
+
+The script is also installed at
+`system.file("examples", "riaz-on-quick-start.R", package = "lisaR")`.
+
+## What to expect
+
+The report opens when the run finishes. Enrichment and figure generation can
+take time; this is a real-data analysis, not an instant demonstration.
+If R reports an error, resolve it before opening a partial report.
+
+Open **responders_vs_pd_on**, then its **GOBP-C2** LISA plot. Select a category
+to inspect its member gene sets. PNG and SVG figures, source tables and
+figure recipes are included. PDF is optional.
+
+Keep the whole `riaz-on` folder if you move or share the report, not just
+`report_index.html`.
+
+**Next: [Use your own DE](use-your-own-de.html).**
+To explore the example output first, [read your report](read-your-report.html).

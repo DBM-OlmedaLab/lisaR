@@ -1,0 +1,5 @@
+role	id	label	description
+study	riaz	Riaz et al. — response to nivolumab	RNA-seq response-group profiles before and during nivolumab.
+analysis	responders_vs_pd_on	On-treatment: responders vs progression	Responders (CR/PR) versus progressive disease during nivolumab; positive values indicate higher expression in responders.
+analysis	responders_vs_pd_pre	Baseline: responders vs progression	Responders (CR/PR) versus progressive disease before nivolumab; positive values indicate higher expression in responders.
+contrast	response_separation_by_time	Response profiles during and before nivolumab	A: on-treatment response-group profile; B: baseline response-group profile. Both profiles are shown separately; their saved difference is descriptive, not an interaction test.

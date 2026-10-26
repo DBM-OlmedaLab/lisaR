@@ -9,6 +9,30 @@ lisa_category_figure_regions <- function(source_path, settings_path) {
     stop('Clickable regions require the recorded 2.0 category layout.',call.=FALSE)
   x <- utils::read.delim(source_path,check.names=FALSE,quote='"',comment.char='')
   prepared <- structure(list(source=x,metadata=m),class='lisa_category_nes_variants')
+  # Empty canonical selections have no faceted panels. Validate their saved
+  # source/settings before skipping geometry; a matched hash alone is not a
+  # valid schema. Reuse the original plot to validate variant/layout settings.
+  if (!nrow(x)) {
+    required <- c('category_id','category_display_name','macrogroup_name',
+      'category_color','side','display_color','display_mean_NES','median_NES',
+      'p25_NES','p75_NES','n_genesets_significant','n_genesets_evaluable',
+      'n_zero_genesets','same_direction_pct')
+    if (!all(required %in% names(x)))
+      stop('Incomplete empty NES-variant source.',call.=FALSE)
+    dimensions <- c(m$width,m$height,m$dpi)
+    if (!identical(m$schema_version,'1.0') || length(m$scope)!=1L ||
+        !m$scope %in% c('single','contrast') || length(m$x_limits)!=2L ||
+        any(!is.finite(m$x_limits)) || m$x_limits[[1L]]>=m$x_limits[[2L]] ||
+        length(dimensions)!=3L || any(!is.finite(dimensions)|dimensions<=0))
+      stop('Invalid empty NES-variant settings.',call.=FALSE)
+    if (length(lisa_nes_plot_sets_validate(m$plot_set,m$scope))!=1L)
+      stop('Select one recorded NES plot set.',call.=FALSE)
+    plot_lisa_category_nes_variant(prepared,m$variant)
+    # Preserve the region-cache schema and the existing placeholder bitmap.
+    return(data.frame(category_id=character(),kind=character(),side=character(),
+      left=numeric(),top=numeric(),width=numeric(),height=numeric(),
+      stringsAsFactors=FALSE))
+  }
   # A graphics device supplies font/layout metrics; the sink emits no file.
   sink <- if (.Platform$OS.type=='windows') 'NUL' else '/dev/null'
   grDevices::png(sink,width=m$width,height=m$height,units='in',res=m$dpi,type='cairo')

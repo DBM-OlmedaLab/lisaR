@@ -11,8 +11,8 @@
 
 lisa_contract_versions <- function() {
   list(
-    package_development_version = "1.0.0",
-    package_r_version = "1.0.0",
+    package_development_version = "1.0.1",
+    package_r_version = "1.0.1",
     pipeline_schema_version = lisa_pipeline_schema_version(),
     report_schema_version = "7.0.0",
     contract_manifest_version = "1.0.0"

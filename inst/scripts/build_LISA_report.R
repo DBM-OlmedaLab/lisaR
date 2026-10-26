@@ -3543,6 +3543,14 @@ main <- function() {
       single_evidence_available <- file.exists(file.path(project_dir, "report_pages",
         "evidence", analysis, collection, "index.html"))
       if (analysis_full_scope && !single_evidence_available) {
+        selection_state <- lisaR:::lisa_report_selection_state(project_dir, analysis, collection)
+        if (identical(selection_state, "completed_empty")) {
+          for (family in c("GeneCards", "Volcano overlays", "Heatmaps")) {
+            layers[[family]]$empty_state <- "completed_empty"
+            layers[[family]]$note <- paste0(layers[[family]]$note,
+              " No eligible member gene sets met the recorded GSEA FDR cutoff in this analysis and collection.")
+          }
+        }
         # A collection without a category-evidence page (HALLMARKS) cannot attach
         # its FULL products to category cards; they are shown as complete
         # galleries so that no FULL figure is left without a place in the report.

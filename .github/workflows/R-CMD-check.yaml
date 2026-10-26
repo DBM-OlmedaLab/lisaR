@@ -47,7 +47,7 @@ jobs:
           stopifnot(length(tar)==1L)
           stopifnot(system2(file.path(R.home("bin"),"R"),c("CMD","INSTALL",shQuote(tar)))==0L)
           library(lisaR)
-          stopifnot(packageVersion("lisaR")=="1.0.0",nrow(tools::getVignetteInfo(package="lisaR"))==25L)
+          stopifnot(packageVersion("lisaR")=="1.0.1",nrow(tools::getVignetteInfo(package="lisaR"))==25L)
       - name: Check native Windows checkpoint archiver before analysis
         shell: pwsh
         run: |

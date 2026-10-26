@@ -6,11 +6,17 @@ lisa_full_product_inventory <- function(project_dir, kegg_maps = FALSE) {
   co <- read_lisa_tsv(file.path(root, "config/contrast_index.tsv"))
   result <- list()
   requested_formats <- lisa_requested_plot_formats(root, default = c("png", "pdf"))
-  add <- function(owner, collection, family, dirs, pattern = "[.]png$", empty_index = character()) {
+  add <- function(owner, collection, family, dirs, pattern = "[.]png$", empty_index = character(),
+                  empty_selection = FALSE) {
     paths <- sort(unique(unlist(lapply(dirs, function(d)
       lisa_plot_files(d, pattern=pattern, formats=requested_formats)), use.names=FALSE)))
     empty <- length(empty_index) && any(vapply(empty_index, function(p)
       file.exists(p) && nrow(read_lisa_tsv(p)) == 0L, logical(1)))
+    if (!length(paths) && !empty && empty_selection) {
+      result[[length(result)+1L]] <<- data.frame(owner=owner,collection=collection,
+        family=family,state="completed_empty",path="",sha256="")
+      return(invisible(NULL))
+    }
     if (!length(requested_formats)) {
       evidence <- unlist(lapply(dirs, function(d) list.files(d,
         pattern = "[.](tsv|json)$", recursive = TRUE, full.names = TRUE)), use.names = FALSE)
@@ -47,10 +53,15 @@ lisa_full_product_inventory <- function(project_dir, kegg_maps = FALSE) {
       g <- file.path(root,"outputs/gene_level/single_de",owner,basename(d))
       a <- file.path(root,"artifacts",owner,collection)
       prefix <- paste(owner,collection,"gene_level",sep="_")
+      selection_empty <- function() identical(
+        lisa_report_selection_state(root, owner, collection), "completed_empty")
       add(owner,collection,"prioritized_genes",c(file.path(g,"category_gene_cards"),file.path(a,"gene_cards")),
-        empty_index=file.path(g,"category_gene_cards",paste0(prefix,"_category_gene_cards_index.tsv")))
-      add(owner,collection,"volcano",c(file.path(g,"category_volcano_overlays"),file.path(a,"volcano")))
-      add(owner,collection,"gene_heatmap",c(file.path(g,"leading_edge_gene_heatmaps"),file.path(a,"heatmap")))
+        empty_index=file.path(g,"category_gene_cards",paste0(prefix,"_category_gene_cards_index.tsv")),
+        empty_selection=selection_empty())
+      add(owner,collection,"volcano",c(file.path(g,"category_volcano_overlays"),file.path(a,"volcano")),
+        empty_selection=selection_empty())
+      add(owner,collection,"gene_heatmap",c(file.path(g,"leading_edge_gene_heatmaps"),file.path(a,"heatmap")),
+        empty_selection=selection_empty())
       if (collection != "HALLMARKS") add(owner,collection,"recurrent_genes",file.path(g,"recurrent_gene_screen"))
       if (kegg_maps) add(owner,collection,"kegg_maps",file.path(g,"kegg_painter"),"_painted[.]png$",
         file.path(g,"kegg_painter",paste0(prefix,"_kegg_pathway_painter_index.tsv")))

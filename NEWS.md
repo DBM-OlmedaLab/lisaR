@@ -1,12 +1,6 @@
 # lisaR 1.0.1 (2026-10-26)
 
-- Fix HTML generation for valid empty category-figure selections while
-  retaining their PNG products and validating source schemas and settings.
-- Mark FULL galleries as completed-empty only when saved analysis, collection,
-  summary and registered-threshold evidence proves that no products are due.
-- Keep missing mandatory products and missing, ambiguous or corrupt empty-result
-  evidence as errors. Scientific calculations, thresholds, schemas and bundled
-  resource versions are unchanged.
+- Bug fixes.
 
 # lisaR 1.0.0 (2026-09-29)
 

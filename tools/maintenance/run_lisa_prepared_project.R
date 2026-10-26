@@ -159,7 +159,7 @@ source_files <- c(
   "full_product_completion.R", "full_product_inventory.R", "gene_level.R", "globals.R",
   "html_report.R", "input_contracts.R", "lisa_pipeline.R", "lollipop_reproduction.R", "manifest.R",
   "pathway_contracts.R", "post_lisa_products.R", "post_script_interfaces.R",
-  "public_api.R", "report_architecture.R", "report_foundation.R",
+  "public_api.R", "report_architecture.R", "report_empty_selection.R", "report_foundation.R",
   "report_packaging.R", "resource_install.R", "resources.R", "rng_contract.R", "run_LISA_DE.R",
   "run_defaults.R",
   "run_management.R", "scientific_report.R", "security.R", "trusted_rds.R",

@@ -19,7 +19,7 @@ not send your data to a cloud-hosted LLM.
 
 ## Latest release
 
-[lisaR 1.0.1](https://github.com/DBM-OlmedaLab/lisaR/releases/tag/v1.0.1): bug fixes.
+[lisaR 1.0.2](https://github.com/DBM-OlmedaLab/lisaR/releases/tag/v1.0.2): bug fixes.
 
 ## Install lisaR
 
@@ -28,7 +28,7 @@ You need **R 4.1 or later**. Run this in R or RStudio:
 ```r
 install.packages(c("BiocManager", "remotes"))
 BiocManager::install("fgsea", update = FALSE, ask = FALSE)
-remotes::install_github("DBM-OlmedaLab/lisaR", ref = "v1.0.1", upgrade = "never",
+remotes::install_github("DBM-OlmedaLab/lisaR", ref = "v1.0.2", upgrade = "never",
                         build_vignettes = FALSE)
 ```
 

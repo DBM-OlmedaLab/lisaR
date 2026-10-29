@@ -1060,6 +1060,23 @@ verify_run <- function(run_dir, workers = 1L) {
   } else if (!("event" %in% names(events) && any(events$event == "validated"))) {
     findings <- c(findings, "validation_incomplete")
   }
+  if (!is_plan) {
+    modes <- character()
+    for (mode_file in c("contract_manifest.tsv", "lisa_pipeline_metadata.tsv")) {
+      mode_path <- file.path(run_dir, mode_file)
+      if (!file.exists(mode_path)) next
+      metadata <- tryCatch(read_lisa_tsv(mode_path), error = function(error) NULL)
+      valid <- !is.null(metadata) && identical(names(metadata), c("key", "value"))
+      value <- if (valid) as.character(metadata$value[!is.na(metadata$key) & metadata$key == "report_mode"]) else character()
+      if (length(value) != 1L || is.na(value) || !value %in% c("standard", "full")) {
+        findings <- c(findings, paste0("full_products_inventory_invalid_mode:", mode_file))
+      } else modes <- c(modes, value)
+    }
+    if (length(unique(modes)) > 1L) {
+      findings <- c(findings, "full_products_inventory_conflicting_modes")
+    }
+    findings <- c(findings, lisa_validate_full_products_inventory(run_dir, required = "full" %in% modes))
+  }
   gate <- if (length(findings)) "FAIL" else "PASS"
   list(
     gate = gate,
@@ -1156,15 +1173,97 @@ lisa_transaction_promote <- function(tx, workers = 1L) {
   ))
 }
 
+# Validate every inherited FULL receipt before changing any run bytes. Resolve
+# relative targets against this copy, never the source/final root. This is also
+# used by copy-only inference/support derivations, not only native promotion.
+lisa_rebase_full_receipts <- function(run_dir, tree) {
+  audit <- file.path(run_dir, "audit", "full_products")
+  files <- tree$path[!tree$isdir]
+  direct <- files[dirname(files) == audit]
+  available <- vapply(files, lisa_path_key, character(1))
+  fail <- function(detail) stop("LISA-RUN-009 invalid FULL completion receipt: ",
+    detail, call. = FALSE)
+  if (any(grepl("[.]pending$", direct))) fail("interrupted family")
+  markers <- direct[grepl("[.]tsv$", direct) & basename(direct) != "coverage.tsv"]
+  proofs <- direct[grepl("[.]inputs[.]rds$", direct)]
+  if (any(!sub("[.]inputs[.]rds$", "", proofs) %in% markers))
+    fail("orphan input payload proof")
+  receipts <- list()
+  for (marker in markers) {
+    ledger <- utils::read.delim(marker, sep = "\t", header = TRUE, quote = "",
+      comment.char = "", check.names = FALSE, stringsAsFactors = FALSE,
+      colClasses = "character")
+    inventory <- identical(basename(marker), "required_family_inventory.tsv")
+    if (inventory) {
+      if (lisa_path_entry_exists(paste0(marker, ".inputs.rds")))
+        fail("aggregate inventory cannot masquerade as an input-proof family")
+      # This is a REQUIRED-FAMILY AGGREGATE, never a family completion marker.
+      # Blank path/hash cells are valid only for explicit non-present states.
+      columns <- c("owner", "collection", "family", "state", "path", "sha256")
+      families <- c("prioritized_genes", "volcano", "gene_heatmap", "recurrent_genes",
+        "kegg_maps", "paired_gene_heatmap", "gene_category_network")
+      if (!identical(names(ledger), columns) || anyNA(ledger) ||
+          any(!nzchar(ledger$owner)) || any(!nzchar(ledger$collection)) ||
+          any(grepl("[[:cntrl:]]", paste(ledger$owner, ledger$collection))) ||
+          any(!ledger$family %in% families) ||
+          any(!ledger$state %in% c("present", "completed_empty", "empty_with_evidence",
+            "image_formats_not_requested")) || anyDuplicated(ledger)) fail(basename(marker))
+      hash_rows <- which(ledger$state == "present")
+      absent <- which(ledger$state != "present")
+      if (any(nzchar(ledger$path[absent])) || any(nzchar(ledger$sha256[absent])) ||
+          !lisa_sha256_all_valid(ledger$sha256[hash_rows], length(hash_rows))) fail(basename(marker))
+    } else {
+      known_family <- "(prioritized_genes|volcano|gene_heatmap|recurrent_genes|kegg_maps|paired_gene_products|gene_category_network)"
+      if (!grepl(paste0("^.+__.+__", known_family, "[.]tsv$"), basename(marker)))
+        fail(paste(basename(marker), "unknown marker identity"))
+      if (anyDuplicated(names(ledger)) ||
+        !identical(names(ledger), c("path", "sha256", "input_fingerprint")) ||
+        !nrow(ledger) || !is.character(ledger$path) || anyNA(ledger$path) ||
+        any(!nzchar(ledger$path)) ||
+        !lisa_sha256_all_valid(ledger$sha256, nrow(ledger)) ||
+        !lisa_sha256_all_valid(ledger$input_fingerprint, nrow(ledger)) ||
+        length(unique(ledger$input_fingerprint)) != 1L) fail(basename(marker))
+      hash_rows <- seq_len(nrow(ledger))
+      lisa_read_full_input_proof(marker, unique(ledger$input_fingerprint), run_dir,
+        required = FALSE)
+    }
+    # Canonical relative file paths only: forbid traversal, drive/UNC aliases,
+    # empty components and references to receipts (cycles/rehash ambiguity).
+    paths <- ledger$path[hash_rows]
+    if (!lisa_full_input_identity_safe(paths) ||
+        any(startsWith(paths, "audit/full_products/"))) fail(basename(marker))
+    targets <- file.path(run_dir, paths)
+    keys <- vapply(targets, lisa_path_key, character(1))
+    if (anyDuplicated(keys) || anyDuplicated(available) ||
+        any(!keys %in% available)) fail(paste(basename(marker), "missing/ambiguous target"))
+    targets <- files[match(keys, available)]
+    actual <- vapply(targets, lisa_sha256_file, character(1))
+    if (!identical(unname(actual), ledger$sha256[hash_rows]))
+      fail(paste(basename(marker), "pre-rebase SHA-256 mismatch"))
+    proof <- paste0(marker, ".inputs.rds")
+    receipts[[marker]] <- list(ledger = ledger, targets = targets, hash_rows = hash_rows,
+      marker_sha256 = lisa_sha256_file(marker),
+      proof_sha256 = if (file.exists(proof)) lisa_sha256_file(proof) else NULL)
+  }
+  receipts
+}
+
 lisa_rebase_run_text_paths <- function(run_dir, from_root, to_root) {
   from_raw <- as.character(from_root)
   run_dir <- lisa_assert_run_tree_safe(run_dir)
   from_root <- normalizePath(from_root, winslash = "/", mustWork = FALSE)
   to_root <- normalizePath(to_root, winslash = "/", mustWork = FALSE)
   from_candidates <- unique(c(from_raw, from_root))
-  if (all(from_candidates == to_root)) return(invisible(character()))
-
   tree <- lisa_scan_run_tree(run_dir)
+  receipts <- lisa_rebase_full_receipts(run_dir, tree)
+  inventory_path <- file.path(run_dir, "artifacts", "full_products_inventory.tsv")
+  has_inventory <- file.exists(inventory_path)
+  inventory_findings <- lisa_validate_full_products_inventory(run_dir)
+  if (length(inventory_findings)) {
+    stop("LISA-RUN-010 invalid FULL products inventory before rebase: ",
+      paste(inventory_findings, collapse = "; "), call. = FALSE)
+  }
+  if (all(from_candidates == to_root)) return(invisible(character()))
   files <- tree$path[!tree$isdir]
   text_extensions <- c(
     "tsv", "csv", "txt", "md", "html", "htm", "json", "jsonl",
@@ -1172,7 +1271,17 @@ lisa_rebase_run_text_paths <- function(run_dir, from_root, to_root) {
   )
   extensions <- tolower(tools::file_ext(files))
   files <- files[extensions %in% text_extensions]
+  # Receipt paths are relative and fingerprints are opaque input identities.
+  # Update only verified target SHA cells below; never translate/hash-bless them.
+  files <- setdiff(files, names(receipts))
   changed <- character()
+  translated <- character()
+  bound <- unlist(lapply(receipts, function(receipt)
+    setNames(receipt$ledger$sha256[receipt$hash_rows], receipt$targets)), use.names = FALSE)
+  # Construct without list-name prefixes; shared targets must already have the
+  # same independently checked old digest in every receipt.
+  bound_paths <- unlist(lapply(receipts, `[[`, "targets"), use.names = FALSE)
+  names(bound) <- bound_paths
 
   for (path in files) {
     lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
@@ -1186,8 +1295,46 @@ lisa_rebase_run_text_paths <- function(run_dir, from_root, to_root) {
     for (candidate in from_candidates) {
       rebased <- gsub(candidate, to_root, rebased, fixed = TRUE)
     }
-    writeLines(rebased, path, useBytes = TRUE)
+    if (identical(rebased, lines)) next
+    if (path %in% names(bound) &&
+        !identical(lisa_sha256_file(path), unname(bound[[path]])))
+      stop("LISA-RUN-009 FULL completion target changed before translation.", call. = FALSE)
+    translated_sha <- NULL
+    lisa_guarded_write(path, function(target) {
+      writeLines(rebased, target, useBytes = TRUE)
+      # Bind the exact staged output of this translation before installation,
+      # rather than blessing arbitrary current bytes after a write.
+      translated_sha <<- lisa_sha256_file(target)
+    }, run_root = run_dir)
+    translated[[path]] <- translated_sha
     changed <- c(changed, path)
+  }
+  for (marker in names(receipts)) {
+    receipt <- receipts[[marker]]
+    ledger <- receipt$ledger
+    expected <- ledger$sha256
+    rewritten <- receipt$targets %in% names(translated)
+    expected[receipt$hash_rows[rewritten]] <- translated[receipt$targets[rewritten]]
+    # Recheck exact expected bytes. Unchanged binary/PDF products retain their
+    # validated SHA, not a freshly blessed digest. Concurrent changes fail shut.
+    actual <- vapply(receipt$targets, lisa_sha256_file, character(1))
+    proof <- paste0(marker, ".inputs.rds")
+    if (!identical(unname(actual), unname(expected[receipt$hash_rows])) ||
+        !identical(lisa_sha256_file(marker), receipt$marker_sha256) ||
+        (if (is.null(receipt$proof_sha256)) lisa_path_entry_exists(proof) else
+          (!file.exists(proof) || !identical(lisa_sha256_file(proof), receipt$proof_sha256))))
+      stop("LISA-RUN-009 FULL completion target changed during rebase.", call. = FALSE)
+    if (!any(expected != ledger$sha256)) next
+    ledger$sha256 <- unname(expected)
+    write_lisa_tsv(ledger, marker)
+    changed <- c(changed, marker)
+  }
+  # Text path translation can resize manifests/indexes. Refresh only after
+  # validating the inherited inventory and completing every guarded rewrite.
+  # This happens in staging/copy-only derivations, never in a completed run.
+  if (has_inventory) {
+    lisa_write_full_products_inventory(run_dir)
+    changed <- c(changed, inventory_path)
   }
   invisible(changed)
 }

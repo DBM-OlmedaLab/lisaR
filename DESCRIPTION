@@ -1,11 +1,11 @@
 Package: lisaR
 Title: LISA: LLM-Inferred Semantic Annotation Pipeline
-Version: 1.0.1
+Version: 1.0.2
 Date: 2026-10-26
 Config/lisaR/release-stage: stable
-Config/lisaR/release-label: 1.0.1
+Config/lisaR/release-label: 1.0.2
 Config/lisaR/pipeline-production-version: 1
-Config/lisaR/pipeline-production-label: lisaR-1.0.1
+Config/lisaR/pipeline-production-label: lisaR-1.0.2
 Config/lisaR/pipeline-production-date: 2026-10-26
 Authors@R: c(
     person("David", "Olmeda Casadomé", role = c("aut", "cre"),

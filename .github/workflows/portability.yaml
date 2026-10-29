@@ -24,9 +24,9 @@ jobs:
         # test-quick-start.R is one installed-package integration run and is
         # ~78% of the suite's wall time; on Windows every step is ~2.5-3.4x
         # slower than macOS, so suite + dependency setup + check did not fit in
-        # one job. The two shards partition the 96 test files exactly
-        # (1 + 95): nothing is skipped, filtered away or weakened, and the
-        # per-shard gates below are the same gates as before.
+        # one job. The two shards partition the test files exactly: the
+        # quick-start file and every other file. Nothing is skipped, filtered
+        # away or weakened; the per-shard gates remain the same.
         shard: [quick-start, core]
     runs-on: ${{ matrix.os }}
     env:
@@ -98,7 +98,7 @@ jobs:
           stopifnot(identical(normalizePath(find.package("lisaR"),winslash="/"),
                               normalizePath(file.path(lib,"lisaR"),winslash="/")))
           print(sessionInfo())
-          stopifnot(nrow(tools::getVignetteInfo(package="lisaR")) == 18L)
+          stopifnot(nrow(tools::getVignetteInfo(package="lisaR")) == 25L)
           set.seed(20260910)
           # Preserve every failing expectation; the default summary truncates at ten.
           testthat::set_max_fails(Inf)

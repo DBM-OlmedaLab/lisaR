@@ -112,6 +112,31 @@ report_kegg_maps_notice <- function(project_dir) {
     paste0(paste(utils::head(message, 3L), collapse = " "), where))
 }
 
+# Export formats live in report_output_policy.tsv; the independent semantic
+# category-evidence selection is sealed in contract_manifest.tsv. Merge it only
+# in memory so old saved runs and the persisted output-policy schema are intact.
+report_load_output_policy <- function(project_dir) {
+  policy <- read_tsv(file.path(project_dir, "report_output_policy.tsv"))
+  if (!nrow(policy)) policy <- data.frame(product = c("source_data", "recipes"), requested = TRUE)
+  contract <- read_tsv(file.path(project_dir, "contract_manifest.tsv"))
+  if (all(c("key", "value") %in% names(contract)) &&
+      !any(policy$product == "category_evidence")) {
+    evidence <- contract[contract$key == "report_category_evidence", , drop = FALSE]
+    if (nrow(evidence) > 1L) stop("Ambiguous category-evidence policy.", call. = FALSE)
+    if (nrow(evidence) == 1L) {
+      value <- tolower(as.character(evidence$value[[1L]]))
+      if (is.na(value) || !value %in% c("true", "false", "t", "f", "1", "0", "yes", "no"))
+        stop("Invalid category-evidence policy.", call. = FALSE)
+      row <- policy[1L, , drop = FALSE]
+      row$product <- "category_evidence"
+      row$requested <- value %in% c("true", "t", "1", "yes")
+      if ("status" %in% names(row)) row$status <- if (row$requested) "requested" else "not_requested"
+      policy <- rbind(policy, row)
+    }
+  }
+  policy
+}
+
 report_requested <- function(product, default = TRUE) {
   policy <- get0("report_output_policy", inherits = TRUE, ifnotfound = NULL)
   if (is.null(policy) || !is.data.frame(policy) || !all(c("product", "requested") %in% names(policy))) {
@@ -143,7 +168,9 @@ report_path_components <- function(path) {
   )) {
     stop("Cannot resolve an absolute report path.", call. = FALSE)
   }
-  path <- normalizePath(path, winslash = "/", mustWork = FALSE)
+  # Planned pages do not exist yet. Canonicalize their existing ancestor too,
+  # so macOS /var and /private/var (and Windows short names) compare equally.
+  path <- report_normalize_existing_ancestor(path)
   if (startsWith(path, "//")) {
     components <- strsplit(sub("^//+", "", path), "/", fixed = TRUE)[[1L]]
     components <- components[nzchar(components)]
@@ -326,6 +353,12 @@ report_normalize_existing_ancestor <- function(path) {
   invisible(report_is_native_absolute_path(
     path, reject_drive_relative = TRUE
   ))
+  # Foreign UNC spellings must retain their server/share root on POSIX.
+  # Only Windows can resolve their native filesystem ancestors.
+  if (!identical(.Platform$OS.type, "windows") &&
+      startsWith(path, "//") && !startsWith(path, "///")) {
+    return(path)
+  }
   native_absolute <- startsWith(path, "/") ||
     (identical(.Platform$OS.type, "windows") &&
        grepl("^[A-Za-z]:/|^//", path))
@@ -347,7 +380,9 @@ report_normalize_existing_ancestor <- function(path) {
     cursor <- parent
   }
   if (length(suffix)) {
-    cursor <- do.call(file.path, as.list(c(cursor, suffix)))
+    # file.path("/", suffix) may spell a POSIX root as "//", which the report
+    # parser must reserve for native UNC roots. Keep exactly one join slash.
+    cursor <- paste0(sub("/+$", "", cursor), "/", paste(suffix, collapse = "/"))
   }
   report_slash_path(cursor)
 }
@@ -1659,12 +1694,42 @@ source_data_for_figure <- function(path) {
 # Build one immutable, figure-specific source-data contract.  The report never
 # points a card at a shared table, manifest, or index: every target carries a
 # unique figure_id, source row order and explicit defaults for visual flags.
-stable_text_hash <- function(text) {
+# Retained only to locate already-written legacy markup during a bounded
+# presentation refresh. Never use this linear checksum to allocate new IDs,
+# source tables, recipes, caches or navigation identities.
+report_legacy_text_hash <- function(text) {
   ints <- utf8ToInt(enc2utf8(text))
   if (!length(ints)) return("0000000000000000")
   h1 <- sum((seq_along(ints) %% 65521) * ints) %% 2147483647
   h2 <- sum(((seq_along(ints) * 131) %% 65521) * rev(ints)) %% 2147483647
   paste0(sprintf("%08x", as.integer(h1)), sprintf("%08x", as.integer(h2)))
+}
+
+report_text_identity_inputs <- new.env(parent = emptyenv())
+report_text_sha256 <- function(text) {
+  digest::digest(enc2utf8(text), algo = "sha256", serialize = FALSE)
+}
+
+stable_text_hash <- function(text) {
+  if (!is.character(text) || length(text) != 1L || is.na(text)) {
+    stop("LISA-REPORT-ID-001 report identity requires one non-missing string.",
+         call. = FALSE)
+  }
+  text <- enc2utf8(text)
+  id <- report_text_sha256(text)
+  if (!is.character(id) || length(id) != 1L || is.na(id) ||
+      !grepl("^[0-9a-f]{64}$", id)) {
+    stop("LISA-REPORT-ID-001 invalid SHA-256 report identity.", call. = FALSE)
+  }
+  # Hashes allocate one-to-one presentation contracts. Check their preimages
+  # before any existence/cache shortcut can reuse another figure's table or
+  # recipe, so even an identity collision fails closed instead of aliasing.
+  if (exists(id, envir = report_text_identity_inputs, inherits = FALSE) &&
+      !identical(get(id, envir = report_text_identity_inputs, inherits = FALSE), text)) {
+    stop("LISA-REPORT-ID-002 report identity collision.", call. = FALSE)
+  }
+  assign(id, text, envir = report_text_identity_inputs)
+  id
 }
 
 figure_id_for_path <- function(path, project_dir) {
@@ -1758,8 +1823,11 @@ figure_source_contract <- function(path, page_file) {
 
 validate_figure_source_contracts <- function(project_dir) {
   data_dir <- file.path(project_dir, "report_figure_data")
-  tsvs <- list.files(data_dir, pattern = "^F_[0-9a-f]{16}[.]tsv[.]gz$", full.names = TRUE)
-  recipes <- list.files(data_dir, pattern = "^F_[0-9a-f]{16}_recipe[.]R$", full.names = TRUE)
+  # Read legacy immutable reports as well as new SHA-256 identities. Writers
+  # above always allocate the full 64-hex digest; no existing run is renamed.
+  id_pattern <- "F_([0-9a-f]{16}|[0-9a-f]{64})"
+  tsvs <- list.files(data_dir, pattern = paste0("^", id_pattern, "[.]tsv[.]gz$"), full.names = TRUE)
+  recipes <- list.files(data_dir, pattern = paste0("^", id_pattern, "_recipe[.]R$"), full.names = TRUE)
   if (!report_requested("source_data", TRUE) || !length(tsvs)) return(invisible(data.frame()))
   rows <- lapply(tsvs, function(path) {
     x <- read_tsv(path)
@@ -1855,6 +1923,28 @@ report_navigation_section <- function(title, label) {
     # told apart from an ordinary layer, either by a reader or by a test.
     "FULL figures" = "full-products",
     slug(label)), href = paste0("#", slug(title)))
+}
+
+# Only sections actually rendered below may be advertised by the overview.
+# Owner-level FULL scope does not imply every collection has saved products.
+report_full_overview_section <- function(analyses, contrasts) {
+  links <- character()
+  add <- function(contexts, page) {
+    for (context in contexts) for (collection in context$collections) {
+      for (section in collection$sections) {
+        if (!identical(section$kind, "full-products")) next
+        label <- paste(context$label, collection$label, "FULL figures", sep = " - ")
+        links <<- c(links, sprintf('<a class="file-link" href="report_pages/%s#%s">%s</a>',
+          esc(page), esc(section$id), esc(label)))
+      }
+    }
+  }
+  add(analyses, "single_de.html")
+  add(contrasts, "contrasts.html")
+  if (!length(links)) return("")
+  paste0('<section id="full-figures-entry" class="panel"><h2>FULL figures — open the extra figures</h2>',
+    '<p>Heatmaps, volcano plots and the other saved category products are incorporated into each analysis and contrast below.</p>',
+    '<div class="links">', paste(links, collapse = ""), '</div></section>')
 }
 
 report_write_navigation_inventory <- function(project_dir, analyses, contrasts) {
@@ -2643,6 +2733,7 @@ report_refresh_category_links <- function(project_dir) {
   if(!nrow(index)) {message('No contrasts: no category-link change required.');return(invisible(character()))}
   html <- paste(readLines(page,warn=FALSE),collapse='\n')
   original <- html
+  refreshed_bundle_files <- character()
   dirs <- list.dirs(file.path(project_dir,'outputs/category_contrasts'),recursive=FALSE,full.names=TRUE)
   for(owner in basename(dirs)) for(collection_dir in contrast_collection_dirs(project_dir,owner)) {
     collection <- sub('^collection_','',basename(collection_dir))
@@ -2653,6 +2744,13 @@ report_refresh_category_links <- function(project_dir) {
     # Original categories section: update only its variant container.
     needle <- paste0('<div class="nes-variants" data-nes-variants="',family,'">')
     pos<-regexpr(needle,html,fixed=TRUE)[1L]
+    if(pos<1L) {
+      # An explicitly requested refresh may read old generated markup, but
+      # must never allocate new assets with its collision-prone legacy ID.
+      legacy_family <- paste0('N_',report_legacy_text_hash(report_relative_path(manifest,project_dir)))
+      needle <- paste0('<div class="nes-variants" data-nes-variants="',legacy_family,'">')
+      pos <- regexpr(needle,html,fixed=TRUE)[1L]
+    }
     if(pos<1L)stop('Original LISA categories section not found.')
     title <- paste(owner,collection) # alt fallback; bitmap text stays untouched.
     replacement <- report_nes_variants_section(collection_dir,page,title,evidence)
@@ -2670,13 +2768,21 @@ report_refresh_category_links <- function(project_dir) {
       html<-report_replace_element(html,pos,'section',replacement);found<-TRUE;break
     }
     if(!found)stop('Contrast evidence cover not found.')
+    # SHA-256 identities can allocate a new bundle while reading legacy
+    # markup. Bind exactly that bundle to the existing manifest; retaining
+    # all previous rows preserves the legacy assets and their identities.
+    bundle <- file.path(project_dir, 'report_figure_data', 'nes_variants', family)
+    if (dir.exists(bundle)) refreshed_bundle_files <- c(refreshed_bundle_files,
+      report_shareable_tree_files(bundle))
   }
-  # Only page + region tables changed. Update their entries in the existing
-  # manifest; retain every other row/hash, no recompression or full traversal.
+  # Update the page, region tables and exact refreshed bundles. Retain every
+  # other row/hash, with no recompression or unrelated tree traversal.
   write_page(page,html)
   manifest <- read_shareable_report_manifest(project_dir)
   changed <- c('report_pages/contrasts.html',substring(list.files(file.path(project_dir,'report_figure_data/category_links'),
-    full.names=TRUE),nchar(project_dir)+2L))
+    full.names=TRUE),nchar(project_dir)+2L),
+    substring(refreshed_bundle_files,nchar(project_dir)+2L))
+  changed <- unique(changed)
   for(rel in changed) {
     row<-data.frame(relative_path=rel,role=if(grepl('[.]html$',rel))'page' else 'figure_contract',
       bytes=file.info(file.path(project_dir,rel))$size,
@@ -2686,7 +2792,7 @@ report_refresh_category_links <- function(project_dir) {
   }
   manifest<-manifest[order(manifest$relative_path),]
   utils::write.table(manifest,file.path(project_dir,report_shareable_manifest_name),sep='\t',quote=FALSE,row.names=FALSE,na='')
-  message('CATEGORY_LINK_REFRESH_PASS: contrasts page and ',length(changed)-1L,' region tables; no scientific output changed.')
+  message('CATEGORY_LINK_REFRESH_PASS: contrasts page and ',length(changed)-1L,' presentation assets; no scientific output changed.')
   invisible(changed)
 }
 
@@ -2694,6 +2800,10 @@ report_refresh_category_links <- function(project_dir) {
 # because NES reproduction verifies the stored source hash; do not run these
 # through the generic, augmented figure-source recipe.
 report_nes_variants_section <- function(collection_dir, page_file, title, evidence_index = NULL, id_suffix = "") {
+  # Both analysis and contrast callers name the prospective evidence page even
+  # when it was deliberately not generated. Disable only the optional clickable
+  # layer, never the saved image or the missing-target check for required links.
+  if (!report_requested("category_evidence", TRUE)) evidence_index <- NULL
   manifests <- list.files(file.path(collection_dir, "qc"),
     pattern = "_category_nes_variants[.]tsv$", full.names = TRUE)
   if (!length(manifests)) return(report_hommel_only_section(collection_dir, page_file, id_suffix))
@@ -3218,9 +3328,7 @@ main <- function() {
   report_package_dir <<- package_dir
   report_renderer_sha256 <<- args$lisa_internal_renderer_sha256
   report_project_dir <<- project_dir
-  policy <- read_tsv(file.path(project_dir, "report_output_policy.tsv"))
-  if (!nrow(policy)) policy <- data.frame(product = c("source_data", "recipes"), requested = TRUE)
-  report_output_policy <<- policy
+  report_output_policy <<- report_load_output_policy(project_dir)
   if (identical(tolower(args$refresh_category_links), "true")) {
     report_refresh_category_links(project_dir)
     return(invisible(project_dir))
@@ -3434,35 +3542,6 @@ main <- function() {
     table_html(contrast_index, c("contrast_id", "output_id", "priority", "contrast_a", "contrast_b", "label_a", "label_b", "biological_question", "question"), "contrast_index_table", file.path(project_dir, "config", "contrast_index.tsv"), 20),
     '</section>'
   )
-  if (!standard_report) {
-    # Make the extra figures directly visible from the entry page, rather than
-    # requiring a reader to discover a section dropdown on a standard-looking
-    # page. The targets are the SAME integrated sections, not a second gallery.
-    links <- character()
-    for (analysis in as.character(de_index$analysis_id)) {
-      if (!report_full_scope_owner(project_dir, analysis)) next
-      for (dir in single_collection_dirs(project_dir, analysis)) {
-        collection <- sub("^collection_", "", basename(dir))
-        label <- paste(short_title(analysis), collection, "FULL figures", sep = " - ")
-        links <- c(links, sprintf('<a class="file-link" href="report_pages/single_de.html#%s">%s</a>',
-          esc(slug(label)), esc(label)))
-      }
-    }
-    for (i in seq_len(nrow(contrast_index))) {
-      owner <- paste(contrast_index$contrast_id[[i]], contrast_index$output_id[[i]], sep = "_")
-      if (!report_full_scope_owner(project_dir, owner, TRUE)) next
-      for (dir in contrast_collection_dirs(project_dir, owner)) {
-        collection <- sub("^collection_", "", basename(dir))
-        label <- paste(contrast_short_title(contrast_index, owner), collection, "FULL figures", sep = " - ")
-        links <- c(links, sprintf('<a class="file-link" href="report_pages/contrasts.html#%s">%s</a>',
-          esc(slug(label)), esc(label)))
-      }
-    }
-    if (length(links)) overview_body <- paste0(
-      '<section id="full-figures-entry" class="panel"><h2>FULL figures — open the extra figures</h2>',
-      '<p>Heatmaps, volcano plots and the other saved category products are incorporated into each analysis and contrast below.</p>',
-      '<div class="links">', paste(links, collapse = ""), '</div></section>', overview_body)
-  }
   evidence_indexes <- list.files(file.path(project_dir, "report_pages", "evidence"),
     pattern = "^index[.]html$", recursive = TRUE, full.names = TRUE)
   if (length(evidence_indexes)) {
@@ -3480,10 +3559,6 @@ main <- function() {
     '<section class="panel"><h2>Evidence for your gene</h2>',
     '<p>Search a symbol or identifier to inspect DE measurements and every significant member gene set. Full set membership and leading-edge membership are reported separately, for individual analyses.</p>',
     '<a class="file-link" href="', esc(rel_path(gene_evidence_index, root_index)), '">Open gene evidence search</a></section>')
-  overview_body <- report_overview_entry(args$title, report_mode, de_index, contrast_index,
-    project_dir, analysis_map, overview_body)
-  write_page(root_index, page_shell(args$title, "overview", overview_body, project_dir, root_index, root = TRUE))
-
   single_file <- file.path(pages_dir, "single_de.html")
   single_blocks <- character()
   single_toc <- list()
@@ -3880,6 +3955,15 @@ main <- function() {
   write_page(contrasts_file, page_shell(args$title, "contrasts", contrast_body, project_dir, contrasts_file,
     navigation = contrast_navigation))
   report_write_navigation_inventory(project_dir, single_navigation, contrast_navigation)
+
+  # Finalize the overview after its actual destinations exist. Empty evaluated
+  # collections retain their ordinary category/empty-state sections, but are
+  # not advertised as having a FULL figures section that was never rendered.
+  if (!standard_report) overview_body <- paste0(
+    report_full_overview_section(single_navigation, contrast_navigation), overview_body)
+  overview_body <- report_overview_entry(args$title, report_mode, de_index, contrast_index,
+    project_dir, analysis_map, overview_body)
+  write_page(root_index, page_shell(args$title, "overview", overview_body, project_dir, root_index, root = TRUE))
 
   for (stale_page in file.path(pages_dir, c("single_gene.html", "contrast_gene.html", "kegg.html"))) {
     if (file.exists(stale_page)) unlink(stale_page)

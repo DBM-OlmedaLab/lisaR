@@ -30,10 +30,10 @@ jobs:
           import pathlib, re, subprocess
           root = pathlib.Path('.')
           desc = (root/'DESCRIPTION').read_text()
-          assert re.search(r'^Version: 1\.0\.1$', desc, re.M)
+          assert re.search(r'^Version: 1\.0\.2$', desc, re.M)
           assert re.search(r'^Config/lisaR/release-stage: stable$', desc, re.M)
           cff = (root/'CITATION.cff').read_text()
-          assert 'version: 1.0.1' in cff
+          assert 'version: 1.0.2' in cff
           assert 'GPL-3.0-or-later' in cff
           allowed = {'dolmeda@iib.uam.es', '303991465+dolmeda-DBM@users.noreply.github.com'}
           roots = subprocess.check_output(['git','rev-list','--max-parents=0','HEAD'], text=True).splitlines()

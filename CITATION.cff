@@ -6,8 +6,8 @@ authors:
   - family-names: "Olmeda Casadomé"
     given-names: "David"
     orcid: "https://orcid.org/0000-0001-5513-5621"
-version: 1.0.1
-date-released: 2026-10-26
+version: 1.0.2
+date-released: 2026-10-27
 license: GPL-3.0-or-later
 repository-code: "https://github.com/DBM-OlmedaLab/lisaR"
 url: "https://github.com/DBM-OlmedaLab/lisaR"

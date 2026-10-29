@@ -1,5 +1,78 @@
 # A missing FULL gallery is completed-empty only when the exact saved scope
-# proves zero eligible members. Do not infer this from directories or defaults.
+# proves zero significant members among evaluated tests. Do not infer this
+# from directories, missing statistics, or default eligibility settings.
+
+# This is report evidence validation, not a new scientific denominator. Keep
+# mapped/evaluable/unavailable counts and all saved statistics unchanged.
+lisa_report_member_eligibility <- function(gsea, fail) {
+  keep <- !is.na(gsea$category_id) & nzchar(as.character(gsea$category_id)) &
+    gsea$category_id != "OTHER_UNCLASSIFIED"
+  if ("classification_status" %in% names(gsea))
+    keep <- keep & !is.na(gsea$classification_status) &
+      gsea$classification_status == "classified"
+  # Validate raw saved rows first: filtering/deduplication must not hide a
+  # contradictory assignment, including one outside the plotted population.
+  x <- gsea
+  nes <- lisa_nes_number(x$NES, "NES")
+  padj_col <- intersect(c("padj", "gsea_fdr"), names(x))[[1L]]
+  padj <- lisa_nes_number(x[[padj_col]], "padj")
+  fields <- c("eligible_for_gsea", "gsea_eligibility_status", "gsea_result_status")
+  bounds <- c("source_gene_count", "ranked_gene_count", "min_gs_size", "max_gs_size")
+  recorded <- intersect(fields, names(x))
+  excluded <- rep(FALSE, nrow(x))
+  if (length(recorded) || length(intersect(bounds, names(x)))) {
+    if (!all(fields %in% names(x))) fail("incomplete recorded GSEA eligibility")
+    if (!all(bounds %in% names(x))) fail("recorded GSEA eligibility lacks complete size bounds")
+    eligible <- x$eligible_for_gsea
+    status <- as.character(x$gsea_eligibility_status)
+    result <- as.character(x$gsea_result_status)
+    reasons <- c("below_min_size", "above_max_size", "no_rank_overlap")
+    if (!is.logical(eligible) || anyNA(eligible) || anyNA(status) || anyNA(result) ||
+        any(!status %in% c("eligible", reasons)) ||
+        any(!result %in% c("tested", reasons)))
+      fail("unknown or invalid recorded GSEA eligibility")
+    if (any(eligible != (status == "eligible")) ||
+        any(result != ifelse(eligible, "tested", status)))
+      fail("contradictory recorded GSEA eligibility")
+    excluded <- !eligible
+    # A label alone does not explain missing results. The saved size evidence
+    # must support every structural exclusion, with no historical defaults.
+    if (any(excluded & (!(is.na(nes) & is.na(padj)) |
+        is.nan(x$NES) | is.nan(x[[padj_col]]) |
+        as.character(x$NES) %in% "NaN" | as.character(x[[padj_col]]) %in% "NaN")))
+      fail("excluded GSEA members contain contradictory statistics")
+  }
+  if (length(intersect(bounds, names(x)))) {
+    if (!all(bounds %in% names(x))) fail("incomplete recorded GSEA size bounds")
+    sizes <- lapply(bounds, function(key) lisa_nes_number(x[[key]], key))
+    names(sizes) <- bounds
+    if (any(vapply(sizes, function(z) any(!is.finite(z) | z < 0 | z != floor(z)), logical(1))) ||
+        any(sizes$max_gs_size < sizes$min_gs_size) ||
+        any(sizes$ranked_gene_count > sizes$source_gene_count) ||
+        length(unique(sizes$min_gs_size)) > 1L || length(unique(sizes$max_gs_size)) > 1L)
+      fail("invalid recorded GSEA size bounds")
+    n <- sizes$ranked_gene_count
+    expected <- ifelse(n == 0, "no_rank_overlap", ifelse(n < sizes$min_gs_size,
+      "below_min_size", ifelse(n > sizes$max_gs_size, "above_max_size", "eligible")))
+    if (any(status != expected) ||
+        any(eligible != (n >= sizes$min_gs_size & n <= sizes$max_gs_size)))
+      fail("GSEA eligibility disagrees with recorded size bounds")
+  }
+  # Dictionary fan-out and identical repeats are legitimate; one source set
+  # cannot have conflicting eligibility metadata in different assignments.
+  set_col <- intersect(c("pathway", "gene_set_id"), names(x))[[1L]]
+  metadata <- intersect(c(fields, bounds), names(x))
+  for (ix in split(seq_len(nrow(x)), as.character(x[[set_col]]))) {
+    if (length(metadata) && nrow(unique(x[ix, metadata, drop = FALSE])) > 1L)
+      fail("conflicting duplicate GSEA eligibility metadata")
+    if (nrow(unique(data.frame(NES = nes[ix], padj = padj[ix]))) > 1L)
+      fail("conflicting duplicate GSEA member across category assignments")
+  }
+  finite <- is.finite(nes) & is.finite(padj)
+  list(excluded = excluded[keep], unavailable = (!excluded & !finite)[keep],
+    evaluated = (!excluded & finite)[keep])
+}
+
 lisa_report_selection_state <- function(project_dir, analysis, collection) {
   fail <- function(reason) stop("LISA-REPORT-EMPTY-001 ", analysis, "/", collection,
     ": ", reason, call. = FALSE)
@@ -13,6 +86,8 @@ lisa_report_selection_state <- function(project_dir, analysis, collection) {
   }
   summary <- one("lisa_tables", paste0(analysis, "_"), "_GSEA_category_summary.tsv")
   gsea <- one("enrichment", paste0(analysis, "_GSEA_"), "_annotated.tsv")
+  if (anyDuplicated(names(gsea)) || anyDuplicated(names(summary)))
+    fail("duplicate evidence columns")
   if (!all(c("category_id", "n_genesets", "n_genesets_mapped",
       "n_genesets_evaluable", "n_genesets_significant", "mean_NES",
       "gsea_padj_cutoff") %in% names(summary)))
@@ -55,7 +130,14 @@ lisa_report_selection_state <- function(project_dir, analysis, collection) {
   positive <- stats$category_id[stats$n_genesets_significant > 0L]
   if (!setequal(positive, ids[checked$n_genesets_significant > 0L]))
     fail("category summary omits significant members")
+  members <- tryCatch(lisa_report_member_eligibility(gsea, fail),
+    error = function(e) {
+      if (startsWith(conditionMessage(e), "LISA-REPORT-EMPTY-001 ")) stop(e)
+      fail(conditionMessage(e))
+    })
   if (length(positive)) return("missing")
-  if (any(stats$n_genesets_unavailable > 0L)) fail("unavailable statistics cannot prove an empty selection")
+  if (any(members$unavailable)) fail("unavailable statistics cannot prove an empty selection")
+  if (!any(members$evaluated))
+    fail("no eligible tests cannot prove an evaluated empty selection")
   "completed_empty"
 }

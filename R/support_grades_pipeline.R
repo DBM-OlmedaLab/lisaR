@@ -49,8 +49,10 @@ lisa_support_presentation_metadata <- function() {
     zeros = "No grade/graph annotation for d=0 or N=0; separate table states",
     direction = "Observed NES signs among evaluable members; not a directional guarantee for the supported minimum",
     lollipop = "Original mean_NES/n_genesets/dictionary colours and significant-member same_direction_pct unchanged; neutral support column from the complete inference family",
-    confidence = .95, helper_sha256 = lisa_cache_digest(body(lisa_support_grade)),
-    renderer_sha256 = lisa_cache_digest(list(body(lisa_plot_support_lollipop), body(lisa_plot_category_inference), body(lisa_plot_hommel_support))),
+    confidence = .95, helper_sha256 = lisa_function_code_sha256(list(support_grade = lisa_support_grade)),
+    renderer_sha256 = lisa_function_code_sha256(list(support_lollipop = lisa_plot_support_lollipop,
+      category_inference = lisa_plot_category_inference,
+      hommel_support = lisa_plot_hommel_support)),
     inference_recomputed = FALSE, difference_grades = FALSE, HALLMARKS_excluded = TRUE)
 }
 

@@ -20,6 +20,83 @@ lisa_write_native_extended_recipe <- function(data, cfg, png, script, type) {
     paste0(stem, "_recipe.R"), run_root = dirname(png))
 }
 
+# Passive proof of the EXACT existing digest preimage. This does not normalize
+# paths, omit arguments, change digest defaults or become a scientific cache key.
+lisa_full_input_identity_safe <- function(paths) {
+  is.character(paths) && !anyNA(paths) && all(nzchar(paths)) &&
+    !any(grepl("[\\\\:[:cntrl:]]", paths)) &&
+    !any(startsWith(paths, "/")) && !any(endsWith(paths, "/")) &&
+    !any(vapply(strsplit(paths, "/", fixed = TRUE),
+      function(x) any(x %in% c("", ".", "..")), logical(1))) &&
+    !anyDuplicated(paths)
+}
+
+lisa_validate_full_input_proof <- function(proof, fingerprint) {
+  fail <- function() stop("LISA-FULL-PROOF-001 invalid FULL input payload proof.", call. = FALSE)
+  plain_character <- function(x) is.character(x) && is.null(attributes(x)) && !anyNA(x)
+  scalar <- function(x) plain_character(x) && length(x) == 1L && nzchar(x)
+  fields <- c("schema", "payload", "input_fingerprint", "digest_algorithm",
+    "digest_serialize_version", "r_version", "digest_version")
+  if (!is.list(proof) || !identical(names(proof), fields) ||
+      !identical(attributes(proof), list(names = fields)) ||
+      !identical(proof$schema, "lisa_full_input_payload_v1") ||
+      !identical(proof$digest_algorithm, "sha256") ||
+      !scalar(fingerprint) || !lisa_sha256_all_valid(fingerprint, 1L) ||
+      !identical(proof$input_fingerprint, fingerprint) ||
+      !is.integer(proof$digest_serialize_version) ||
+      length(proof$digest_serialize_version) != 1L ||
+      !is.null(attributes(proof$digest_serialize_version)) ||
+      is.na(proof$digest_serialize_version) ||
+      !proof$digest_serialize_version %in% c(2L, 3L) ||
+      !scalar(proof$r_version) || !scalar(proof$digest_version)) fail()
+  payload <- proof$payload
+  if (!is.list(payload) || !identical(names(payload), c("inputs", "builder", "args")) ||
+      !identical(attributes(payload), list(names = c("inputs", "builder", "args"))) ||
+      !is.character(payload$inputs) || anyNA(payload$inputs) ||
+      !identical(attributes(payload$inputs), list(names = names(payload$inputs))) ||
+      length(names(payload$inputs)) != length(payload$inputs) ||
+      !lisa_full_input_identity_safe(names(payload$inputs)) ||
+      !lisa_sha256_all_valid(payload$inputs, length(payload$inputs)) ||
+      !scalar(payload$builder) || !lisa_sha256_all_valid(payload$builder, 1L) ||
+      !plain_character(payload$args)) fail()
+  observed <- digest::digest(payload, algo = "sha256",
+    serializeVersion = proof$digest_serialize_version)
+  if (!identical(observed, fingerprint)) fail()
+  invisible(proof)
+}
+
+lisa_full_input_proof <- function(payload, fingerprint) {
+  proof <- list(schema = "lisa_full_input_payload_v1", payload = payload,
+    input_fingerprint = fingerprint, digest_algorithm = "sha256",
+    digest_serialize_version = eval(formals(digest::digest)$serializeVersion,
+      environment(digest::digest)), r_version = R.version.string,
+    digest_version = as.character(utils::packageVersion("digest")))
+  lisa_validate_full_input_proof(proof, fingerprint)
+  proof
+}
+
+lisa_write_full_input_proof <- function(marker, payload, fingerprint, root) {
+  proof <- lisa_full_input_proof(payload, fingerprint)
+  path <- paste0(marker, ".inputs.rds")
+  lisa_guarded_write(path, function(target) saveRDS(proof, target, version = 2L),
+    run_root = root, overwrite = FALSE)
+  invisible(path)
+}
+
+lisa_read_full_input_proof <- function(marker, fingerprint, root, required = TRUE) {
+  path <- lisa_guarded_path(paste0(marker, ".inputs.rds"), root)
+  if (!lisa_path_entry_exists(path)) {
+    if (isTRUE(required)) stop("LISA-FULL-PROOF-002 missing FULL input payload proof.", call. = FALSE)
+    # Explicit legacy compatibility, not proof of the historical digest preimage.
+    return(invisible(NULL))
+  }
+  lisa_assert_regular_managed_file(path, run_root = root, label = "FULL input payload proof")
+  proof <- tryCatch(readRDS(path), error = function(e)
+    stop("LISA-FULL-PROOF-001 unreadable FULL input payload proof.", call. = FALSE))
+  lisa_validate_full_input_proof(proof, fingerprint)
+  invisible(proof)
+}
+
 lisa_complete_full_products <- function(project_dir, kegg_maps = FALSE,
     kegg_cache_root = "", kegg_snapshot_id = "", kegg_access_mode = "cache_only",
     formats = NULL, families = NULL) {
@@ -75,18 +152,22 @@ lisa_complete_full_products <- function(project_dir, kegg_maps = FALSE,
       file.path(root, "outputs/category_contrasts"))
     input_files <- sort(unique(unlist(lapply(input_roots, function(p)
       list.files(p, pattern = "[.]tsv$", recursive = TRUE, full.names = TRUE)))))
-    fingerprint <- digest::digest(list(inputs = setNames(vapply(input_files, lisa_sha256_file,
+    fingerprint_payload <- list(inputs = setNames(vapply(input_files, lisa_sha256_file,
       character(1)), substring(input_files, nchar(root) + 2L)),
-      builder = lisa_sha256_file(file.path(scripts, script)), args = args), algo = "sha256")
+      builder = lisa_sha256_file(file.path(scripts, script)), args = args)
+    fingerprint <- digest::digest(fingerprint_payload, algo = "sha256")
     key <- paste(owner, collection, name, sep = "__")
     marker <- file.path(audit, paste0(key, ".tsv"))
     pending <- paste0(marker, ".pending")
     if (file.exists(pending)) stop("Interrupted FULL family; preserve existing files and inspect log: ", key, call. = FALSE)
+    if (lisa_path_entry_exists(paste0(marker, ".inputs.rds")) && !file.exists(marker))
+      stop("LISA-FULL-PROOF-003 orphan FULL input payload proof; preserve and inspect: ", key, call. = FALSE)
     if (file.exists(marker)) {
       ledger <- read(marker)
       if (!"input_fingerprint" %in% names(ledger) ||
           !identical(unique(ledger$input_fingerprint), fingerprint))
         stop("Completed FULL family input or builder changed: ", key, call. = FALSE)
+      lisa_read_full_input_proof(marker, fingerprint, root, required = FALSE)
       if (nrow(ledger) && (any(!file.exists(file.path(root, ledger$path))) ||
           any(vapply(file.path(root, ledger$path), lisa_sha256_file, character(1)) != ledger$sha256)))
         stop("Previously completed FULL family changed: ", key, call. = FALSE)
@@ -110,6 +191,9 @@ lisa_complete_full_products <- function(project_dir, kegg_maps = FALSE,
     ext <- tolower(tools::file_ext(products))
     products <- products[!ext %in% c("png", "svg", "pdf") | ext %in% requested_formats |
       grepl("_kegg_base[.]png$", products)]
+    # Save only the small typed hash/argument object, never copies of input trees.
+    # A failed marker write leaves pending/orphan evidence, not a reusable receipt.
+    lisa_write_full_input_proof(marker, fingerprint_payload, fingerprint, root)
     write_lisa_tsv(data.frame(path = substring(products, nchar(root) + 2L),
       sha256 = vapply(products, lisa_sha256_file, character(1)),
       input_fingerprint = fingerprint), marker)

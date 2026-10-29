@@ -322,3 +322,95 @@ lisa_cached_fgsea <- function(pathways, ranks, min_gs_size, max_gs_size, n_threa
   qc$elapsed_seconds <- proc.time()[["elapsed"]] - start
   list(result = result, qc = qc)
 }
+
+
+# Copyright (C) 2026 Agencia Estatal Consejo Superior de Investigaciones
+# Cientificas (CSIC). Author: David Olmeda Casadome. GPL-3 or later.
+
+# Fingerprint function syntax, not closure state or transitive dependencies.
+# Only parser source-reference metadata is omitted. Other attributes, AST
+# types, missing arguments, call tags, formal defaults and ordering are kept.
+# Do not substitute this helper for lisa_cache_digest or any scientific key.
+lisa_function_code_sha256 <- function(functions) {
+  fail <- function(message) stop("LISA-CODE-001: ", message, call. = FALSE)
+  if (!identical(typeof(functions), "list") || !length(functions) ||
+      length(setdiff(names(attributes(functions)), "names")))
+    fail("expected one nonempty plain named list of R closures.")
+  labels <- names(functions)
+  if (is.null(labels) || anyNA(labels) || any(!nzchar(labels)) ||
+      anyDuplicated(labels) || any(grepl("[[:cntrl:]]", labels)))
+    fail("function labels must be unique, nonempty names without controls.")
+
+  # Length-prefix every field in UTF-8 bytes, avoiding delimiter collisions.
+  frame <- function(tag, fields = character()) {
+    payload <- if (!length(fields)) "" else
+      paste0(nchar(fields, type = "bytes"), ":", fields, collapse = "")
+    paste0(tag, "#", length(fields), "{", payload, "}")
+  }
+  hex <- function(bytes) paste(format(bytes), collapse = "")
+  string <- function(value) {
+    if (is.na(value)) return(frame("missing_character"))
+    if (identical(Encoding(value), "bytes"))
+      fail("byte-encoded strings are unsupported in function syntax.")
+    frame("utf8", enc2utf8(value))
+  }
+  source_attributes <- c("srcref", "srcfile", "wholeSrcref")
+  node <- function(value, depth = 0L) {
+    if (depth > 1000L) fail("function syntax exceeds the supported nesting depth.")
+    type <- typeof(value)
+    if (!type %in% c("NULL", "symbol", "language", "pairlist", "expression",
+                    "list", "logical", "integer", "double", "complex",
+                    "character", "raw"))
+      fail(paste0("unsupported function-syntax node type: ", type, "."))
+    # Read metadata but never walk a srcref/srcfile environment. Preserve other
+    # attributes rather than silently equating attributed executable constants.
+    attrs <- attributes(value)
+    # A parsed nested function can also carry its srcref in the fourth AST
+    # slot, not an attribute. Source-free syntax omits that slot or uses NULL.
+    # Normalize only this parser-defined position, never ordinary arguments.
+    if (identical(type, "language") && length(value) == 4L &&
+        identical(value[[1L]], as.name("function"))) {
+      if (identical(value[[4L]], quote(expr = )))
+        fail("malformed nested-function source-reference slot.")
+      if (!is.null(value[[4L]]) &&
+          !(is.integer(value[[4L]]) && length(value[[4L]]) %in% c(6L, 8L) &&
+            !anyNA(value[[4L]]) && inherits(value[[4L]], "srcref")))
+        fail("unsupported nested-function source-reference slot.")
+      value <- as.call(as.list(value)[seq_len(3L)])
+    }
+    tags <- names(value)
+    attrs[intersect(names(attrs), c(source_attributes, "names"))] <- NULL
+    if (!is.null(attributes(value))) attributes(value) <- NULL
+    attributes_record <- frame("attributes", vapply(seq_along(attrs), function(i)
+      frame("attribute", c(string(names(attrs)[[i]]), node(attrs[[i]], depth + 1L))),
+      character(1)))
+    tags_record <- if (is.null(tags)) frame("no_names") else
+      frame("names", vapply(tags, string, character(1)))
+    payload <- if (identical(type, "NULL")) character() else
+      if (identical(type, "symbol")) string(as.character(value)) else
+      if (type %in% c("language", "pairlist", "expression", "list")) {
+        # Never bind or pass R_MissingArg to node(): that would force an empty
+        # default/argument. The indexed identical() comparison is intentional.
+        vapply(seq_along(value), function(i) {
+          if (identical(value[[i]], quote(expr = ))) frame("missing_argument") else
+            node(value[[i]], depth + 1L)
+        }, character(1))
+      } else if (identical(type, "character")) {
+        vapply(value, string, character(1), USE.NAMES = FALSE)
+      } else if (identical(type, "raw")) hex(value) else {
+        size <- switch(type, logical = 4L, integer = 4L, double = 8L, complex = 16L)
+        bytes <- writeBin(if (identical(type, "logical")) as.integer(value) else value,
+          raw(), size = size, endian = "little")
+        hex(bytes)
+      }
+    frame(type, c(tags_record, attributes_record, payload))
+  }
+  records <- vapply(seq_along(functions), function(i) {
+    fun <- functions[[i]]
+    if (!identical(typeof(fun), "closure"))
+      fail(paste0("entry '", labels[[i]], "' is not an R closure."))
+    frame("function", c(string(labels[[i]]), node(formals(fun)), node(body(fun))))
+  }, character(1))
+  canonical <- frame("lisa_function_code_ast_v1", records)
+  digest::digest(canonical, algo = "sha256", serialize = FALSE)
+}

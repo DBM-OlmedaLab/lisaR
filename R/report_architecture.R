@@ -2469,7 +2469,8 @@ lisa_apply_format_policy <- function(root, formats) {
   invisible(TRUE)
 }
 
-lisa_write_full_products_inventory <- function(run_dir, units = NULL) {
+lisa_full_products_inventory_rows <- function(run_dir) {
+  run_dir <- lisa_assert_run_tree_safe(run_dir)
   roots <- c("artifacts", file.path("outputs", "gene_level"))
   rows <- list()
   for (root in roots) {
@@ -2477,15 +2478,52 @@ lisa_write_full_products_inventory <- function(run_dir, units = NULL) {
     if (!dir.exists(absolute)) next
     tree <- lisa_scan_run_tree(absolute)
     files <- sort(tree$path[!tree$isdir])
-    files <- files[basename(files) != "full_products_inventory.tsv"]
+    files <- files[files != file.path(run_dir, "artifacts", "full_products_inventory.tsv")]
     if (!length(files)) next
     rows[[length(rows) + 1L]] <- data.frame(
       path = substring(files, nchar(run_dir) + 2L),
       bytes = as.numeric(file.info(files)$size),
       format = tolower(tools::file_ext(files)), stringsAsFactors = FALSE)
   }
-  inventory <- if (length(rows)) do.call(rbind, rows) else
+  if (length(rows)) do.call(rbind, rows) else
     data.frame(path = character(), bytes = numeric(), format = character())
+}
+
+# The outer run manifest protects inventory bytes, not the truth of its cells.
+# Validate the embedded declarations independently, without repairing a run.
+lisa_validate_full_products_inventory <- function(run_dir, required = FALSE) {
+  path <- file.path(run_dir, "artifacts", "full_products_inventory.tsv")
+  if (!file.exists(path)) {
+    return(if (required) "full_products_inventory_absent" else character())
+  }
+  inventory <- tryCatch(read_lisa_tsv(path), error = function(error) NULL)
+  columns <- c("path", "bytes", "format")
+  if (is.null(inventory) || !identical(names(inventory), columns) ||
+      anyNA(inventory) || !is.character(inventory$path) ||
+      any(!nzchar(inventory$path)) || anyDuplicated(inventory$path)) {
+    return("full_products_inventory_invalid_schema")
+  }
+  bytes <- suppressWarnings(as.numeric(inventory$bytes))
+  if (any(!is.finite(bytes)) || any(bytes < 0) || any(bytes != floor(bytes))) {
+    return("full_products_inventory_invalid_bytes")
+  }
+  actual <- lisa_full_products_inventory_rows(run_dir)
+  if (!setequal(inventory$path, actual$path)) {
+    return("full_products_inventory_scope_mismatch")
+  }
+  matched <- match(inventory$path, actual$path)
+  findings <- character()
+  if (any(bytes != actual$bytes[matched])) {
+    findings <- c(findings, "full_products_inventory_size_mismatch")
+  }
+  if (!identical(as.character(inventory$format), as.character(actual$format[matched]))) {
+    findings <- c(findings, "full_products_inventory_format_mismatch")
+  }
+  findings
+}
+
+lisa_write_full_products_inventory <- function(run_dir, units = NULL) {
+  inventory <- lisa_full_products_inventory_rows(run_dir)
   path <- file.path(run_dir, "artifacts", "full_products_inventory.tsv")
   if (!dir.exists(dirname(path))) lisa_guarded_dir_create(dirname(path))
   write_lisa_tsv(inventory, path)

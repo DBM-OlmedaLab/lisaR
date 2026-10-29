@@ -3634,10 +3634,7 @@ save_plot_multi <- function(plot, stem, formats, width, height, bg = "white") {
           useDingbats = FALSE, limitsize = FALSE, bg = bg
         )
       } else if (identical(format, "svg")) {
-        ggplot2::ggsave(
-          target, plot, width = width, height = height,
-          device = grDevices::svg, limitsize = FALSE, bg = bg
-        )
+        lisa_save_plot_svg_isolated(plot, target, width, height, bg)
       } else {
         device <- if (format %in% c("tif", "tiff")) {
           "tiff"
@@ -3724,4 +3721,36 @@ format_pathway_display_label <- function(x) {
   x <- gsub("_", " ", x)
   x <- gsub("^KEGG MEDICUS ", "KEGG_MEDICUS ", x)
   x
+}
+
+# Render only the SVG branch in a fresh process: grDevices Cairo font/layout
+# state can survive device closure and make later SVG layout history-dependent.
+# Retain guarded path handling in the caller and leave PNG/PDF saving unchanged.
+lisa_save_plot_svg_isolated <- function(plot, target, width, height, bg) {
+  folder <- tempfile("lisa-svg-device-")
+  if (!dir.create(folder)) stop("Cannot create isolated SVG rendering directory.", call. = FALSE)
+  on.exit(unlink(folder, recursive = TRUE), add = TRUE)
+  paths <- file.path(folder, "libraries.rds")
+  bundle <- file.path(folder, "figure.rds")
+  script <- file.path(folder, "render.R")
+  log <- file.path(folder, "render.log")
+  saveRDS(.libPaths(), paths)
+  saveRDS(list(plot = plot, target = normalizePath(target, winslash = "/", mustWork = FALSE),
+    width = width, height = height, bg = bg), bundle)
+  writeLines(c(
+    "args <- commandArgs(trailingOnly = TRUE)",
+    ".libPaths(readRDS(args[[1L]]))",
+    "suppressPackageStartupMessages(library(ggplot2))",
+    "item <- readRDS(args[[2L]])",
+    "ggplot2::ggsave(item$target, item$plot, width = item$width, height = item$height, device = grDevices::svg, limitsize = FALSE, bg = item$bg)"
+  ), script)
+  executable <- file.path(R.home("bin"), if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
+  if (!file.exists(executable)) stop("The pinned Rscript executable is unavailable for SVG rendering.", call. = FALSE)
+  status <- system2(executable,
+    args = c("--vanilla", shQuote(script), shQuote(paths), shQuote(bundle)), stdout = log, stderr = log)
+  if (!identical(status, 0L) || !file.exists(target) || is.na(file.info(target)$size) || file.info(target)$size == 0) {
+    detail <- if (file.exists(log)) paste(readLines(log, warn = FALSE), collapse = "\n") else "No renderer log."
+    stop("Isolated SVG figure rendering failed: ", detail, call. = FALSE)
+  }
+  invisible(target)
 }

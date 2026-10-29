@@ -39,10 +39,11 @@ stopifnot(
   identical(validation$analyses, 2L),
   identical(validation$contrasts, 1L),
   identical(as.integer(validation$config$pipeline$workers), 4L),
-  !isTRUE(validation$config$pipeline$dry_run)
+  !isTRUE(validation$config$pipeline$dry_run),
+  identical(validation$config$report$mode, "standard")
 )
 estimate <- plan_lisa_outputs(config)
-stopifnot(identical(estimate$summary$mode, "full"))
+stopifnot(identical(estimate$summary$mode, "standard"))
 result <- suppressWarnings(run_lisa(config))
 check <- verify_lisa_run(result$output_dir)
 parallel_path <- file.path(result$output_dir, "parallel_execution.tsv")
@@ -82,9 +83,13 @@ stopifnot(
   identical(check$gate, "PASS"),
   file.exists(file.path(result$output_dir, "report_index.html")),
   file.exists(file.path(result$output_dir, "report_output_policy.tsv")),
-  dir.exists(result$extension_output_dir),
-  file.exists(file.path(result$extension_output_dir, "index.html"))
+  is.null(result$extension_output_dir),
+  !dir.exists(paste0(result$output_dir, "-full-report")),
+  !dir.exists(paste0(result$output_dir, "-kegg-maps"))
 )
+metadata <- utils::read.delim(file.path(result$output_dir, "lisa_pipeline_metadata.tsv"),
+  check.names=FALSE, stringsAsFactors=FALSE)
+stopifnot(identical(metadata$value[metadata$key=="report_mode"], "standard"))
 cat("LISA_QUICK_START_GATE=PASS\n")
 cat("package_version=", as.character(utils::packageVersion("lisaR")), "\n", sep = "")
 cat("package_root=", installed_root, "\n", sep = "")

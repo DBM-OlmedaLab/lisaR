@@ -1,3 +1,7 @@
+# lisaR 1.0.2 (2026-10-29)
+
+- Bug fixes.
+
 # lisaR 1.0.1 (2026-10-26)
 
 - Bug fixes.

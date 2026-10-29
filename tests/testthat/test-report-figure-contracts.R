@@ -20,7 +20,7 @@ test_that("report relative paths do not depend on GNU realpath", {
   on.exit(Sys.setenv(PATH = old_path), add = TRUE)
   Sys.setenv(PATH = empty_path)
   expect_identical(env$rel_path(figure, page), "../outputs/figure.png")
-  expect_match(env$figure_id_for_path(figure, project), "^F_[0-9a-f]{16}$")
+  expect_match(env$figure_id_for_path(figure, project), "^F_[0-9a-f]{64}$")
 })
 
 test_that("report path handling rejects Windows device namespaces", {

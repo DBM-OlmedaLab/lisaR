@@ -45,10 +45,29 @@ test_that("runtime manifests record RNG, execution, versions, and lock hashes", 
 })
 
 test_that("runtime manifests record unavailable optional packages without querying their versions", {
-  skip_if(requireNamespace("yaml", quietly = TRUE), "This regression fixture requires yaml to be unavailable.")
-  manifest <- lisa_runtime_manifest(task_ids = "unavailable-optional-package")
+  # Exercise the unavailable branch even in a fully provisioned environment.
+  # Clone only this function's lexical environment; do not remove dependencies
+  # or alter a production installation to manufacture the missing namespace.
+  manifest_function <- lisa_runtime_manifest
+  mock_environment <- new.env(parent = environment(manifest_function))
+  real_require <- base::requireNamespace
+  mock_environment$requireNamespace <- function(package, ...) {
+    if (identical(package, "yaml")) return(FALSE)
+    real_require(package, ...)
+  }
+  environment(manifest_function) <- mock_environment
+  real_version <- utils::packageVersion
+  version_queries <- character()
+  testthat::local_mocked_bindings(packageVersion = function(package, ...) {
+    version_queries <<- c(version_queries, package)
+    if (identical(package, "yaml")) stop("Unavailable namespace version was queried")
+    real_version(package, ...)
+  }, .package = "utils")
+  manifest <- manifest_function(task_ids = "unavailable-optional-package")
   yaml_row <- manifest$versions[manifest$versions$package == "yaml", , drop = FALSE]
 
   expect_equal(nrow(yaml_row), 1L)
   expect_true(is.na(yaml_row$version[[1]]))
+  expect_false("yaml" %in% version_queries)
+  expect_true("lisaR" %in% version_queries)
 })
